@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { formatBs } from "@/lib/money";
 import type { CategoriaCliente, VSaldoCliente } from "@/lib/types";
 
-const CATEGORIAS: CategoriaCliente[] = ["RETAIL", "MAYORISTA", "MUNICIPAL", "CORPORATIVO"];
+const CATEGORIAS: CategoriaCliente[] = ["RETAIL", "MAYORISTA", "INSTITUCIONAL", "CORPORATIVO"];
 
 function badgeSituacion(situacion: VSaldoCliente["situacion"]) {
   if (situacion === "DEUDOR") return "badge badge-deudor";
@@ -64,9 +64,14 @@ export default function ClientesPage() {
           <div className="page-title">Clientes</div>
           <div className="page-sub">Una cuenta corriente viva por cliente.</div>
         </div>
-        <Link href="/clientes/nuevo" className="btn btn-primary">
-          + Nuevo cliente
-        </Link>
+        <div style={{ display: "flex", gap: 10 }}>
+          <Link href="/clientes/importar" className="btn btn-secondary">
+            Importar desde POS
+          </Link>
+          <Link href="/clientes/nuevo" className="btn btn-primary">
+            + Nuevo cliente
+          </Link>
+        </div>
       </div>
 
       {!cargando && clientes.length > 0 && (

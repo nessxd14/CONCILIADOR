@@ -134,7 +134,7 @@ export default function EditarClientePage() {
           <select id="categoria" className="select" value={categoria} onChange={(e) => setCategoria(e.target.value as CategoriaCliente)}>
             <option value="RETAIL">RETAIL</option>
             <option value="MAYORISTA">MAYORISTA</option>
-            <option value="MUNICIPAL">MUNICIPAL</option>
+            <option value="INSTITUCIONAL">INSTITUCIONAL</option>
             <option value="CORPORATIVO">CORPORATIVO</option>
           </select>
         </div>
