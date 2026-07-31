@@ -39,7 +39,7 @@ export async function updateSession(request: NextRequest) {
 
   if (user && isLoginRoute) {
     const url = request.nextUrl.clone();
-    url.pathname = "/clientes";
+    url.pathname = "/dia";
     return NextResponse.redirect(url);
   }
 
