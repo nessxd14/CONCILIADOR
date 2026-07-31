@@ -6,7 +6,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { formatBs } from "@/lib/money";
 import { rolDeUsuario } from "@/lib/roles";
-import type { Cliente, ClienteCredito, VMayorAuxiliar, VSaldoCliente } from "@/lib/types";
+import type { Cliente, ClienteCredito, PartidaAbierta, VMayorAuxiliar, VSaldoCliente } from "@/lib/types";
 
 export default function FichaClientePage() {
   const params = useParams();
@@ -17,6 +17,7 @@ export default function FichaClientePage() {
   const [credito, setCredito] = useState<ClienteCredito | null>(null);
   const [saldo, setSaldo] = useState<VSaldoCliente | null>(null);
   const [movimientos, setMovimientos] = useState<VMayorAuxiliar[]>([]);
+  const [partidasAbiertas, setPartidasAbiertas] = useState<PartidaAbierta[]>([]);
   const [esAdmin, setEsAdmin] = useState(false);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -32,6 +33,7 @@ export default function FichaClientePage() {
         creditoRes,
         saldoRes,
         movRes,
+        partidasRes,
       ] = await Promise.all([
         supabase.auth.getUser(),
         supabase.from("cliente").select("*").eq("id", clienteId).single(),
@@ -43,6 +45,12 @@ export default function FichaClientePage() {
           .eq("cliente_id", clienteId)
           .order("fecha_efectiva", { ascending: true })
           .order("id", { ascending: true }),
+        supabase
+          .from("partida_abierta")
+          .select("*")
+          .eq("cliente_id", clienteId)
+          .eq("estado", "ABIERTA")
+          .order("fecha_entrega", { ascending: true }),
       ]);
 
       if (clienteRes.error) {
@@ -56,6 +64,7 @@ export default function FichaClientePage() {
       setCredito((creditoRes.data ?? null) as ClienteCredito | null);
       setSaldo((saldoRes.data ?? null) as VSaldoCliente | null);
       setMovimientos((movRes.data ?? []) as VMayorAuxiliar[]);
+      setPartidasAbiertas((partidasRes.data ?? []) as PartidaAbierta[]);
       setCargando(false);
     }
     cargar();
@@ -134,6 +143,32 @@ export default function FichaClientePage() {
           </div>
         </div>
       </div>
+
+      {partidasAbiertas.length > 0 && (
+        <div style={{ marginBottom: 20 }}>
+          <div style={{ fontSize: 11, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.03em", fontWeight: 700, marginBottom: 8 }}>
+            Partidas abiertas — expediente
+          </div>
+          <div className="table">
+            <div className="table-head" style={{ gridTemplateColumns: "1fr 1fr 1fr auto" }}>
+              <div>Documento</div>
+              <div>Entrega</div>
+              <div>Total</div>
+              <div></div>
+            </div>
+            {partidasAbiertas.map((p) => (
+              <div key={p.id} className="table-row" style={{ gridTemplateColumns: "1fr 1fr 1fr auto" }}>
+                <span style={{ fontSize: 12.5 }}>{p.documento_interno}</span>
+                <span style={{ fontSize: 12, color: "var(--muted)" }}>{p.fecha_entrega ?? "—"}</span>
+                <span className="money">{formatBs(p.total)}</span>
+                <Link href={`/clientes/${clienteId}/expediente/${p.id}`} className="btn btn-secondary">
+                  Ver expediente
+                </Link>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="table">
         <div className="table-head" style={{ gridTemplateColumns: "90px 2fr 1fr 1fr" }}>

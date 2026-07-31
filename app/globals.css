@@ -354,6 +354,124 @@ textarea {
   color: var(--alerta);
 }
 
+/* ---------- expediente ---------- */
+
+.timeline {
+  display: flex;
+  flex-direction: column;
+}
+
+.timeline-hito {
+  position: relative;
+  padding-left: 28px;
+  padding-bottom: 22px;
+}
+
+.timeline-hito::before {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 22px;
+  bottom: -2px;
+  width: 2px;
+  background: var(--line);
+}
+
+.timeline-hito:last-child::before {
+  display: none;
+}
+
+.timeline-dot {
+  position: absolute;
+  left: 0;
+  top: 3px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--muted);
+  background: var(--white);
+}
+
+.timeline-dot.completo {
+  border-color: var(--acreedor);
+  background: var(--acreedor);
+}
+
+.doc-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: var(--surface-1);
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-top: 8px;
+}
+
+.estado-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 6px;
+  background: var(--muted);
+}
+
+.estado-dot.SUBIDO {
+  background: var(--provisional);
+}
+
+.estado-dot.APROBADO {
+  background: var(--acreedor);
+}
+
+.estado-dot.RECHAZADO {
+  background: var(--alerta);
+}
+
+/* ---------- responsive: /captura es mobile-first ---------- */
+
+@media (max-width: 720px) {
+  .shell {
+    display: block;
+    min-width: 0;
+  }
+
+  .sidebar {
+    display: none;
+  }
+
+  .content {
+    padding: 14px;
+  }
+}
+
+.mobile-topbar {
+  display: none;
+}
+
+@media (max-width: 720px) {
+  .mobile-topbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+}
+
+.captura-shell {
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+.btn-lg {
+  width: 100%;
+  justify-content: center;
+  height: 56px;
+  font-size: 15px;
+  border-radius: 12px;
+}
+
 .login-shell {
   min-height: 100vh;
   display: grid;
