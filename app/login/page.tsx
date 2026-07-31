@@ -1,12 +1,17 @@
 "use client";
 
+// No prerenderizar como estática: el cliente de Supabase se crea recién
+// al enviar el formulario (ver handleSubmit), nunca durante el render del
+// componente, así el build no depende de que las env vars existan en ese
+// momento. force-dynamic queda como refuerzo explícito de la ruta.
+export const dynamic = "force-dynamic";
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
   const router = useRouter();
-  const supabase = createClient();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -17,6 +22,7 @@ export default function LoginPage() {
     setError(null);
     setCargando(true);
 
+    const supabase = createClient();
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
