@@ -7,6 +7,7 @@ export function Sidebar({ email, rol }: { email: string; rol: string | null }) {
   const pathname = usePathname();
 
   const items = [
+    { href: "/dia", label: "Mi día" },
     { href: "/clientes", label: "Clientes" },
     ...(rol === "admin" ? [{ href: "/apertura", label: "Cargar aperturas" }] : []),
   ];

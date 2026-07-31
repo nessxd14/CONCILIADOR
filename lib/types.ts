@@ -42,6 +42,15 @@ export interface VSaldoCliente {
   situacion: Situacion;
 }
 
+export interface VCobrosBloqueados {
+  cliente_id: number;
+  cliente: string;
+  categoria: CategoriaCliente;
+  partidas_bloqueadas: number;
+  monto_bloqueado: string;
+  dias_maximo: number;
+}
+
 export interface VMayorAuxiliar {
   id: number;
   cliente_id: number;

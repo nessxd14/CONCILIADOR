@@ -116,10 +116,11 @@ export default function ClientesPage() {
 
       {!cargando && (
         <div className="table">
-          <div className="table-head" style={{ gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr auto" }}>
+          <div className="table-head" style={{ gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr 1fr auto" }}>
             <div>Cliente</div>
             <div>Categoría</div>
             <div>Saldo confirmado</div>
+            <div>Saldo provisional</div>
             <div>Situación</div>
             <div>Apertura</div>
             <div></div>
@@ -128,7 +129,7 @@ export default function ClientesPage() {
             <div
               key={c.cliente_id}
               className="table-row"
-              style={{ gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr auto" }}
+              style={{ gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr 1fr auto" }}
             >
               <b style={{ fontSize: 13 }}>{c.cliente}</b>
               <span style={{ fontSize: 12, color: "var(--muted)" }}>{c.categoria}</span>
@@ -139,6 +140,7 @@ export default function ClientesPage() {
               >
                 {formatBs(c.saldo_confirmado)}
               </span>
+              <span className="money-provisional">{formatBs(c.saldo_provisional)}</span>
               <span className={badgeSituacion(c.situacion)}>{c.situacion}</span>
               <span className={conApertura.has(c.cliente_id) ? "badge badge-aldia" : "badge badge-pendiente"}>
                 {conApertura.has(c.cliente_id) ? "Cargada" : "Pendiente"}
