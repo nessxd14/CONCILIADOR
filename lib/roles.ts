@@ -8,6 +8,6 @@ export type Rol =
   | "auditor";
 
 export function rolDeUsuario(user: { user_metadata?: Record<string, unknown> } | null): Rol | null {
-  const rol = user?.user_metadata?.role;
+  const rol = user?.user_metadata?.rol;
   return typeof rol === "string" ? (rol as Rol) : null;
 }

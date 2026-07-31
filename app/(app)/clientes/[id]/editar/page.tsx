@@ -17,7 +17,6 @@ export default function EditarClientePage() {
   const [error, setError] = useState<string | null>(null);
   const [guardando, setGuardando] = useState(false);
   const [esGerente, setEsGerente] = useState(false);
-  const [emailUsuario, setEmailUsuario] = useState("desconocido");
 
   const [nombre, setNombre] = useState("");
   const [nit, setNit] = useState("");
@@ -45,7 +44,6 @@ export default function EditarClientePage() {
         return;
       }
 
-      setEmailUsuario(userData.user?.email ?? "desconocido");
       setEsGerente(rolDeUsuario(userData.user) === "gerente");
 
       const cliente = clienteRes.data as Cliente;
@@ -94,42 +92,18 @@ export default function EditarClientePage() {
 
     const nuevoLimite = sinLimite ? null : limiteCredito;
 
-    const { error: errCredito } = await supabase
-      .from("cliente_credito")
-      .update({
-        sector,
-        limite_credito: nuevoLimite,
-        plazo_dias: plazoDias,
-        actualizado_por: emailUsuario,
-      })
-      .eq("cliente_id", clienteId);
+    const { error: errCredito } = await supabase.rpc("actualizar_credito_cliente", {
+      p_cliente_id: clienteId,
+      p_sector: sector,
+      p_limite_credito: nuevoLimite,
+      p_plazo_dias: plazoDias,
+      p_motivo: motivo.trim() || null,
+    });
 
     if (errCredito) {
       setError(errCredito.message);
       setGuardando(false);
       return;
-    }
-
-    if (limiteCambio) {
-      await supabase.from("cliente_credito_evento").insert({
-        cliente_id: clienteId,
-        campo: "limite_credito",
-        valor_previo: original?.limite ?? null,
-        valor_nuevo: nuevoLimite,
-        motivo,
-        creado_por: emailUsuario,
-      });
-    }
-
-    if (plazoCambio) {
-      await supabase.from("cliente_credito_evento").insert({
-        cliente_id: clienteId,
-        campo: "plazo_dias",
-        valor_previo: String(original?.plazo ?? ""),
-        valor_nuevo: String(plazoDias),
-        motivo,
-        creado_por: emailUsuario,
-      });
     }
 
     router.push(`/clientes/${clienteId}`);

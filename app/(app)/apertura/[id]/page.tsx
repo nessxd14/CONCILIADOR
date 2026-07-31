@@ -19,7 +19,6 @@ export default function CargarAperturaPage() {
   const [paso, setPaso] = useState<Paso>("cargando");
   const [cliente, setCliente] = useState<Cliente | null>(null);
   const [fechaCorte, setFechaCorte] = useState("");
-  const [emailAdmin, setEmailAdmin] = useState("desconocido");
   const [montoTexto, setMontoTexto] = useState("");
   const [motivo, setMotivo] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -49,7 +48,6 @@ export default function CargarAperturaPage() {
         return;
       }
 
-      setEmailAdmin(userData.user?.email ?? "desconocido");
       setCliente(clienteRes.data as Cliente);
       setFechaCorte(parametroRes.data?.valor ?? "");
 
@@ -88,7 +86,6 @@ export default function CargarAperturaPage() {
     const { error: errRpc } = await supabase.rpc("cargar_saldo_apertura", {
       p_cliente_id: clienteId,
       p_saldo: monto.toFixed(2),
-      p_admin: emailAdmin,
       p_motivo: motivo.trim(),
     });
 
