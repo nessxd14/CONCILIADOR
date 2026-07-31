@@ -1,0 +1,370 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap");
+
+:root {
+  --orange: #f26b2b;
+  --orange-dark: #dc5519;
+  --charcoal: #1d1d1b;
+  --muted: #77746d;
+  --line: #e9e5dc;
+  --surface-0: #f5f3ee;
+  --surface-1: #efede7;
+  --surface-2: #f0ece3;
+  --white: #ffffff;
+  --acreedor: #2f7d4a;
+  --acreedor-bg: #e5f3e9;
+  --provisional: #a8791a;
+  --provisional-bg: #faf1e0;
+  --alerta: #c0392b;
+  --alerta-bg: #fbeae7;
+
+  --fs-eyebrow: 11px;
+  --fs-label: 12px;
+  --fs-body: 13px;
+  --fs-title: 15px;
+  --fs-figure: 19px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+}
+
+body {
+  font-family: "DM Sans", Inter, system-ui, sans-serif;
+  color: var(--charcoal);
+  background: var(--surface-0);
+  font-size: var(--fs-body);
+}
+
+a {
+  color: var(--orange-dark);
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+}
+
+/* ---------- shell / navegación ---------- */
+
+.shell {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  min-height: 100vh;
+  min-width: 1180px;
+}
+
+.sidebar {
+  background: var(--charcoal);
+  padding: 22px 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 8px 24px;
+}
+
+.sidebar-mark {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: var(--orange);
+  display: grid;
+  place-items: center;
+  transform: rotate(-4deg);
+  color: #fff;
+  font-weight: 800;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.sidebar-title {
+  color: #fff;
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.5px;
+}
+
+.sidebar-sub {
+  color: #98968f;
+  font-size: 10.5px;
+  margin-top: 1px;
+}
+
+.nav-item {
+  border: 0;
+  background: transparent;
+  color: #a9a7a0;
+  border-radius: 9px;
+  padding: 0 12px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+  text-decoration: none;
+}
+
+.nav-item.active {
+  background: var(--orange);
+  color: #fff;
+}
+
+.sidebar-footer {
+  margin-top: auto;
+  border-top: 1px solid #343431;
+  padding: 16px 6px 0;
+  color: #7d7b75;
+  font-size: 10.5px;
+}
+
+.content {
+  padding: 26px 30px 40px;
+}
+
+.page-title {
+  font-size: 23px;
+  font-weight: 800;
+  color: var(--charcoal);
+  margin-bottom: 4px;
+}
+
+.page-sub {
+  color: var(--muted);
+  font-size: 12.5px;
+  margin-bottom: 18px;
+}
+
+/* ---------- tarjetas / superficies ---------- */
+
+.card {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 16px 18px;
+}
+
+.banner-warn {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  background: var(--provisional-bg);
+  border: 1px dashed #d8b76a;
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+
+.banner-alerta {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  background: var(--alerta-bg);
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+
+/* ---------- tabla ---------- */
+
+.table {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--white);
+}
+
+.table-head {
+  display: grid;
+  gap: 10px;
+  padding: 11px 16px;
+  background: var(--surface-2);
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.table-row {
+  display: grid;
+  gap: 10px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--line);
+  align-items: center;
+}
+
+.table-row:first-child {
+  border-top: 0;
+}
+
+/* ---------- formularios ---------- */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.field label {
+  font-size: var(--fs-label);
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.field-hint {
+  font-size: 11px;
+  color: #a9a7a0;
+}
+
+.field-error {
+  font-size: 11px;
+  color: var(--alerta);
+  font-weight: 600;
+}
+
+.input,
+.select,
+.textarea {
+  height: 40px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  padding: 0 12px;
+  background: var(--white);
+  width: 100%;
+}
+
+.textarea {
+  height: auto;
+  padding: 10px 12px;
+  resize: vertical;
+}
+
+.input:disabled,
+.select:disabled {
+  background: var(--surface-1);
+  color: var(--muted);
+}
+
+/* ---------- botones ---------- */
+
+.btn {
+  border: 0;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: var(--charcoal);
+  color: #fff;
+}
+
+.btn-orange {
+  background: var(--orange);
+  color: #fff;
+}
+
+.btn-secondary {
+  background: #fff;
+  border: 1px solid var(--charcoal);
+  color: var(--charcoal);
+}
+
+.btn-link {
+  background: transparent;
+  border: 0;
+  color: var(--orange-dark);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 0;
+  cursor: pointer;
+}
+
+/* ---------- montos / estado ---------- */
+
+.money {
+  font-weight: 700;
+  color: var(--charcoal);
+}
+
+.money-acreedor {
+  font-weight: 700;
+  color: var(--acreedor);
+}
+
+.money-provisional {
+  font-weight: 700;
+  color: var(--provisional);
+}
+
+.badge {
+  display: inline-block;
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 5px;
+  background: var(--surface-2);
+  color: var(--muted);
+}
+
+.badge-deudor {
+  background: #fdece3;
+  color: var(--orange-dark);
+}
+
+.badge-acreedor {
+  background: var(--acreedor-bg);
+  color: var(--acreedor);
+}
+
+.badge-aldia {
+  background: var(--surface-2);
+  color: var(--muted);
+}
+
+.badge-pendiente {
+  background: var(--alerta-bg);
+  color: var(--alerta);
+}
+
+.login-shell {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  background: var(--surface-0);
+}
+
+.login-card {
+  width: 360px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 32px;
+}
