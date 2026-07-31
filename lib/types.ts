@@ -67,6 +67,62 @@ export interface VMayorAuxiliar {
   creado_en: string;
 }
 
+export type EstadoPartida = "ABIERTA" | "CANCELADA" | "ANULADA";
+export type EstadoHito = "PENDIENTE" | "COMPLETO";
+export type EstadoDocumento = "PENDIENTE" | "SUBIDO" | "APROBADO" | "RECHAZADO";
+export type TipoDocumento = "HABILITANTE" | "ANEXO";
+
+export interface PartidaAbierta {
+  id: number;
+  cliente_id: number;
+  cliente_nombre: string;
+  cliente_categoria: CategoriaCliente;
+  pedido_id: number | null;
+  venta_id: number | null;
+  documento_interno: string;
+  cuf: string | null;
+  total: string;
+  inicio_computo: InicioComputo;
+  plazo_dias: number;
+  fecha_entrega: string | null;
+  fecha_factura: string | null;
+  estado: EstadoPartida;
+  documentado: boolean;
+  referencia: string | null;
+  creado_por: string;
+  creado_en: string;
+  anulada_en: string | null;
+  anulada_por: string | null;
+  motivo_anulacion: string | null;
+}
+
+export interface Hito {
+  id: number;
+  partida_abierta_id: number;
+  hito_plantilla_id: number | null;
+  orden: number;
+  nombre: string;
+  estado: EstadoHito;
+  completado_en: string | null;
+  completado_por: string | null;
+  habilitantes_pendientes: number;
+}
+
+export interface Documento {
+  id: number;
+  hito_id: number;
+  documento_plantilla_id: number | null;
+  etiqueta: string;
+  tipo: TipoDocumento;
+  estado: EstadoDocumento;
+  storage_path: string | null;
+  subido_por: string | null;
+  subido_en: string | null;
+  revisado_por: string | null;
+  revisado_en: string | null;
+  notas: string | null;
+}
+
 export interface ClienteCation {
   id: number;
   nombre: string;
