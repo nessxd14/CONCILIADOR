@@ -472,6 +472,23 @@ textarea {
   border-radius: 12px;
 }
 
+/* ---------- modal ---------- */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(29, 29, 27, 0.45);
+  display: grid;
+  place-items: center;
+  z-index: 50;
+  padding: 16px;
+}
+
+.modal-card {
+  width: 100%;
+  max-width: 400px;
+}
+
 .login-shell {
   min-height: 100vh;
   display: grid;
