@@ -22,8 +22,13 @@ export default function FichaClientePage() {
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function cargar() {
+  const [modalNCAbierto, setModalNCAbierto] = useState(false);
+  const [montoNC, setMontoNC] = useState("");
+  const [motivoNC, setMotivoNC] = useState("");
+  const [guardandoNC, setGuardandoNC] = useState(false);
+  const [errorNC, setErrorNC] = useState<string | null>(null);
+
+  async function cargar() {
       setCargando(true);
       setError(null);
 
@@ -66,8 +71,11 @@ export default function FichaClientePage() {
       setMovimientos((movRes.data ?? []) as VMayorAuxiliar[]);
       setPartidasAbiertas((partidasRes.data ?? []) as PartidaAbierta[]);
       setCargando(false);
-    }
+  }
+
+  useEffect(() => {
     cargar();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [supabase, clienteId]);
 
   if (cargando) return <div>Cargando…</div>;
@@ -75,6 +83,35 @@ export default function FichaClientePage() {
   if (!cliente) return <div>Cliente no encontrado.</div>;
 
   const tieneApertura = movimientos.some((m) => m.tipo === "SALDO_APERTURA");
+
+  function cerrarModalNC() {
+    setModalNCAbierto(false);
+    setMontoNC("");
+    setMotivoNC("");
+    setErrorNC(null);
+  }
+
+  async function confirmarNC(e: React.FormEvent) {
+    e.preventDefault();
+    setGuardandoNC(true);
+    setErrorNC(null);
+
+    const { error } = await supabase.rpc("registrar_nota_credito", {
+      p_cliente_id: clienteId,
+      p_monto: montoNC,
+      p_motivo: motivoNC,
+    });
+
+    if (error) {
+      setErrorNC(error.message);
+      setGuardandoNC(false);
+      return;
+    }
+
+    setGuardandoNC(false);
+    cerrarModalNC();
+    await cargar();
+  }
 
   return (
     <div>
@@ -111,6 +148,14 @@ export default function FichaClientePage() {
           <div style={{ fontSize: 13, fontWeight: 600 }}>
             Este cliente todavía no tiene saldo de apertura cargado. Sus movimientos no reflejan la deuda real hasta que se cargue.
           </div>
+        </div>
+      )}
+
+      {esAdmin && (
+        <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 16 }}>
+          <button type="button" className="btn btn-secondary" onClick={() => setModalNCAbierto(true)}>
+            Registrar nota de crédito
+          </button>
         </div>
       )}
 
@@ -199,6 +244,53 @@ export default function FichaClientePage() {
           </div>
         )}
       </div>
+
+      {modalNCAbierto && (
+        <div className="modal-overlay" onClick={cerrarModalNC}>
+          <form className="card modal-card" onClick={(e) => e.stopPropagation()} onSubmit={confirmarNC}>
+            <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 14 }}>Registrar nota de crédito</div>
+
+            <div className="field">
+              <label htmlFor="montoNC">Monto (Bs)</label>
+              <input
+                id="montoNC"
+                type="number"
+                min="0"
+                step="0.01"
+                className="input"
+                value={montoNC}
+                onChange={(e) => setMontoNC(e.target.value)}
+                autoFocus
+                required
+              />
+              <div className="field-hint">A favor del cliente. No hace falta poner el signo, la base lo resuelve.</div>
+            </div>
+
+            <div className="field">
+              <label htmlFor="motivoNC">Motivo</label>
+              <textarea
+                id="motivoNC"
+                className="textarea"
+                rows={3}
+                value={motivoNC}
+                onChange={(e) => setMotivoNC(e.target.value)}
+                required
+              />
+            </div>
+
+            {errorNC && <div className="field-error" style={{ marginBottom: 14 }}>{errorNC}</div>}
+
+            <div style={{ display: "flex", gap: 10 }}>
+              <button type="button" className="btn btn-secondary" onClick={cerrarModalNC} disabled={guardandoNC}>
+                Cancelar
+              </button>
+              <button type="submit" className="btn btn-orange" disabled={guardandoNC}>
+                {guardandoNC ? "Guardando…" : "Confirmar"}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
     </div>
   );
 }
