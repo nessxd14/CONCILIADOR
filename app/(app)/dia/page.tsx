@@ -5,7 +5,12 @@ import Link from "next/link";
 import Decimal from "decimal.js";
 import { createClient } from "@/lib/supabase/client";
 import { formatBs } from "@/lib/money";
-import type { VCobrosBloqueados } from "@/lib/types";
+import { rolDeUsuario } from "@/lib/roles";
+import type { PagoPropuesto, VCobrosBloqueados } from "@/lib/types";
+
+function creadorSinPrefijo(creadoPor: string): string {
+  return creadoPor.startsWith("pos:") ? creadoPor.slice(4) : creadoPor;
+}
 
 export default function MiDiaPage() {
   const supabase = useMemo(() => createClient(), []);
@@ -13,27 +18,87 @@ export default function MiDiaPage() {
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const [esGerente, setEsGerente] = useState(false);
+  const [usuario, setUsuario] = useState("desconocido");
+  const [pagos, setPagos] = useState<PagoPropuesto[]>([]);
+  const [erroresPago, setErroresPago] = useState<Record<number, string>>({});
+  const [confirmando, setConfirmando] = useState<Record<number, boolean>>({});
+
   useEffect(() => {
     async function cargar() {
       setCargando(true);
       setError(null);
 
-      const { data, error } = await supabase
-        .from("v_cobros_bloqueados")
-        .select("*")
-        .order("monto_bloqueado", { ascending: false });
+      const [{ data: userData }, bloqueadosRes] = await Promise.all([
+        supabase.auth.getUser(),
+        supabase.from("v_cobros_bloqueados").select("*").order("monto_bloqueado", { ascending: false }),
+      ]);
 
-      if (error) {
-        setError(error.message);
+      if (bloqueadosRes.error) {
+        setError(bloqueadosRes.error.message);
         setCargando(false);
         return;
       }
 
-      setBloqueados(data as VCobrosBloqueados[]);
+      setUsuario(userData.user?.email ?? "desconocido");
+      const gerente = rolDeUsuario(userData.user) === "gerente";
+      setEsGerente(gerente);
+      setBloqueados(bloqueadosRes.data as VCobrosBloqueados[]);
+
+      if (gerente) {
+        const { data: pagosData, error: errPagos } = await supabase
+          .from("pago")
+          .select("id, cliente_id, monto, medio, referencia, creado_por, creado_en")
+          .eq("estado", "PROPUESTO")
+          .order("creado_en", { ascending: true });
+
+        if (!errPagos && pagosData && pagosData.length > 0) {
+          const clienteIds = [...new Set(pagosData.map((p) => p.cliente_id as number))];
+          const { data: clientesData } = await supabase.from("cliente").select("id, nombre").in("id", clienteIds);
+          const nombrePorId = new Map((clientesData ?? []).map((c) => [c.id as number, c.nombre as string]));
+
+          setPagos(
+            pagosData.map((p) => ({
+              id: p.id,
+              cliente_id: p.cliente_id,
+              cliente: nombrePorId.get(p.cliente_id as number) ?? "—",
+              monto: p.monto,
+              medio: p.medio,
+              referencia: p.referencia,
+              creado_por: p.creado_por,
+              creado_en: p.creado_en,
+            })) as PagoPropuesto[]
+          );
+        }
+      }
+
       setCargando(false);
     }
     cargar();
   }, [supabase]);
+
+  async function confirmarPago(pago: PagoPropuesto) {
+    setConfirmando((prev) => ({ ...prev, [pago.id]: true }));
+    setErroresPago((prev) => {
+      const next = { ...prev };
+      delete next[pago.id];
+      return next;
+    });
+
+    const { error } = await supabase.rpc("confirmar_pago", {
+      p_pago_id: pago.id,
+      p_usuario: usuario,
+    });
+
+    if (error) {
+      setErroresPago((prev) => ({ ...prev, [pago.id]: error.message }));
+      setConfirmando((prev) => ({ ...prev, [pago.id]: false }));
+      return;
+    }
+
+    setPagos((prev) => prev.filter((p) => p.id !== pago.id));
+    setConfirmando((prev) => ({ ...prev, [pago.id]: false }));
+  }
 
   const totalBloqueado = bloqueados
     .reduce((acc, b) => acc.plus(new Decimal(b.monto_bloqueado)), new Decimal(0))
@@ -52,6 +117,44 @@ export default function MiDiaPage() {
 
       {error && <div className="field-error" style={{ marginTop: 16 }}>{error}</div>}
       {cargando && <div style={{ marginTop: 16 }}>Cargando…</div>}
+
+      {!cargando && esGerente && pagos.length > 0 && (
+        <div style={{ marginTop: 16 }}>
+          <div style={{ fontSize: 11, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.03em", fontWeight: 700, marginBottom: 8 }}>
+            Pagos por confirmar ({pagos.length})
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {pagos.map((p) => (
+              <div key={p.id} className="card">
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <b style={{ fontSize: 13.5 }}>{p.cliente}</b>
+                      <span className="badge">{p.medio}</span>
+                    </div>
+                    <div style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 3 }}>
+                      Cobrado por {creadorSinPrefijo(p.creado_por)} · {new Date(p.creado_en).toLocaleString("es-BO")}
+                      {p.referencia && ` · ref. ${p.referencia}`}
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                    <span className="money" style={{ fontSize: 16 }}>{formatBs(p.monto)}</span>
+                    <button
+                      type="button"
+                      className="btn btn-orange"
+                      disabled={confirmando[p.id]}
+                      onClick={() => confirmarPago(p)}
+                    >
+                      {confirmando[p.id] ? "Confirmando…" : "Confirmar"}
+                    </button>
+                  </div>
+                </div>
+                {erroresPago[p.id] && <div className="field-error" style={{ marginTop: 8 }}>{erroresPago[p.id]}</div>}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {!cargando && !error && bloqueados.length === 0 && (
         <div className="card" style={{ marginTop: 16 }}>

@@ -123,6 +123,19 @@ export interface Documento {
   notas: string | null;
 }
 
+export type MedioPago = "EFECTIVO" | "QR" | "DEPOSITO" | "TRANSFERENCIA" | "SIGEP" | "CHEQUE";
+
+export interface PagoPropuesto {
+  id: number;
+  cliente_id: number;
+  cliente: string;
+  monto: string;
+  medio: MedioPago;
+  referencia: string | null;
+  creado_por: string;
+  creado_en: string;
+}
+
 export interface ClienteCation {
   id: number;
   nombre: string;
