@@ -79,17 +79,6 @@ export default function EditarClientePage() {
 
     setGuardando(true);
 
-    const { error: errCliente } = await supabase
-      .from("cliente")
-      .update({ nombre: nombre.trim(), nit: nit.trim() || null, categoria })
-      .eq("id", clienteId);
-
-    if (errCliente) {
-      setError(errCliente.message);
-      setGuardando(false);
-      return;
-    }
-
     const nuevoLimite = sinLimite ? null : limiteCredito;
 
     const { error: errCredito } = await supabase.rpc("actualizar_credito_cliente", {
@@ -123,20 +112,18 @@ export default function EditarClientePage() {
       <form onSubmit={handleSubmit} className="card">
         <div className="field">
           <label htmlFor="nombre">Nombre</label>
-          <input id="nombre" className="input" value={nombre} onChange={(e) => setNombre(e.target.value)} required />
+          <input id="nombre" className="input" value={nombre} disabled readOnly />
         </div>
         <div className="field">
           <label htmlFor="nit">NIT</label>
-          <input id="nit" className="input" value={nit} onChange={(e) => setNit(e.target.value)} />
+          <input id="nit" className="input" value={nit} disabled readOnly />
         </div>
         <div className="field">
           <label htmlFor="categoria">Categoría</label>
-          <select id="categoria" className="select" value={categoria} onChange={(e) => setCategoria(e.target.value as CategoriaCliente)}>
-            <option value="RETAIL">RETAIL</option>
-            <option value="MAYORISTA">MAYORISTA</option>
-            <option value="INSTITUCIONAL">INSTITUCIONAL</option>
-            <option value="CORPORATIVO">CORPORATIVO</option>
-          </select>
+          <input id="categoria" className="input" value={categoria} disabled readOnly />
+        </div>
+        <div className="field-hint" style={{ marginTop: -8, marginBottom: 14 }}>
+          Nombre, NIT y categoría se sincronizan desde Cation. Para corregirlos, editá el cliente en el POS.
         </div>
         <div className="field">
           <label htmlFor="sector">Sector</label>

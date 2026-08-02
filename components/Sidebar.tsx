@@ -3,12 +3,20 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-export function Sidebar({ email, rol }: { email: string; rol: string | null }) {
+export function Sidebar({
+  email,
+  rol,
+  pendientesImportar = 0,
+}: {
+  email: string;
+  rol: string | null;
+  pendientesImportar?: number;
+}) {
   const pathname = usePathname();
 
   const items = [
     { href: "/dia", label: "Mi día" },
-    { href: "/clientes", label: "Clientes" },
+    { href: "/clientes", label: "Clientes", badge: pendientesImportar > 0 ? pendientesImportar : undefined },
     ...(rol === "admin" ? [{ href: "/apertura", label: "Cargar aperturas" }] : []),
   ];
 
@@ -27,8 +35,10 @@ export function Sidebar({ email, rol }: { email: string; rol: string | null }) {
           key={item.href}
           href={item.href}
           className={`nav-item ${pathname.startsWith(item.href) ? "active" : ""}`}
+          style={{ justifyContent: "space-between" }}
         >
-          {item.label}
+          <span>{item.label}</span>
+          {item.badge !== undefined && <span className="badge badge-pendiente">{item.badge}</span>}
         </Link>
       ))}
 

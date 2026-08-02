@@ -19,9 +19,13 @@ export default async function AppLayout({
 
   const rol = rolDeUsuario(user);
 
+  const { count } = await supabase
+    .from("v_clientes_cation_pendientes")
+    .select("*", { count: "exact", head: true });
+
   return (
     <div className="shell">
-      <Sidebar email={user.email ?? ""} rol={rol} />
+      <Sidebar email={user.email ?? ""} rol={rol} pendientesImportar={count ?? 0} />
       <div className="content">{children}</div>
     </div>
   );

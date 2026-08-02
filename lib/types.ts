@@ -147,6 +147,10 @@ export interface ClienteCation {
   creado_en: string;
 }
 
+export interface ClienteCationPendiente extends ClienteCation {
+  categoria_sugerida: CategoriaCliente | null;
+}
+
 const TIPO_PRECIO_A_CATEGORIA: Record<string, CategoriaCliente> = {
   retail: "RETAIL",
   mayorista: "MAYORISTA",
