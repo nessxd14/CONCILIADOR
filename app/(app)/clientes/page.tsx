@@ -2,9 +2,12 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { formatBs } from "@/lib/money";
 import type { CategoriaCliente, VSaldoCliente } from "@/lib/types";
+
+type ResultadoSync = { actualizados: number; sin_mapeo: number; no_importados: number };
 
 const CATEGORIAS: CategoriaCliente[] = ["RETAIL", "MAYORISTA", "INSTITUCIONAL", "CORPORATIVO"];
 
@@ -16,35 +19,60 @@ function badgeSituacion(situacion: VSaldoCliente["situacion"]) {
 
 export default function ClientesPage() {
   const supabase = useMemo(() => createClient(), []);
+  const router = useRouter();
   const [clientes, setClientes] = useState<VSaldoCliente[]>([]);
   const [conApertura, setConApertura] = useState<Set<number>>(new Set());
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busqueda, setBusqueda] = useState("");
   const [categoria, setCategoria] = useState<CategoriaCliente | "">("");
+  const [sincronizando, setSincronizando] = useState(false);
+  const [resultadoSync, setResultadoSync] = useState<ResultadoSync | null>(null);
+  const [errorSync, setErrorSync] = useState<string | null>(null);
+
+  async function cargar() {
+    setCargando(true);
+    setError(null);
+
+    const [saldos, aperturas] = await Promise.all([
+      supabase.from("v_saldo_cliente").select("*").order("cliente"),
+      supabase.from("movimiento_cuenta").select("cliente_id").eq("tipo", "SALDO_APERTURA"),
+    ]);
+
+    if (saldos.error) {
+      setError(saldos.error.message);
+      setCargando(false);
+      return;
+    }
+
+    setClientes(saldos.data as VSaldoCliente[]);
+    setConApertura(new Set((aperturas.data ?? []).map((r) => r.cliente_id as number)));
+    setCargando(false);
+  }
 
   useEffect(() => {
-    async function cargar() {
-      setCargando(true);
-      setError(null);
-
-      const [saldos, aperturas] = await Promise.all([
-        supabase.from("v_saldo_cliente").select("*").order("cliente"),
-        supabase.from("movimiento_cuenta").select("cliente_id").eq("tipo", "SALDO_APERTURA"),
-      ]);
-
-      if (saldos.error) {
-        setError(saldos.error.message);
-        setCargando(false);
-        return;
-      }
-
-      setClientes(saldos.data as VSaldoCliente[]);
-      setConApertura(new Set((aperturas.data ?? []).map((r) => r.cliente_id as number)));
-      setCargando(false);
-    }
     cargar();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [supabase]);
+
+  async function sincronizar() {
+    setSincronizando(true);
+    setErrorSync(null);
+    setResultadoSync(null);
+
+    const { data, error: errSync } = await supabase.rpc("sincronizar_clientes_cation");
+
+    if (errSync) {
+      setErrorSync(errSync.message);
+      setSincronizando(false);
+      return;
+    }
+
+    setResultadoSync((data as ResultadoSync[])[0] ?? null);
+    setSincronizando(false);
+    await cargar();
+    router.refresh();
+  }
 
   const filtrados = useMemo(() => {
     const q = busqueda.trim().toLowerCase();
@@ -65,6 +93,9 @@ export default function ClientesPage() {
           <div className="page-sub">Una cuenta corriente viva por cliente.</div>
         </div>
         <div style={{ display: "flex", gap: 10 }}>
+          <button type="button" className="btn btn-secondary" disabled={sincronizando} onClick={sincronizar}>
+            {sincronizando ? "Sincronizando…" : "Sincronizar ahora"}
+          </button>
           <Link href="/clientes/importar" className="btn btn-secondary">
             Importar desde POS
           </Link>
@@ -73,6 +104,25 @@ export default function ClientesPage() {
           </Link>
         </div>
       </div>
+
+      {errorSync && (
+        <div className="field-error" style={{ marginBottom: 16 }}>
+          {errorSync}
+        </div>
+      )}
+
+      {resultadoSync && (
+        <div className="banner-warn" style={{ marginBottom: 16, alignItems: "center" }}>
+          <div style={{ fontSize: 13, fontWeight: 600 }}>
+            {`${resultadoSync.actualizados} clientes actualizados · ${resultadoSync.no_importados} sin cuenta en Hermes`}
+          </div>
+          {resultadoSync.sin_mapeo > 0 && (
+            <div style={{ fontSize: 12.5, marginTop: 4 }}>
+              {`${resultadoSync.sin_mapeo} clientes tienen un tipo_precio en Cation sin categoría equivalente en Hermes y se quedaron con la categoría anterior.`}
+            </div>
+          )}
+        </div>
+      )}
 
       {!cargando && clientes.length > 0 && (
         <div

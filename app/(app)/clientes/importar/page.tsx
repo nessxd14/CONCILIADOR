@@ -2,20 +2,21 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import {
   DEFAULTS_CREDITO_POR_CATEGORIA,
-  categoriaDesdeTipoPrecio,
   sectorDesdeCategoria,
-  type ClienteCation,
+  type ClienteCationPendiente,
 } from "@/lib/types";
 
 type EstadoFila = { cargando: boolean; error: string | null };
 
 export default function ImportarClientesPage() {
   const supabase = useMemo(() => createClient(), []);
+  const router = useRouter();
 
-  const [pendientes, setPendientes] = useState<ClienteCation[]>([]);
+  const [pendientes, setPendientes] = useState<ClienteCationPendiente[]>([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busqueda, setBusqueda] = useState("");
@@ -26,24 +27,18 @@ export default function ImportarClientesPage() {
     setCargando(true);
     setError(null);
 
-    const [cationRes, localRes] = await Promise.all([
-      supabase.from("v_clientes_cation").select("*").eq("activo", true).order("nombre"),
-      supabase.from("cliente").select("pos_cliente_id").not("pos_cliente_id", "is", null),
-    ]);
+    const { data, error: errCation } = await supabase
+      .from("v_clientes_cation_pendientes")
+      .select("*")
+      .order("nombre");
 
-    if (cationRes.error) {
-      setError(cationRes.error.message);
-      setCargando(false);
-      return;
-    }
-    if (localRes.error) {
-      setError(localRes.error.message);
+    if (errCation) {
+      setError(errCation.message);
       setCargando(false);
       return;
     }
 
-    const yaImportados = new Set((localRes.data ?? []).map((r) => r.pos_cliente_id as number));
-    setPendientes((cationRes.data as ClienteCation[]).filter((c) => !yaImportados.has(c.id)));
+    setPendientes(data as ClienteCationPendiente[]);
     setCargando(false);
   }
 
@@ -62,10 +57,8 @@ export default function ImportarClientesPage() {
     );
   }, [pendientes, busqueda]);
 
-  async function importar(cliente: ClienteCation) {
-    setEstadoFilas((prev) => ({ ...prev, [cliente.id]: { cargando: true, error: null } }));
-
-    const categoria = categoriaDesdeTipoPrecio(cliente.tipo_precio);
+  async function importar(cliente: ClienteCationPendiente) {
+    const categoria = cliente.categoria_sugerida;
     if (!categoria) {
       setEstadoFilas((prev) => ({
         ...prev,
@@ -76,6 +69,8 @@ export default function ImportarClientesPage() {
       }));
       return;
     }
+
+    setEstadoFilas((prev) => ({ ...prev, [cliente.id]: { cargando: true, error: null } }));
 
     const {
       data: { user },
@@ -119,6 +114,7 @@ export default function ImportarClientesPage() {
       delete next[cliente.id];
       return next;
     });
+    router.refresh();
 
     if (errCredito) {
       setAvisos((prev) => [
@@ -168,18 +164,20 @@ export default function ImportarClientesPage() {
 
       {!cargando && (
         <div className="table">
-          <div className="table-head" style={{ gridTemplateColumns: "2fr 1fr 1fr 1fr auto" }}>
+          <div className="table-head" style={{ gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr auto" }}>
             <div>Cliente</div>
             <div>Tipo de precio</div>
+            <div>Categoría</div>
             <div>Documento</div>
             <div>Ciudad</div>
             <div></div>
           </div>
           {filtrados.map((c) => {
             const fila = estadoFilas[c.id];
+            const sinCategoria = !c.categoria_sugerida;
             return (
               <div key={c.id}>
-                <div className="table-row" style={{ gridTemplateColumns: "2fr 1fr 1fr 1fr auto" }}>
+                <div className="table-row" style={{ gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr auto" }}>
                   <div>
                     <b style={{ fontSize: 13 }}>{c.nombre}</b>
                     {c.razon_social && (
@@ -187,17 +185,23 @@ export default function ImportarClientesPage() {
                     )}
                   </div>
                   <span style={{ fontSize: 12, color: "var(--muted)" }}>{c.tipo_precio}</span>
+                  <span style={{ fontSize: 12, color: "var(--muted)" }}>{c.categoria_sugerida ?? "—"}</span>
                   <span style={{ fontSize: 12, color: "var(--muted)" }}>{c.documento || "—"}</span>
                   <span style={{ fontSize: 12, color: "var(--muted)" }}>{c.ciudad || "—"}</span>
                   <button
                     type="button"
                     className="btn btn-orange"
-                    disabled={fila?.cargando}
+                    disabled={fila?.cargando || sinCategoria}
                     onClick={() => importar(c)}
                   >
                     {fila?.cargando ? "Importando…" : "Importar"}
                   </button>
                 </div>
+                {sinCategoria && !fila?.error && (
+                  <div className="field-error" style={{ padding: "0 16px 10px" }}>
+                    {`tipo_precio "${c.tipo_precio}" no tiene categoría equivalente en Hermes.`}
+                  </div>
+                )}
                 {fila?.error && (
                   <div className="field-error" style={{ padding: "0 16px 10px" }}>
                     {fila.error}
