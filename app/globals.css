@@ -354,6 +354,16 @@ textarea {
   color: var(--alerta);
 }
 
+.badge-vencida {
+  background: var(--alerta-bg);
+  color: var(--alerta);
+}
+
+.badge-ambar {
+  background: var(--provisional-bg);
+  color: var(--provisional);
+}
+
 /* ---------- expediente ---------- */
 
 .timeline {
