@@ -43,7 +43,8 @@ export interface VSaldoCliente {
 }
 
 export type MotivoBloqueo = "VENCIDA" | "ENTREGADO_SIN_FACTURAR" | "FRENADA";
-export type AccionFrenada = "FALTA_DOCUMENTO" | "LISTO_PARA_COMPLETAR";
+export type AccionFrenada = "COBRAR" | "FACTURAR" | "FALTA_DOCUMENTO" | "LISTO_PARA_COMPLETAR";
+export type DiasConcepto = "vencido" | "sin facturar" | "parado";
 
 export interface VCobrosBloqueados {
   cliente_id: number;
@@ -89,6 +90,7 @@ export interface VPartidasFrenadas {
   motivo: MotivoBloqueo;
   dias: number;
   accion: AccionFrenada;
+  dias_concepto: DiasConcepto;
 }
 
 export type MotivoPedidoPendiente =
