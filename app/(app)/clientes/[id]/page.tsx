@@ -21,6 +21,13 @@ const MOTIVO_INFO: Record<string, { label: string; className: string }> = {
   FRENADA: { label: "Frenado", className: "badge-ambar" },
 };
 
+const ACCION_INFO: Record<VPartidasFrenadas["accion"], { texto: string; boton: string }> = {
+  COBRAR: { texto: "Vencido, cobrar", boton: "Ver expediente" },
+  FACTURAR: { texto: "Falta facturar", boton: "Registrar factura" },
+  FALTA_DOCUMENTO: { texto: "Falta:", boton: "Ver expediente" },
+  LISTO_PARA_COMPLETAR: { texto: "Listo para avanzar", boton: "Completar hito" },
+};
+
 export default function FichaClientePage() {
   const params = useParams();
   const clienteId = Number(params.id);
@@ -265,7 +272,7 @@ export default function FichaClientePage() {
             Frenando el cobro
           </div>
           <div className="table">
-            <div className="table-head" style={{ gridTemplateColumns: "1.3fr 1fr 60px 2fr auto" }}>
+            <div className="table-head" style={{ gridTemplateColumns: "1.3fr 1fr 90px 2fr auto" }}>
               <div>Partida</div>
               <div>Frente</div>
               <div>Días</div>
@@ -274,32 +281,32 @@ export default function FichaClientePage() {
             </div>
             {partidasFrenadas.map((p) => {
               const info = MOTIVO_INFO[p.motivo];
+              const accionInfo = ACCION_INFO[p.accion];
               const hitoId = hitoPorPartida[p.partida_id];
               const href = `/clientes/${clienteId}/expediente/${p.partida_id}${hitoId ? `#hito-${hitoId}` : ""}`;
               return (
-                <div key={p.partida_id} className="table-row" style={{ gridTemplateColumns: "1.3fr 1fr 60px 2fr auto" }}>
+                <div key={p.partida_id} className="table-row" style={{ gridTemplateColumns: "1.3fr 1fr 90px 2fr auto" }}>
                   <div>
                     <span style={{ fontSize: 12.5 }}>{p.documento_interno}</span>
                     <div className="money" style={{ fontSize: 12 }}>{formatBs(p.saldo_partida)}</div>
                   </div>
                   <span style={{ fontSize: 12, color: "var(--muted)" }}>{p.frente ?? "—"}</span>
-                  <span style={{ fontSize: 12, color: "var(--muted)" }}>{p.dias}</span>
+                  <span style={{ fontSize: 12, color: "var(--muted)" }}>
+                    {p.dias} {p.dias === 1 ? "día" : "días"} {p.dias_concepto}
+                  </span>
                   <div>
                     {info && (
                       <span className={`badge ${info.className}`} style={{ marginRight: 8 }}>
                         {info.label}
                       </span>
                     )}
-                    {p.accion === "FALTA_DOCUMENTO" ? (
-                      <span style={{ fontSize: 12 }}>
-                        Falta documento: {p.habilitantes_detalle ?? "—"}
-                      </span>
-                    ) : (
-                      <span style={{ fontSize: 12 }}>Listo para avanzar</span>
-                    )}
+                    <span style={{ fontSize: 12 }}>
+                      {accionInfo.texto}
+                      {p.accion === "FALTA_DOCUMENTO" && <> {p.habilitantes_detalle ?? "—"}</>}
+                    </span>
                   </div>
                   <Link href={href} className="btn btn-secondary">
-                    {p.accion === "LISTO_PARA_COMPLETAR" ? "Completar hito" : "Ver expediente"}
+                    {accionInfo.boton}
                   </Link>
                 </div>
               );
