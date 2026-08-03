@@ -6,7 +6,20 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { formatBs } from "@/lib/money";
 import { rolDeUsuario } from "@/lib/roles";
-import type { Cliente, ClienteCredito, PartidaAbierta, VMayorAuxiliar, VSaldoCliente } from "@/lib/types";
+import type {
+  Cliente,
+  ClienteCredito,
+  PartidaAbierta,
+  VMayorAuxiliar,
+  VPartidasFrenadas,
+  VSaldoCliente,
+} from "@/lib/types";
+
+const MOTIVO_INFO: Record<string, { label: string; className: string }> = {
+  VENCIDA: { label: "Vencido", className: "badge-vencida" },
+  ENTREGADO_SIN_FACTURAR: { label: "Sin facturar", className: "badge-ambar" },
+  FRENADA: { label: "Frenado", className: "badge-ambar" },
+};
 
 export default function FichaClientePage() {
   const params = useParams();
@@ -18,6 +31,8 @@ export default function FichaClientePage() {
   const [saldo, setSaldo] = useState<VSaldoCliente | null>(null);
   const [movimientos, setMovimientos] = useState<VMayorAuxiliar[]>([]);
   const [partidasAbiertas, setPartidasAbiertas] = useState<PartidaAbierta[]>([]);
+  const [partidasFrenadas, setPartidasFrenadas] = useState<VPartidasFrenadas[]>([]);
+  const [hitoPorPartida, setHitoPorPartida] = useState<Record<number, number>>({});
   const [esAdmin, setEsAdmin] = useState(false);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -39,6 +54,7 @@ export default function FichaClientePage() {
         saldoRes,
         movRes,
         partidasRes,
+        frenadasRes,
       ] = await Promise.all([
         supabase.auth.getUser(),
         supabase.from("cliente").select("*").eq("id", clienteId).single(),
@@ -56,6 +72,11 @@ export default function FichaClientePage() {
           .eq("cliente_id", clienteId)
           .eq("estado", "ABIERTA")
           .order("fecha_entrega", { ascending: true }),
+        supabase
+          .from("v_partidas_frenadas")
+          .select("*")
+          .eq("cliente_id", clienteId)
+          .order("dias", { ascending: false }),
       ]);
 
       if (clienteRes.error) {
@@ -70,6 +91,29 @@ export default function FichaClientePage() {
       setSaldo((saldoRes.data ?? null) as VSaldoCliente | null);
       setMovimientos((movRes.data ?? []) as VMayorAuxiliar[]);
       setPartidasAbiertas((partidasRes.data ?? []) as PartidaAbierta[]);
+
+      const frenadas = (frenadasRes.data ?? []) as VPartidasFrenadas[];
+      setPartidasFrenadas(frenadas);
+
+      const listoPartidaIds = frenadas
+        .filter((f) => f.accion === "LISTO_PARA_COMPLETAR")
+        .map((f) => f.partida_id);
+      if (listoPartidaIds.length > 0) {
+        const { data: frenteData } = await supabase
+          .from("v_frente_partida")
+          .select("partida_id, hito_id")
+          .in("partida_id", listoPartidaIds);
+        setHitoPorPartida(
+          Object.fromEntries(
+            (frenteData ?? [])
+              .filter((f) => f.hito_id != null)
+              .map((f) => [f.partida_id as number, f.hito_id as number])
+          )
+        );
+      } else {
+        setHitoPorPartida({});
+      }
+
       setCargando(false);
   }
 
@@ -211,6 +255,55 @@ export default function FichaClientePage() {
                 </Link>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {partidasFrenadas.length > 0 && (
+        <div style={{ marginBottom: 20 }}>
+          <div style={{ fontSize: 11, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.03em", fontWeight: 700, marginBottom: 8 }}>
+            Frenando el cobro
+          </div>
+          <div className="table">
+            <div className="table-head" style={{ gridTemplateColumns: "1.3fr 1fr 60px 2fr auto" }}>
+              <div>Partida</div>
+              <div>Frente</div>
+              <div>Días</div>
+              <div>Estado</div>
+              <div></div>
+            </div>
+            {partidasFrenadas.map((p) => {
+              const info = MOTIVO_INFO[p.motivo];
+              const hitoId = hitoPorPartida[p.partida_id];
+              const href = `/clientes/${clienteId}/expediente/${p.partida_id}${hitoId ? `#hito-${hitoId}` : ""}`;
+              return (
+                <div key={p.partida_id} className="table-row" style={{ gridTemplateColumns: "1.3fr 1fr 60px 2fr auto" }}>
+                  <div>
+                    <span style={{ fontSize: 12.5 }}>{p.documento_interno}</span>
+                    <div className="money" style={{ fontSize: 12 }}>{formatBs(p.saldo_partida)}</div>
+                  </div>
+                  <span style={{ fontSize: 12, color: "var(--muted)" }}>{p.frente ?? "—"}</span>
+                  <span style={{ fontSize: 12, color: "var(--muted)" }}>{p.dias}</span>
+                  <div>
+                    {info && (
+                      <span className={`badge ${info.className}`} style={{ marginRight: 8 }}>
+                        {info.label}
+                      </span>
+                    )}
+                    {p.accion === "FALTA_DOCUMENTO" ? (
+                      <span style={{ fontSize: 12 }}>
+                        Falta documento: {p.habilitantes_detalle ?? "—"}
+                      </span>
+                    ) : (
+                      <span style={{ fontSize: 12 }}>Listo para avanzar</span>
+                    )}
+                  </div>
+                  <Link href={href} className="btn btn-secondary">
+                    {p.accion === "LISTO_PARA_COMPLETAR" ? "Completar hito" : "Ver expediente"}
+                  </Link>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}

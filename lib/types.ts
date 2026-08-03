@@ -42,6 +42,9 @@ export interface VSaldoCliente {
   situacion: Situacion;
 }
 
+export type MotivoBloqueo = "VENCIDA" | "ENTREGADO_SIN_FACTURAR" | "FRENADA";
+export type AccionFrenada = "FALTA_DOCUMENTO" | "LISTO_PARA_COMPLETAR";
+
 export interface VCobrosBloqueados {
   cliente_id: number;
   cliente: string;
@@ -49,6 +52,66 @@ export interface VCobrosBloqueados {
   partidas_bloqueadas: number;
   monto_bloqueado: string;
   dias_maximo: number;
+  /** Valores de MotivoBloqueo separados por coma, uno por cada motivo presente entre las partidas del cliente. */
+  motivos: string;
+}
+
+export interface VFrentePartida {
+  partida_id: number;
+  cliente_id: number;
+  cliente: string;
+  categoria: CategoriaCliente;
+  documento_interno: string;
+  pedido_id: number | null;
+  hito_id: number | null;
+  frente_orden: number | null;
+  frente: string | null;
+  frente_desde: string | null;
+  dias_parado: number | null;
+  habilitantes_faltantes: number;
+  habilitantes_detalle: string | null;
+}
+
+export interface VPartidasFrenadas {
+  partida_id: number;
+  cliente_id: number;
+  cliente: string;
+  categoria: CategoriaCliente;
+  documento_interno: string;
+  pedido_id: number | null;
+  frente: string | null;
+  dias_parado: number | null;
+  habilitantes_faltantes: number;
+  habilitantes_detalle: string | null;
+  saldo_partida: string;
+  estado_reloj: string;
+  fecha_vencimiento: string | null;
+  motivo: MotivoBloqueo;
+  dias: number;
+  accion: AccionFrenada;
+}
+
+export type MotivoPedidoPendiente =
+  | "SIN_CLIENTE"
+  | "CLIENTE_SIN_CUENTA"
+  | "ABRE"
+  | "SIN_TOTAL"
+  | "SIN_FICHA_CREDITO"
+  | "CATEGORIA_NO_ELEGIBLE"
+  | "ESTADO_NO_ELEGIBLE"
+  | "YA_TIENE_PARTIDA";
+
+export interface VPedidoCationPendiente {
+  pedido_id: number;
+  pos_cliente_id: number | null;
+  hermes_cliente_id: number | null;
+  cliente: string | null;
+  categoria: CategoriaCliente | null;
+  estado: string;
+  total: string | null;
+  referencia: string | null;
+  creado_en: string;
+  motivo: MotivoPedidoPendiente;
 }
 
 export interface VMayorAuxiliar {

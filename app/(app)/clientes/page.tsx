@@ -99,6 +99,9 @@ export default function ClientesPage() {
           <Link href="/clientes/importar" className="btn btn-secondary">
             Importar desde POS
           </Link>
+          <Link href="/pedidos-pendientes" className="btn btn-secondary">
+            Pedidos pendientes
+          </Link>
           <Link href="/clientes/nuevo" className="btn btn-primary">
             + Nuevo cliente
           </Link>

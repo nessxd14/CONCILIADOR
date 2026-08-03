@@ -12,6 +12,12 @@ function creadorSinPrefijo(creadoPor: string): string {
   return creadoPor.startsWith("pos:") ? creadoPor.slice(4) : creadoPor;
 }
 
+const MOTIVO_INFO: Record<string, { label: string; className: string }> = {
+  VENCIDA: { label: "Vencido", className: "badge-vencida" },
+  ENTREGADO_SIN_FACTURAR: { label: "Sin facturar", className: "badge-ambar" },
+  FRENADA: { label: "Frenado", className: "badge-ambar" },
+};
+
 export default function MiDiaPage() {
   const supabase = useMemo(() => createClient(), []);
   const [bloqueados, setBloqueados] = useState<VCobrosBloqueados[]>([]);
@@ -31,7 +37,7 @@ export default function MiDiaPage() {
 
       const [{ data: userData }, bloqueadosRes] = await Promise.all([
         supabase.auth.getUser(),
-        supabase.from("v_cobros_bloqueados").select("*").order("monto_bloqueado", { ascending: false }),
+        supabase.from("v_cobros_bloqueados").select("*").order("dias_maximo", { ascending: false }),
       ]);
 
       if (bloqueadosRes.error) {
@@ -172,9 +178,17 @@ export default function MiDiaPage() {
               style={{ display: "flex", justifyContent: "space-between", alignItems: "center", textDecoration: "none" }}
             >
               <div>
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
                   <b style={{ fontSize: 14 }}>{b.cliente}</b>
                   <span className="badge">{b.categoria}</span>
+                  {b.motivos.split(",").map((m) => {
+                    const info = MOTIVO_INFO[m];
+                    return info ? (
+                      <span key={m} className={`badge ${info.className}`}>
+                        {info.label}
+                      </span>
+                    ) : null;
+                  })}
                 </div>
                 <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 4 }}>
                   {b.partidas_bloqueadas} {b.partidas_bloqueadas === 1 ? "partida" : "partidas"} · hace{" "}
