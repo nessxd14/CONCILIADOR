@@ -1,53 +1,19 @@
-import { createServiceClient } from "@/lib/supabase/service";
+import {
+  autenticarAgente,
+  esConfianzaValida,
+  esEnteroPositivo,
+  esObjetoPlano,
+  esStringNoVacio,
+  metodoNoPermitido,
+} from "@/lib/api/agente";
 
 // El cliente de service_role no debe correr en edge.
 export const runtime = "nodejs";
 
-type Agente = "OPENCLAW" | "HERMES_AGENT";
-
-/**
- * El agente se resuelve desde el secreto, nunca desde el body: si el JSON
- * trae un campo "agente" se ignora. Es lo que hace que documento.origen sea
- * confiable y no una declaración del propio cliente.
- */
-function agenteDesdeSecreto(secreto: string | null): Agente | null {
-  if (!secreto) return null;
-  if (process.env.OPENCLAW_INGEST_SECRET && secreto === process.env.OPENCLAW_INGEST_SECRET) return "OPENCLAW";
-  if (process.env.HERMES_AGENT_INGEST_SECRET && secreto === process.env.HERMES_AGENT_INGEST_SECRET) return "HERMES_AGENT";
-  return null;
-}
-
-function esStringNoVacio(v: unknown): v is string {
-  return typeof v === "string" && v.trim().length > 0;
-}
-
-function esObjetoPlano(v: unknown): v is Record<string, unknown> {
-  return typeof v === "object" && v !== null && !Array.isArray(v);
-}
-
-function esEnteroPositivo(v: unknown): v is number {
-  return typeof v === "number" && Number.isInteger(v) && v > 0;
-}
-
-function esConfianzaValida(v: unknown): v is number {
-  return typeof v === "number" && Number.isFinite(v) && v >= 0 && v <= 1;
-}
-
-function metodoNoPermitido() {
-  return Response.json({ error: "Método no permitido" }, { status: 405 });
-}
-
 export async function POST(request: Request) {
-  const secreto = request.headers.get("x-agente-secret");
-  const agente = agenteDesdeSecreto(secreto);
-  if (!agente) {
-    return Response.json({ error: "No autorizado" }, { status: 401 });
-  }
-
-  const supabase = createServiceClient();
-  if (!supabase) {
-    return Response.json({ error: "Hermes no está configurado en el servidor" }, { status: 500 });
-  }
+  const auth = autenticarAgente(request);
+  if (!auth.ok) return auth.response;
+  const { agente, supabase } = auth;
 
   let body: unknown;
   try {
