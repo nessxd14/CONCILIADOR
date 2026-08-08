@@ -31,7 +31,7 @@ export async function leerPaginas(itemId: string, cantidad: number): Promise<Blo
   const paginas = await new Promise<Blob[]>((resolve, reject) => {
     const tx = db.transaction(STORE, "readonly");
     const store = tx.objectStore(STORE);
-    const resultados: Blob[] = [];
+    const resultados: (Blob | undefined)[] = [];
     let pendientes = cantidad;
     if (cantidad === 0) {
       resolve([]);
@@ -40,9 +40,15 @@ export async function leerPaginas(itemId: string, cantidad: number): Promise<Blo
     for (let i = 0; i < cantidad; i++) {
       const req = store.get(`${itemId}:${i}`);
       req.onsuccess = () => {
-        resultados[i] = req.result as Blob;
+        resultados[i] = req.result as Blob | undefined;
         pendientes -= 1;
-        if (pendientes === 0) resolve(resultados);
+        if (pendientes === 0) {
+          if (resultados.some((b) => b === undefined)) {
+            reject(new Error("Faltan páginas guardadas localmente para este documento"));
+            return;
+          }
+          resolve(resultados as Blob[]);
+        }
       };
       req.onerror = () => reject(req.error);
     }

@@ -26,6 +26,7 @@ export default function ClientesPage() {
   const [error, setError] = useState<string | null>(null);
   const [busqueda, setBusqueda] = useState("");
   const [categoria, setCategoria] = useState<CategoriaCliente | "">("");
+  const [errorAperturas, setErrorAperturas] = useState<string | null>(null);
   const [sincronizando, setSincronizando] = useState(false);
   const [resultadoSync, setResultadoSync] = useState<ResultadoSync | null>(null);
   const [errorSync, setErrorSync] = useState<string | null>(null);
@@ -33,6 +34,7 @@ export default function ClientesPage() {
   async function cargar() {
     setCargando(true);
     setError(null);
+    setErrorAperturas(null);
 
     const [saldos, aperturas] = await Promise.all([
       supabase.from("v_saldo_cliente").select("*").order("cliente"),
@@ -46,7 +48,14 @@ export default function ClientesPage() {
     }
 
     setClientes(saldos.data as VSaldoCliente[]);
-    setConApertura(new Set((aperturas.data ?? []).map((r) => r.cliente_id as number)));
+
+    if (aperturas.error) {
+      setErrorAperturas(aperturas.error.message);
+      setConApertura(new Set());
+    } else {
+      setConApertura(new Set((aperturas.data ?? []).map((r) => r.cliente_id as number)));
+    }
+
     setCargando(false);
   }
 
@@ -127,7 +136,13 @@ export default function ClientesPage() {
         </div>
       )}
 
-      {!cargando && clientes.length > 0 && (
+      {!cargando && errorAperturas && (
+        <div className="field-error" style={{ marginBottom: 16 }}>
+          No se pudo cargar el estado de apertura de los clientes ({errorAperturas}).
+        </div>
+      )}
+
+      {!cargando && !errorAperturas && clientes.length > 0 && (
         <div
           className="banner-warn"
           style={{ marginBottom: 16, alignItems: "center" }}
@@ -195,9 +210,13 @@ export default function ClientesPage() {
               </span>
               <span className="money-provisional">{formatBs(c.saldo_provisional)}</span>
               <span className={badgeSituacion(c.situacion)}>{c.situacion}</span>
-              <span className={conApertura.has(c.cliente_id) ? "badge badge-aldia" : "badge badge-pendiente"}>
-                {conApertura.has(c.cliente_id) ? "Cargada" : "Pendiente"}
-              </span>
+              {errorAperturas ? (
+                <span className="badge">—</span>
+              ) : (
+                <span className={conApertura.has(c.cliente_id) ? "badge badge-aldia" : "badge badge-pendiente"}>
+                  {conApertura.has(c.cliente_id) ? "Cargada" : "Pendiente"}
+                </span>
+              )}
               <Link href={`/clientes/${c.cliente_id}`} className="btn btn-secondary">
                 Ver ficha
               </Link>

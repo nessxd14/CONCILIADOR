@@ -35,6 +35,9 @@ export async function POST(request: Request) {
   // ingesta/YYYY-MM-DD/ a propósito — todo lo que entra por acá es modo
   // ciego hasta que /ingesta lo asocie, y la fecha hace trivial auditar qué
   // subió cada agente y cuándo con un listado del bucket.
+  // El prefijo de fecha es solo organizativo y corre en el servidor de
+  // Vercel (UTC) a propósito: a diferencia de fecha_entrega/fecha_factura,
+  // no determina ningún plazo de cobro, así que no hace falta la hora local.
   const ruta = `ingesta/${new Date().toISOString().slice(0, 10)}/${crypto.randomUUID()}.${extension.toLowerCase()}`;
 
   const { data, error } = await supabase.storage.from("documentos-expediente").createSignedUploadUrl(ruta);

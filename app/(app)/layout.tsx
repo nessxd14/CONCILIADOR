@@ -19,13 +19,22 @@ export default async function AppLayout({
 
   const rol = rolDeUsuario(user);
 
-  const { count } = await supabase
-    .from("v_clientes_cation_pendientes")
-    .select("*", { count: "exact", head: true });
+  const [{ count: pendientesImportar }, { count: pedidosAccionables }] = await Promise.all([
+    supabase.from("v_clientes_cation_pendientes").select("*", { count: "exact", head: true }),
+    supabase
+      .from("v_pedidos_cation_pendientes")
+      .select("*", { count: "exact", head: true })
+      .in("motivo", ["ABRE", "CLIENTE_SIN_CUENTA", "SIN_FICHA_CREDITO"]),
+  ]);
 
   return (
     <div className="shell">
-      <Sidebar email={user.email ?? ""} rol={rol} pendientesImportar={count ?? 0} />
+      <Sidebar
+        email={user.email ?? ""}
+        rol={rol}
+        pendientesImportar={pendientesImportar ?? 0}
+        pedidosAccionables={pedidosAccionables ?? 0}
+      />
       <div className="content">{children}</div>
     </div>
   );

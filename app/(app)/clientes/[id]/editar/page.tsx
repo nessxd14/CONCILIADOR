@@ -35,7 +35,7 @@ export default function EditarClientePage() {
       const [{ data: userData }, clienteRes, creditoRes] = await Promise.all([
         supabase.auth.getUser(),
         supabase.from("cliente").select("*").eq("id", clienteId).single(),
-        supabase.from("cliente_credito").select("*").eq("cliente_id", clienteId).single(),
+        supabase.from("cliente_credito").select("*").eq("cliente_id", clienteId).maybeSingle(),
       ]);
 
       if (clienteRes.error) {

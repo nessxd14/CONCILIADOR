@@ -27,60 +27,68 @@ export default function MiDiaPage() {
   const [esGerente, setEsGerente] = useState(false);
   const [usuario, setUsuario] = useState("desconocido");
   const [pagos, setPagos] = useState<PagoPropuesto[]>([]);
+  const [errorPagos, setErrorPagos] = useState<string | null>(null);
   const [erroresPago, setErroresPago] = useState<Record<number, string>>({});
   const [confirmando, setConfirmando] = useState<Record<number, boolean>>({});
 
-  useEffect(() => {
-    async function cargar() {
-      setCargando(true);
-      setError(null);
+  async function cargar() {
+    setCargando(true);
+    setError(null);
+    setErrorPagos(null);
 
-      const [{ data: userData }, bloqueadosRes] = await Promise.all([
-        supabase.auth.getUser(),
-        supabase.from("v_cobros_bloqueados").select("*").order("dias_maximo", { ascending: false }),
-      ]);
+    const [{ data: userData }, bloqueadosRes] = await Promise.all([
+      supabase.auth.getUser(),
+      supabase.from("v_cobros_bloqueados").select("*").order("dias_maximo", { ascending: false }),
+    ]);
 
-      if (bloqueadosRes.error) {
-        setError(bloqueadosRes.error.message);
-        setCargando(false);
-        return;
-      }
-
-      setUsuario(userData.user?.email ?? "desconocido");
-      const gerente = rolDeUsuario(userData.user) === "gerente";
-      setEsGerente(gerente);
-      setBloqueados(bloqueadosRes.data as VCobrosBloqueados[]);
-
-      if (gerente) {
-        const { data: pagosData, error: errPagos } = await supabase
-          .from("pago")
-          .select("id, cliente_id, monto, medio, referencia, creado_por, creado_en")
-          .eq("estado", "PROPUESTO")
-          .order("creado_en", { ascending: true });
-
-        if (!errPagos && pagosData && pagosData.length > 0) {
-          const clienteIds = [...new Set(pagosData.map((p) => p.cliente_id as number))];
-          const { data: clientesData } = await supabase.from("cliente").select("id, nombre").in("id", clienteIds);
-          const nombrePorId = new Map((clientesData ?? []).map((c) => [c.id as number, c.nombre as string]));
-
-          setPagos(
-            pagosData.map((p) => ({
-              id: p.id,
-              cliente_id: p.cliente_id,
-              cliente: nombrePorId.get(p.cliente_id as number) ?? "—",
-              monto: p.monto,
-              medio: p.medio,
-              referencia: p.referencia,
-              creado_por: p.creado_por,
-              creado_en: p.creado_en,
-            })) as PagoPropuesto[]
-          );
-        }
-      }
-
+    if (bloqueadosRes.error) {
+      setError(bloqueadosRes.error.message);
       setCargando(false);
+      return;
     }
+
+    setUsuario(userData.user?.email ?? "desconocido");
+    const gerente = rolDeUsuario(userData.user) === "gerente";
+    setEsGerente(gerente);
+    setBloqueados(bloqueadosRes.data as VCobrosBloqueados[]);
+
+    if (gerente) {
+      const { data: pagosData, error: errPagos } = await supabase
+        .from("pago")
+        .select("id, cliente_id, monto, medio, referencia, creado_por, creado_en")
+        .eq("estado", "PROPUESTO")
+        .order("creado_en", { ascending: true });
+
+      if (errPagos) {
+        setErrorPagos(errPagos.message);
+      } else if (pagosData && pagosData.length > 0) {
+        const clienteIds = [...new Set(pagosData.map((p) => p.cliente_id as number))];
+        const { data: clientesData } = await supabase.from("cliente").select("id, nombre").in("id", clienteIds);
+        const nombrePorId = new Map((clientesData ?? []).map((c) => [c.id as number, c.nombre as string]));
+
+        setPagos(
+          pagosData.map((p) => ({
+            id: p.id,
+            cliente_id: p.cliente_id,
+            cliente: nombrePorId.get(p.cliente_id as number) ?? "—",
+            monto: p.monto,
+            medio: p.medio,
+            referencia: p.referencia,
+            creado_por: p.creado_por,
+            creado_en: p.creado_en,
+          })) as PagoPropuesto[]
+        );
+      } else {
+        setPagos([]);
+      }
+    }
+
+    setCargando(false);
+  }
+
+  useEffect(() => {
     cargar();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [supabase]);
 
   async function confirmarPago(pago: PagoPropuesto) {
@@ -124,7 +132,18 @@ export default function MiDiaPage() {
       {error && <div className="field-error" style={{ marginTop: 16 }}>{error}</div>}
       {cargando && <div style={{ marginTop: 16 }}>Cargando…</div>}
 
-      {!cargando && esGerente && pagos.length > 0 && (
+      {!cargando && esGerente && errorPagos && (
+        <div className="card" style={{ marginTop: 16 }}>
+          <div className="field-error" style={{ marginBottom: 10 }}>
+            No se pudieron cargar los pagos por confirmar ({errorPagos}).
+          </div>
+          <button type="button" className="btn btn-secondary" onClick={cargar}>
+            Reintentar
+          </button>
+        </div>
+      )}
+
+      {!cargando && esGerente && !errorPagos && pagos.length > 0 && (
         <div style={{ marginTop: 16 }}>
           <div style={{ fontSize: 11, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.03em", fontWeight: 700, marginBottom: 8 }}>
             Pagos por confirmar ({pagos.length})
@@ -181,7 +200,7 @@ export default function MiDiaPage() {
                 <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
                   <b style={{ fontSize: 14 }}>{b.cliente}</b>
                   <span className="badge">{b.categoria}</span>
-                  {b.motivos.split(",").map((m) => {
+                  {b.motivos.split(",").map((m) => m.trim()).map((m) => {
                     const info = MOTIVO_INFO[m];
                     return info ? (
                       <span key={m} className={`badge ${info.className}`}>

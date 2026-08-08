@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import Decimal from "decimal.js";
 import { createClient } from "@/lib/supabase/client";
 import { formatBs } from "@/lib/money";
 import { rolDeUsuario } from "@/lib/roles";
@@ -28,6 +29,12 @@ const ACCION_INFO: Record<VPartidasFrenadas["accion"], { texto: string; boton: s
   LISTO_PARA_COMPLETAR: { texto: "Listo para avanzar", boton: "Completar hito" },
 };
 
+// v_mayor_auxiliar.saldo_corrido es una window function sobre el cliente
+// completo (verificado: PARTITION BY cliente_id, sin LIMIT dentro de la
+// vista), así que paginar el resultado no lo rompe — Postgres calcula el
+// acumulado sobre todas las filas del cliente antes de recortar la página.
+const PAGINA_MOVIMIENTOS = 200;
+
 export default function FichaClientePage() {
   const params = useParams();
   const clienteId = Number(params.id);
@@ -37,6 +44,11 @@ export default function FichaClientePage() {
   const [credito, setCredito] = useState<ClienteCredito | null>(null);
   const [saldo, setSaldo] = useState<VSaldoCliente | null>(null);
   const [movimientos, setMovimientos] = useState<VMayorAuxiliar[]>([]);
+  const [offsetMovimientos, setOffsetMovimientos] = useState(0);
+  const [hayMasMovimientos, setHayMasMovimientos] = useState(false);
+  const [cargandoMasMovimientos, setCargandoMasMovimientos] = useState(false);
+  const [errorMovimientos, setErrorMovimientos] = useState<string | null>(null);
+  const [tieneApertura, setTieneApertura] = useState(false);
   const [partidasAbiertas, setPartidasAbiertas] = useState<PartidaAbierta[]>([]);
   const [partidasFrenadas, setPartidasFrenadas] = useState<VPartidasFrenadas[]>([]);
   const [hitoPorPartida, setHitoPorPartida] = useState<Record<number, number>>({});
@@ -53,26 +65,37 @@ export default function FichaClientePage() {
   async function cargar() {
       setCargando(true);
       setError(null);
+      setErrorMovimientos(null);
 
       const [
         { data: userData },
         clienteRes,
         creditoRes,
         saldoRes,
+        aperturaRes,
         movRes,
         partidasRes,
         frenadasRes,
       ] = await Promise.all([
         supabase.auth.getUser(),
         supabase.from("cliente").select("*").eq("id", clienteId).single(),
-        supabase.from("cliente_credito").select("*").eq("cliente_id", clienteId).single(),
-        supabase.from("v_saldo_cliente").select("*").eq("cliente_id", clienteId).single(),
+        supabase.from("cliente_credito").select("*").eq("cliente_id", clienteId).maybeSingle(),
+        supabase.from("v_saldo_cliente").select("*").eq("cliente_id", clienteId).maybeSingle(),
+        // Chequeo aparte, no derivado de los movimientos paginados: la apertura
+        // suele ser el movimiento más viejo y podría quedar fuera de "los
+        // últimos 200" que se muestran por defecto.
+        supabase
+          .from("movimiento_cuenta")
+          .select("id", { count: "exact", head: true })
+          .eq("cliente_id", clienteId)
+          .eq("tipo", "SALDO_APERTURA"),
         supabase
           .from("v_mayor_auxiliar")
           .select("*")
           .eq("cliente_id", clienteId)
-          .order("fecha_efectiva", { ascending: true })
-          .order("id", { ascending: true }),
+          .order("fecha_efectiva", { ascending: false })
+          .order("id", { ascending: false })
+          .range(0, PAGINA_MOVIMIENTOS - 1),
         supabase
           .from("partida_abierta")
           .select("*")
@@ -96,7 +119,20 @@ export default function FichaClientePage() {
       setCliente(clienteRes.data as Cliente);
       setCredito((creditoRes.data ?? null) as ClienteCredito | null);
       setSaldo((saldoRes.data ?? null) as VSaldoCliente | null);
-      setMovimientos((movRes.data ?? []) as VMayorAuxiliar[]);
+      setTieneApertura((aperturaRes.count ?? 0) > 0);
+
+      if (movRes.error) {
+        setErrorMovimientos(movRes.error.message);
+        setMovimientos([]);
+        setHayMasMovimientos(false);
+        setOffsetMovimientos(0);
+      } else {
+        const pagina = (movRes.data ?? []) as VMayorAuxiliar[];
+        setMovimientos([...pagina].reverse());
+        setOffsetMovimientos(pagina.length);
+        setHayMasMovimientos(pagina.length === PAGINA_MOVIMIENTOS);
+      }
+
       setPartidasAbiertas((partidasRes.data ?? []) as PartidaAbierta[]);
 
       const frenadas = (frenadasRes.data ?? []) as VPartidasFrenadas[];
@@ -129,11 +165,34 @@ export default function FichaClientePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [supabase, clienteId]);
 
+  async function cargarMasMovimientos() {
+    setCargandoMasMovimientos(true);
+    setErrorMovimientos(null);
+
+    const { data, error } = await supabase
+      .from("v_mayor_auxiliar")
+      .select("*")
+      .eq("cliente_id", clienteId)
+      .order("fecha_efectiva", { ascending: false })
+      .order("id", { ascending: false })
+      .range(offsetMovimientos, offsetMovimientos + PAGINA_MOVIMIENTOS - 1);
+
+    if (error) {
+      setErrorMovimientos(error.message);
+      setCargandoMasMovimientos(false);
+      return;
+    }
+
+    const pagina = (data ?? []) as VMayorAuxiliar[];
+    setMovimientos((prev) => [...[...pagina].reverse(), ...prev]);
+    setOffsetMovimientos((prev) => prev + pagina.length);
+    setHayMasMovimientos(pagina.length === PAGINA_MOVIMIENTOS);
+    setCargandoMasMovimientos(false);
+  }
+
   if (cargando) return <div>Cargando…</div>;
   if (error) return <div className="field-error">{error}</div>;
   if (!cliente) return <div>Cliente no encontrado.</div>;
-
-  const tieneApertura = movimientos.some((m) => m.tipo === "SALDO_APERTURA");
 
   function cerrarModalNC() {
     setModalNCAbierto(false);
@@ -233,7 +292,7 @@ export default function FichaClientePage() {
             {saldo ? formatBs(saldo.saldo_provisional) : "—"}
           </div>
           <div style={{ fontSize: 11, color: "#a9a7a0", marginTop: 3 }}>
-            {saldo && saldo.saldo_confirmado === saldo.saldo_provisional
+            {saldo && new Decimal(saldo.saldo_confirmado).eq(new Decimal(saldo.saldo_provisional))
               ? "Igual al confirmado"
               : "Incluye pagos sin revisar"}
           </div>
@@ -315,6 +374,25 @@ export default function FichaClientePage() {
         </div>
       )}
 
+      {errorMovimientos && (
+        <div className="card" style={{ marginBottom: 12 }}>
+          <div className="field-error" style={{ marginBottom: 10 }}>
+            No se pudieron cargar los movimientos ({errorMovimientos}).
+          </div>
+          <button type="button" className="btn btn-secondary" onClick={cargar}>
+            Reintentar
+          </button>
+        </div>
+      )}
+
+      {hayMasMovimientos && !errorMovimientos && (
+        <div style={{ marginBottom: 10 }}>
+          <button type="button" className="btn btn-secondary" disabled={cargandoMasMovimientos} onClick={cargarMasMovimientos}>
+            {cargandoMasMovimientos ? "Cargando…" : "Cargar movimientos anteriores"}
+          </button>
+        </div>
+      )}
+
       <div className="table">
         <div className="table-head" style={{ gridTemplateColumns: "90px 2fr 1fr 1fr" }}>
           <div>Fecha</div>
@@ -346,7 +424,7 @@ export default function FichaClientePage() {
       </div>
 
       {modalNCAbierto && (
-        <div className="modal-overlay" onClick={cerrarModalNC}>
+        <div className="modal-overlay" onClick={guardandoNC ? undefined : cerrarModalNC}>
           <form className="card modal-card" onClick={(e) => e.stopPropagation()} onSubmit={confirmarNC}>
             <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 14 }}>Registrar nota de crédito</div>
 
