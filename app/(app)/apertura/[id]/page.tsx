@@ -28,7 +28,7 @@ export default function CargarAperturaPage() {
       const [{ data: userData }, clienteRes, parametroRes, movRes] = await Promise.all([
         supabase.auth.getUser(),
         supabase.from("cliente").select("*").eq("id", clienteId).single(),
-        supabase.from("parametro").select("valor").eq("clave", "fecha_corte_apertura").single(),
+        supabase.from("parametro").select("valor").eq("clave", "fecha_corte_apertura").maybeSingle(),
         supabase
           .from("movimiento_cuenta")
           .select("id")

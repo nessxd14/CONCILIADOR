@@ -21,11 +21,14 @@ const MOTIVOS_ORDEN: { motivo: MotivoPedidoPendiente; label: string }[] = [
 
 const MOTIVOS_ACCIONABLES: MotivoPedidoPendiente[] = ["ABRE", "CLIENTE_SIN_CUENTA", "SIN_FICHA_CREDITO"];
 
+const DETALLE_LIMITE = 200;
+
 export default function PedidosPendientesPage() {
   const supabase = useMemo(() => createClient(), []);
 
   const [conteos, setConteos] = useState<Record<string, number>>({});
   const [detalle, setDetalle] = useState<VPedidoCationPendiente[]>([]);
+  const [totalAccionables, setTotalAccionables] = useState(0);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -37,33 +40,49 @@ export default function PedidosPendientesPage() {
     setCargando(true);
     setError(null);
 
-    const [conteoRes, detalleRes] = await Promise.all([
-      supabase.from("v_pedidos_cation_pendientes").select("motivo"),
-      supabase
-        .from("v_pedidos_cation_pendientes")
-        .select("*")
-        .in("motivo", MOTIVOS_ACCIONABLES)
-        .order("creado_en", { ascending: true }),
-    ]);
+    // PostgREST corta cualquier select en 1000 filas: contar en el navegador
+    // sobre un .select("motivo") sin filtro se congela ahí. Un count:'exact'
+    // por motivo, con head:true (no baja filas), da el número real de cada
+    // uno sin ese techo. Ocho consultas livianas en vez de una vista de
+    // conteos agregada del lado del servidor — queda pendiente pedirle esa
+    // vista a Ness si el número de motivos crece.
+    const conteoPorMotivo = await Promise.all(
+      MOTIVOS_ORDEN.map(({ motivo }) =>
+        supabase
+          .from("v_pedidos_cation_pendientes")
+          .select("motivo", { count: "exact", head: true })
+          .eq("motivo", motivo)
+      )
+    );
 
-    if (conteoRes.error) {
-      setError(conteoRes.error.message);
+    const errConteo = conteoPorMotivo.find((r) => r.error)?.error;
+    if (errConteo) {
+      setError(errConteo.message);
       setCargando(false);
       return;
     }
+
+    const conteosPorMotivo: Record<string, number> = {};
+    MOTIVOS_ORDEN.forEach(({ motivo }, i) => {
+      conteosPorMotivo[motivo] = conteoPorMotivo[i].count ?? 0;
+    });
+    setConteos(conteosPorMotivo);
+
+    const detalleRes = await supabase
+      .from("v_pedidos_cation_pendientes")
+      .select("*", { count: "exact" })
+      .in("motivo", MOTIVOS_ACCIONABLES)
+      .order("creado_en", { ascending: true })
+      .range(0, DETALLE_LIMITE - 1);
+
     if (detalleRes.error) {
       setError(detalleRes.error.message);
       setCargando(false);
       return;
     }
 
-    const conteosPorMotivo: Record<string, number> = {};
-    for (const row of conteoRes.data ?? []) {
-      const m = row.motivo as string;
-      conteosPorMotivo[m] = (conteosPorMotivo[m] ?? 0) + 1;
-    }
-    setConteos(conteosPorMotivo);
     setDetalle(detalleRes.data as VPedidoCationPendiente[]);
+    setTotalAccionables(detalleRes.count ?? detalleRes.data?.length ?? 0);
     setCargando(false);
   }
 
@@ -148,6 +167,11 @@ export default function PedidosPendientesPage() {
           <div style={{ fontSize: 11, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.03em", fontWeight: 700, marginBottom: 8 }}>
             Detalle — requieren acción
           </div>
+          {totalAccionables > DETALLE_LIMITE && (
+            <div className="field-hint" style={{ marginBottom: 8 }}>
+              Mostrando los primeros {DETALLE_LIMITE} de {totalAccionables}.
+            </div>
+          )}
           <div className="table">
             <div className="table-head" style={{ gridTemplateColumns: "1fr 1.5fr 1fr 1fr 1fr" }}>
               <div>Pedido</div>

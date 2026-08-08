@@ -6,26 +6,16 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { formatBs } from "@/lib/money";
 import { rolDeUsuario, puedeRegistrarFechas } from "@/lib/roles";
+import { diasDesde, hoyLocal } from "@/lib/fechas";
 import type { Documento, Hito, PartidaAbierta } from "@/lib/types";
 
 type HitoConPendientes = Hito & { habilitantes_pendientes: number };
 type EstadoAccion = { cargando: boolean; error: string | null };
 
-function hoyISO(): string {
-  return new Date().toISOString().slice(0, 10);
-}
-
 function sumarDias(fechaISO: string, dias: number): string {
   const d = new Date(`${fechaISO}T00:00:00Z`);
   d.setUTCDate(d.getUTCDate() + dias);
   return d.toISOString().slice(0, 10);
-}
-
-function diasTranscurridosDesde(fechaISO: string): number {
-  const hoy = new Date();
-  const hoyUTC = Date.UTC(hoy.getUTCFullYear(), hoy.getUTCMonth(), hoy.getUTCDate());
-  const desde = new Date(`${fechaISO}T00:00:00Z`).getTime();
-  return Math.round((hoyUTC - desde) / 86400000);
 }
 
 function calcularVencimiento(partida: PartidaAbierta): string | null {
@@ -37,6 +27,22 @@ function calcularVencimiento(partida: PartidaAbierta): string | null {
 
 function textoBase(inicio: PartidaAbierta["inicio_computo"]): string {
   return inicio === "ENTREGA" ? "entrega" : "factura";
+}
+
+/**
+ * partir_partida devuelve un bigint escalar, pero PostgREST no siempre lo
+ * entrega tal cual (puede llegar envuelto en fila u objeto según el cliente):
+ * normalizar acá evita que la URL de navegación salga "[object Object]".
+ */
+function idDesdeRpc(data: unknown): number | null {
+  if (typeof data === "number" && Number.isFinite(data)) return data;
+  if (typeof data === "string" && /^-?\d+$/.test(data)) return Number(data);
+  if (Array.isArray(data)) return data.length > 0 ? idDesdeRpc(data[0]) : null;
+  if (data && typeof data === "object") {
+    const valores = Object.values(data as Record<string, unknown>);
+    return valores.length === 1 ? idDesdeRpc(valores[0]) : null;
+  }
+  return null;
 }
 
 export default function ExpedientePage() {
@@ -54,13 +60,14 @@ export default function ExpedientePage() {
   const [usuario, setUsuario] = useState("desconocido");
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [errorHitos, setErrorHitos] = useState<string | null>(null);
   const [acciones, setAcciones] = useState<Record<string, EstadoAccion>>({});
   const [notas, setNotas] = useState<Record<number, string>>({});
 
   const [mostrarFormEntrega, setMostrarFormEntrega] = useState(false);
-  const [fechaEntregaInput, setFechaEntregaInput] = useState(hoyISO());
+  const [fechaEntregaInput, setFechaEntregaInput] = useState(hoyLocal());
   const [mostrarFormFactura, setMostrarFormFactura] = useState(false);
-  const [fechaFacturaInput, setFechaFacturaInput] = useState(hoyISO());
+  const [fechaFacturaInput, setFechaFacturaInput] = useState(hoyLocal());
   const [cufInput, setCufInput] = useState("");
 
   const [modalAnularAbierto, setModalAnularAbierto] = useState(false);
@@ -76,6 +83,7 @@ export default function ExpedientePage() {
   async function cargar() {
     setCargando(true);
     setError(null);
+    setErrorHitos(null);
 
     const [{ data: userData }, partidaRes, hitosRes] = await Promise.all([
       supabase.auth.getUser(),
@@ -95,6 +103,14 @@ export default function ExpedientePage() {
     setPuedeFechas(puedeRegistrarFechas(rol));
     setPartida(partidaRes.data as PartidaAbierta);
 
+    if (hitosRes.error) {
+      setErrorHitos(hitosRes.error.message);
+      setHitos([]);
+      setDocumentosPorHito({});
+      setCargando(false);
+      return;
+    }
+
     const hitosData = (hitosRes.data ?? []) as Hito[];
     const hitoIds = hitosData.map((h) => h.id);
 
@@ -103,7 +119,7 @@ export default function ExpedientePage() {
       : { data: [] as Documento[], error: null };
 
     if (docsRes.error) {
-      setError(docsRes.error.message);
+      setErrorHitos(docsRes.error.message);
       setCargando(false);
       return;
     }
@@ -181,17 +197,32 @@ export default function ExpedientePage() {
   }
 
   async function verDocumento(doc: Documento) {
-    if (!doc.storage_path) return;
-    const { data, error } = await supabase.storage
-      .from("documentos-expediente")
-      .createSignedUrl(doc.storage_path, 60);
+    // Preparado para múltiples páginas: hoy documento.storage_path es una
+    // sola columna, así que la "lista" tiene como mucho un elemento y se
+    // muestra siempre la primera. Cuando la base sume una tabla/columna de
+    // páginas, alimentar storagePaths desde ahí sin tocar el resto.
+    const storagePaths = doc.storage_path ? [doc.storage_path] : [];
+    const primera = storagePaths[0];
+    if (!primera) return;
+
+    // La pestaña se abre ANTES del await: si se abre después, el navegador
+    // ya perdió el gesto del usuario y bloquea el popup. Se redirige recién
+    // cuando la signed URL está lista.
+    const ventana = window.open("", "_blank");
+
+    const { data, error } = await supabase.storage.from("documentos-expediente").createSignedUrl(primera, 60);
 
     if (error || !data) {
+      ventana?.close();
       setAccion(`doc-${doc.id}`, { cargando: false, error: error?.message ?? "No se pudo generar el enlace." });
       return;
     }
 
-    window.open(data.signedUrl, "_blank", "noopener,noreferrer");
+    if (ventana) {
+      ventana.location.href = data.signedUrl;
+    } else {
+      window.open(data.signedUrl, "_blank", "noopener,noreferrer");
+    }
   }
 
   async function registrarFechas(entrega: string | null, factura: string | null, cuf: string | null) {
@@ -266,7 +297,14 @@ export default function ExpedientePage() {
       return;
     }
 
-    router.push(`/clientes/${clienteId}/expediente/${data}`);
+    const nuevaId = idDesdeRpc(data);
+    if (nuevaId == null) {
+      setErrorPartir("La partición se realizó, pero no se pudo determinar el id de la partida nueva.");
+      setGuardandoPartir(false);
+      return;
+    }
+
+    router.push(`/clientes/${clienteId}/expediente/${nuevaId}`);
   }
 
   if (cargando) return <div>Cargando…</div>;
@@ -274,7 +312,7 @@ export default function ExpedientePage() {
   if (!partida) return <div>Partida no encontrada.</div>;
 
   const vencimiento = calcularVencimiento(partida);
-  const vencida = Boolean(vencimiento && vencimiento < hoyISO());
+  const vencida = Boolean(vencimiento && vencimiento < hoyLocal());
   const accionFechas = acciones["fechas"];
 
   return (
@@ -334,7 +372,7 @@ export default function ExpedientePage() {
                 className="btn btn-orange"
                 style={{ marginTop: 10 }}
                 onClick={() => {
-                  setFechaEntregaInput(hoyISO());
+                  setFechaEntregaInput(hoyLocal());
                   setMostrarFormEntrega(true);
                 }}
               >
@@ -363,21 +401,26 @@ export default function ExpedientePage() {
                 </button>
               </div>
             )}
+            {mostrarFormEntrega && fechaEntregaInput > hoyLocal() && (
+              <div className="banner-warn" style={{ marginTop: 10 }}>
+                <div style={{ fontSize: 12.5 }}>Estás registrando una entrega con fecha futura.</div>
+              </div>
+            )}
           </div>
         )}
 
         {partida.fecha_entrega && !partida.fecha_factura && (
           <div>
             <div style={{ fontSize: 13, marginBottom: 10 }}>
-              Entregada el <b>{partida.fecha_entrega}</b> · hace {diasTranscurridosDesde(partida.fecha_entrega)}{" "}
-              {diasTranscurridosDesde(partida.fecha_entrega) === 1 ? "día" : "días"}
+              Entregada el <b>{partida.fecha_entrega}</b> · hace {diasDesde(partida.fecha_entrega)}{" "}
+              {diasDesde(partida.fecha_entrega) === 1 ? "día" : "días"}
             </div>
             {puedeFechas && !mostrarFormFactura && (
               <button
                 type="button"
                 className="btn btn-orange"
                 onClick={() => {
-                  setFechaFacturaInput(hoyISO());
+                  setFechaFacturaInput(hoyLocal());
                   setMostrarFormFactura(true);
                 }}
               >
@@ -550,11 +593,23 @@ export default function ExpedientePage() {
             </div>
           );
         })}
-        {hitos.length === 0 && <div style={{ color: "var(--muted)" }}>Este expediente no tiene hitos.</div>}
+        {errorHitos && (
+          <div className="card">
+            <div className="field-error" style={{ marginBottom: 10 }}>
+              No se pudieron cargar los hitos ({errorHitos}).
+            </div>
+            <button type="button" className="btn btn-secondary" onClick={cargar}>
+              Reintentar
+            </button>
+          </div>
+        )}
+        {!errorHitos && hitos.length === 0 && (
+          <div style={{ color: "var(--muted)" }}>Este expediente no tiene hitos.</div>
+        )}
       </div>
 
       {modalAnularAbierto && (
-        <div className="modal-overlay" onClick={cerrarModalAnular}>
+        <div className="modal-overlay" onClick={guardandoAnular ? undefined : cerrarModalAnular}>
           <form className="card modal-card" onClick={(e) => e.stopPropagation()} onSubmit={confirmarAnular}>
             <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 14 }}>Anular partida</div>
             <div style={{ fontSize: 12.5, color: "var(--muted)", marginBottom: 14 }}>
@@ -589,7 +644,7 @@ export default function ExpedientePage() {
       )}
 
       {modalPartirAbierto && (
-        <div className="modal-overlay" onClick={cerrarModalPartir}>
+        <div className="modal-overlay" onClick={guardandoPartir ? undefined : cerrarModalPartir}>
           <form className="card modal-card" onClick={(e) => e.stopPropagation()} onSubmit={confirmarPartir}>
             <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 14 }}>Partir partida</div>
             <div style={{ fontSize: 12.5, color: "var(--muted)", marginBottom: 14 }}>

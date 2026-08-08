@@ -5,6 +5,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { formatBs } from "@/lib/money";
 import { leerCola, reintentar, subirOEncolar, type ItemCola } from "@/lib/captura/queue";
+import { comprimirImagen } from "@/lib/captura/comprimir";
 import type { Documento, PartidaAbierta } from "@/lib/types";
 
 type Paso = "home" | "captura" | "pedido" | "tipo" | "confirmar" | "enviando" | "exito";
@@ -23,6 +24,7 @@ export default function CapturaPage() {
   const [partidasConPendientes, setPartidasConPendientes] = useState<Set<number>>(new Set());
   const [busquedaPedido, setBusquedaPedido] = useState("");
   const [cargandoPedidos, setCargandoPedidos] = useState(false);
+  const [errorPedidos, setErrorPedidos] = useState<string | null>(null);
 
   const [partidaSel, setPartidaSel] = useState<PartidaAbierta | null>(null);
   const [pendientesDelPedido, setPendientesDelPedido] = useState<Documento[]>([]);
@@ -46,12 +48,19 @@ export default function CapturaPage() {
 
   async function cargarPedidos() {
     setCargandoPedidos(true);
-    const [{ data: partidasData, error: errPartidas }, { data: hitosData }] = await Promise.all([
+    setErrorPedidos(null);
+    const [{ data: partidasData, error: errPartidas }, { data: hitosData, error: errHitos }] = await Promise.all([
       supabase.from("partida_abierta").select("*").eq("estado", "ABIERTA").order("fecha_entrega"),
       supabase.from("hito").select("id, partida_abierta_id"),
     ]);
 
     if (errPartidas || !partidasData) {
+      setErrorPedidos(errPartidas?.message ?? "No se pudieron cargar los pedidos.");
+      setCargandoPedidos(false);
+      return;
+    }
+    if (errHitos) {
+      setErrorPedidos(errHitos.message);
       setCargandoPedidos(false);
       return;
     }
@@ -59,9 +68,15 @@ export default function CapturaPage() {
     const hitoAPartida = new Map((hitosData ?? []).map((h) => [h.id as number, h.partida_abierta_id as number]));
     const hitoIds = (hitosData ?? []).map((h) => h.id as number);
 
-    const { data: docsPendientes } = hitoIds.length
+    const { data: docsPendientes, error: errDocs } = hitoIds.length
       ? await supabase.from("documento").select("hito_id").in("hito_id", hitoIds).in("estado", ["PENDIENTE", "RECHAZADO"])
-      : { data: [] as { hito_id: number }[] };
+      : { data: [] as { hito_id: number }[], error: null };
+
+    if (errDocs) {
+      setErrorPedidos(errDocs.message);
+      setCargandoPedidos(false);
+      return;
+    }
 
     const conPendientes = new Set(
       (docsPendientes ?? []).map((d) => hitoAPartida.get(d.hito_id)).filter((id): id is number => id != null)
@@ -160,6 +175,33 @@ export default function CapturaPage() {
     }
   }
 
+  useEffect(() => {
+    // Serializado a propósito: uno por vez, no Promise.all — cada item hace
+    // sus propias llamadas a Storage y a la RPC, y no vale la pena
+    // saturar la conexión (a menudo mala, es la razón por la que el ítem
+    // quedó en cola) reintentando todo junto.
+    let cancelado = false;
+
+    async function reintentarColaAutomaticamente() {
+      for (const item of leerCola()) {
+        if (cancelado) return;
+        // eslint-disable-next-line no-await-in-loop
+        await handleReintentar(item);
+      }
+    }
+
+    if (typeof navigator !== "undefined" && navigator.onLine && leerCola().length > 0) {
+      reintentarColaAutomaticamente();
+    }
+
+    window.addEventListener("online", reintentarColaAutomaticamente);
+    return () => {
+      cancelado = true;
+      window.removeEventListener("online", reintentarColaAutomaticamente);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <div className="captura-shell">
       <div className="mobile-topbar">
@@ -241,11 +283,12 @@ export default function CapturaPage() {
                   accept="image/*"
                   capture="environment"
                   style={{ display: "none" }}
-                  onChange={(e) => {
+                  onChange={async (e) => {
                     const file = e.target.files?.[0] ?? null;
+                    const comprimido = file ? await comprimirImagen(file) : null;
                     setFotos((prev) => {
                       const next = [...prev];
-                      next[i] = file;
+                      next[i] = comprimido;
                       return next;
                     });
                   }}
@@ -304,28 +347,41 @@ export default function CapturaPage() {
 
           {cargandoPedidos && <div>Cargando…</div>}
 
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {filtrados.map((p) => (
-              <button
-                key={p.id}
-                type="button"
-                className="card"
-                style={{ textAlign: "left", cursor: "pointer" }}
-                onClick={() => seleccionarPedido(p)}
-              >
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <b style={{ fontSize: 13 }}>{p.documento_interno}</b>
-                  {partidasConPendientes.has(p.id) && <span className="badge badge-pendiente">Pendiente</span>}
-                </div>
-                <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 2 }}>
-                  {p.cliente_nombre} · {formatBs(p.total)}
-                </div>
+          {errorPedidos && (
+            <div className="card" style={{ marginBottom: 12 }}>
+              <div className="field-error" style={{ marginBottom: 10 }}>
+                No se pudieron cargar los pedidos ({errorPedidos}).
+              </div>
+              <button type="button" className="btn btn-secondary" onClick={cargarPedidos}>
+                Reintentar
               </button>
-            ))}
-            {!cargandoPedidos && filtrados.length === 0 && (
-              <div style={{ color: "var(--muted)", fontSize: 12.5 }}>No hay pedidos que coincidan.</div>
-            )}
-          </div>
+            </div>
+          )}
+
+          {!errorPedidos && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {filtrados.map((p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  className="card"
+                  style={{ textAlign: "left", cursor: "pointer" }}
+                  onClick={() => seleccionarPedido(p)}
+                >
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <b style={{ fontSize: 13 }}>{p.documento_interno}</b>
+                    {partidasConPendientes.has(p.id) && <span className="badge badge-pendiente">Pendiente</span>}
+                  </div>
+                  <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 2 }}>
+                    {p.cliente_nombre} · {formatBs(p.total)}
+                  </div>
+                </button>
+              ))}
+              {!cargandoPedidos && filtrados.length === 0 && (
+                <div style={{ color: "var(--muted)", fontSize: 12.5 }}>No hay pedidos que coincidan.</div>
+              )}
+            </div>
+          )}
         </div>
       )}
 
