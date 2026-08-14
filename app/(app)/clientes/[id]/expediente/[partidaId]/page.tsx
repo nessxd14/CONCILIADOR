@@ -5,9 +5,10 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { formatBs } from "@/lib/money";
-import { rolDeUsuario, puedeRegistrarFechas } from "@/lib/roles";
+import { rolDeUsuario, puedeRegistrarFechas, puedeGestionarDocumentos } from "@/lib/roles";
 import { diasDesde, hoyLocal } from "@/lib/fechas";
-import type { Documento, Hito, PartidaAbierta } from "@/lib/types";
+import { SubidaEvidencia } from "@/components/SubidaEvidencia";
+import type { CationPedido, Documento, Hito, PartidaAbierta, VCotizacionHermes, VPedidoLineaHermes } from "@/lib/types";
 
 type HitoConPendientes = Hito & { habilitantes_pendientes: number };
 type EstadoAccion = { cargando: boolean; error: string | null };
@@ -56,6 +57,8 @@ export default function ExpedientePage() {
   const [hitos, setHitos] = useState<HitoConPendientes[]>([]);
   const [documentosPorHito, setDocumentosPorHito] = useState<Record<number, Documento[]>>({});
   const [esGerente, setEsGerente] = useState(false);
+  // Brief T7 Tarea 2: carga/borrado de documentos es solo admin/gerente.
+  const [puedeDocs, setPuedeDocs] = useState(false);
   const [puedeFechas, setPuedeFechas] = useState(false);
   const [usuario, setUsuario] = useState("desconocido");
   const [cargando, setCargando] = useState(true);
@@ -63,6 +66,12 @@ export default function ExpedientePage() {
   const [errorHitos, setErrorHitos] = useState<string | null>(null);
   const [acciones, setAcciones] = useState<Record<string, EstadoAccion>>({});
   const [notas, setNotas] = useState<Record<number, string>>({});
+
+  // Brief T7 Tarea 3: origen y detalle del pedido — estrictamente de solo lectura, foreign
+  // tables hacia Cation. Solo se piden acá (detalle de UNA partida), nunca en la grilla.
+  const [cotizacionOrigen, setCotizacionOrigen] = useState<VCotizacionHermes | null>(null);
+  const [lineasPedido, setLineasPedido] = useState<VPedidoLineaHermes[]>([]);
+  const [errorDetallePedido, setErrorDetallePedido] = useState<string | null>(null);
 
   const [mostrarFormEntrega, setMostrarFormEntrega] = useState(false);
   const [fechaEntregaInput, setFechaEntregaInput] = useState(hoyLocal());
@@ -79,6 +88,57 @@ export default function ExpedientePage() {
   const [montoPartir, setMontoPartir] = useState("");
   const [guardandoPartir, setGuardandoPartir] = useState(false);
   const [errorPartir, setErrorPartir] = useState<string | null>(null);
+
+  /**
+   * Brief T7 Tarea 3: cotización de origen y líneas del pedido — separado de `cargar()`
+   * porque necesita `partida.pedido_id`, que recién se conoce después de leer la partida.
+   * Nota de rendimiento del brief: cada consulta acá viaja por red hasta Cation (foreign
+   * table) — por eso esto vive en el detalle de UNA partida, nunca en la grilla.
+   */
+  async function cargarDetallePedido(pedidoId: number | null) {
+    setErrorDetallePedido(null);
+    if (pedidoId == null) {
+      setCotizacionOrigen(null);
+      setLineasPedido([]);
+      return;
+    }
+
+    const [pedidoRes, lineasRes] = await Promise.all([
+      supabase.from("cation_pedido").select("*").eq("id", pedidoId).maybeSingle(),
+      supabase.from("v_pedido_linea_hermes").select("*").eq("pedido_id", pedidoId).order("id"),
+    ]);
+
+    if (pedidoRes.error || lineasRes.error) {
+      setErrorDetallePedido((pedidoRes.error ?? lineasRes.error)?.message ?? "No se pudo cargar el detalle del pedido");
+      setCotizacionOrigen(null);
+      setLineasPedido([]);
+      return;
+    }
+
+    setLineasPedido((lineasRes.data ?? []) as VPedidoLineaHermes[]);
+
+    const cationPedido = pedidoRes.data as CationPedido | null;
+    if (!cationPedido?.cotizacion_origen_id) {
+      // La mayoría de los pedidos viejos no tienen origen y los internos nunca lo van a
+      // tener — no mostrar la sección, no es un error.
+      setCotizacionOrigen(null);
+      return;
+    }
+
+    const cotizacionRes = await supabase
+      .from("v_cotizacion_hermes")
+      .select("*")
+      .eq("id", cationPedido.cotizacion_origen_id)
+      .maybeSingle();
+
+    if (cotizacionRes.error) {
+      setErrorDetallePedido(cotizacionRes.error.message);
+      setCotizacionOrigen(null);
+      return;
+    }
+
+    setCotizacionOrigen((cotizacionRes.data ?? null) as VCotizacionHermes | null);
+  }
 
   async function cargar() {
     setCargando(true);
@@ -100,8 +160,11 @@ export default function ExpedientePage() {
     setUsuario(userData.user?.email ?? "desconocido");
     const rol = rolDeUsuario(userData.user);
     setEsGerente(rol === "gerente");
+    setPuedeDocs(puedeGestionarDocumentos(rol));
     setPuedeFechas(puedeRegistrarFechas(rol));
-    setPartida(partidaRes.data as PartidaAbierta);
+    const partidaData = partidaRes.data as PartidaAbierta;
+    setPartida(partidaData);
+    void cargarDetallePedido(partidaData.pedido_id);
 
     if (hitosRes.error) {
       setErrorHitos(hitosRes.error.message);
@@ -223,6 +286,27 @@ export default function ExpedientePage() {
     } else {
       window.open(data.signedUrl, "_blank", "noopener,noreferrer");
     }
+  }
+
+  /** Brief T7 Tarea 2: borrado solo admin/gerente, con confirmación acá (el botón que lo
+   * dispara ya está gateado por puedeDocs, pero la confirmación es la última barrera antes
+   * de un borrado irreversible). */
+  async function borrarDocumento(doc: Documento) {
+    if (!confirm(`¿Borrar el archivo de "${doc.etiqueta}"? No se puede deshacer.`)) return;
+    const key = `doc-${doc.id}`;
+    setAccion(key, { cargando: true, error: null });
+    const res = await fetch("/api/evidencia/eliminar", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ entidad: "documento", entidadId: doc.id }),
+    });
+    const data = await res.json().catch(() => null);
+    if (!res.ok) {
+      setAccion(key, { cargando: false, error: data?.error ?? "No se pudo borrar el archivo" });
+      return;
+    }
+    setAccion(key, { cargando: false, error: null });
+    await cargar();
   }
 
   async function registrarFechas(entrega: string | null, factura: string | null, cuf: string | null) {
@@ -501,6 +585,72 @@ export default function ExpedientePage() {
         )}
       </div>
 
+      {errorDetallePedido && (
+        <div className="card" style={{ marginBottom: 16 }}>
+          <div className="field-error">No se pudo cargar el detalle del pedido ({errorDetallePedido}).</div>
+        </div>
+      )}
+
+      {/* Brief T7 Tarea 3: estrictamente de solo lectura — Hermes nunca escribe sobre
+          pedidos ni cotizaciones, así que acá no hay ningún botón de edición. */}
+      {cotizacionOrigen && (
+        <div className="card" style={{ marginBottom: 16 }}>
+          <div style={{ fontSize: 11, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.03em", fontWeight: 700, marginBottom: 8 }}>
+            Cotización de origen
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", flexWrap: "wrap", gap: 8 }}>
+            <span style={{ fontSize: 14, fontWeight: 700 }}>{cotizacionOrigen.numero}</span>
+            <span className="money" style={{ fontSize: 15, fontWeight: 800 }}>{cotizacionOrigen.total ? formatBs(cotizacionOrigen.total) : "—"}</span>
+          </div>
+          <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 6 }}>
+            {cotizacionOrigen.fecha ?? "sin fecha"} · aprobada por {cotizacionOrigen.aprobado_por ?? "—"}
+          </div>
+        </div>
+      )}
+
+      {lineasPedido.length > 0 && (
+        <div style={{ marginBottom: 20 }}>
+          <div style={{ fontSize: 11, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.03em", fontWeight: 700, marginBottom: 8 }}>
+            Líneas del pedido
+          </div>
+          <div className="table">
+            <div className="table-head" style={{ gridTemplateColumns: "2fr 90px 1fr 80px 1fr" }}>
+              <div>Descripción</div>
+              <div>Cantidad</div>
+              <div>P/U</div>
+              <div>Desc.</div>
+              <div>Subtotal</div>
+            </div>
+            {lineasPedido.map((l) => {
+              const cantidadBase = Number(l.cantidad_base);
+              const despachada = l.cantidad_despachada != null ? Number(l.cantidad_despachada) : null;
+              // Es lo que el almacén todavía debe: despachado menor a lo pedido.
+              const pendienteDespacho = despachada != null && despachada < cantidadBase;
+              return (
+                <div
+                  key={l.id}
+                  className={`table-row ${pendienteDespacho ? "detalle-pedido-linea-pendiente" : ""}`}
+                  style={{ gridTemplateColumns: "2fr 90px 1fr 80px 1fr" }}
+                >
+                  <div>
+                    <span style={{ fontSize: 12.5 }}>{l.descripcion ?? "—"}</span>
+                    {pendienteDespacho && (
+                      <div style={{ fontSize: 11, color: "var(--provisional)" }}>
+                        ⚠️ despachado {l.cantidad_despachada} de {l.cantidad_base}
+                      </div>
+                    )}
+                  </div>
+                  <span style={{ fontSize: 12.5 }}>{l.cantidad_presentacion ?? l.cantidad_base}</span>
+                  <span style={{ fontSize: 12.5 }}>{formatBs(l.precio_unitario)}</span>
+                  <span style={{ fontSize: 12.5 }}>{Number(l.descuento_pct) > 0 ? `${l.descuento_pct}%` : "—"}</span>
+                  <span className="money" style={{ fontSize: 12.5 }}>{formatBs(l.subtotal)}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {hitoBloqueado && docBloqueante && (
         <a href={`#hito-${hitoBloqueado.id}`} className="banner-alerta" style={{ marginBottom: 16, textDecoration: "none", color: "inherit" }}>
           <div>
@@ -553,6 +703,17 @@ export default function ExpedientePage() {
                             Ver
                           </button>
                         )}
+                        {d.storage_path && puedeDocs && (
+                          <button
+                            type="button"
+                            className="btn btn-secondary"
+                            style={{ borderColor: "var(--alerta)", color: "var(--alerta)" }}
+                            disabled={accionDoc?.cargando}
+                            onClick={() => borrarDocumento(d)}
+                          >
+                            Borrar archivo
+                          </button>
+                        )}
                         {esGerente && d.estado === "SUBIDO" && (
                           <>
                             <button
@@ -576,6 +737,11 @@ export default function ExpedientePage() {
                         )}
                       </div>
                     </div>
+                    {!d.storage_path && puedeDocs && (
+                      <div style={{ marginTop: 6 }}>
+                        <SubidaEvidencia entidad="documento" entidadId={d.id} label="Subir documento" onSubido={cargar} />
+                      </div>
+                    )}
                     {esGerente && d.estado === "SUBIDO" && (
                       <input
                         className="input"

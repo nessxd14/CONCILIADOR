@@ -6,10 +6,14 @@ import Link from "next/link";
 import Decimal from "decimal.js";
 import { createClient } from "@/lib/supabase/client";
 import { formatBs } from "@/lib/money";
-import { rolDeUsuario } from "@/lib/roles";
+import { rolDeUsuario, puedeGestionarDocumentos } from "@/lib/roles";
+import { SubidaEvidencia } from "@/components/SubidaEvidencia";
+import { VisorEvidencia } from "@/components/VisorEvidencia";
+import { mimeDesdeNombre } from "@/lib/mime";
 import type {
   Cliente,
   ClienteCredito,
+  VAnticipoCliente,
   VMayorAuxiliar,
   VPartidaEstado,
   VPartidasFrenadas,
@@ -50,10 +54,13 @@ export default function FichaClientePage() {
   const [errorMovimientos, setErrorMovimientos] = useState<string | null>(null);
   const [tieneApertura, setTieneApertura] = useState(false);
   const [partidasEstado, setPartidasEstado] = useState<VPartidaEstado[]>([]);
-  const [tabPartidas, setTabPartidas] = useState<"ABIERTA" | "PAGADA">("ABIERTA");
+  const [tabPartidas, setTabPartidas] = useState<"ABIERTA" | "PAGADA" | "ANTICIPO">("ABIERTA");
   const [partidasFrenadas, setPartidasFrenadas] = useState<VPartidasFrenadas[]>([]);
   const [hitoPorPartida, setHitoPorPartida] = useState<Record<number, number>>({});
+  const [anticipos, setAnticipos] = useState<VAnticipoCliente[]>([]);
   const [esAdmin, setEsAdmin] = useState(false);
+  // Brief T7 Tarea 2: carga/borrado de comprobantes es solo admin/gerente.
+  const [puedeDocs, setPuedeDocs] = useState(false);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -77,6 +84,7 @@ export default function FichaClientePage() {
         movRes,
         partidasEstadoRes,
         frenadasRes,
+        anticiposRes,
       ] = await Promise.all([
         supabase.auth.getUser(),
         supabase.from("cliente").select("*").eq("id", clienteId).single(),
@@ -110,6 +118,13 @@ export default function FichaClientePage() {
           .select("*")
           .eq("cliente_id", clienteId)
           .order("dias", { ascending: false }),
+        // Brief T7 Tarea 1: v_anticipo_cliente ya filtra por CONFIRMADO/ACREDITADO y
+        // saldo_favor > 0 — acá solo se pide por cliente.
+        supabase
+          .from("v_anticipo_cliente")
+          .select("*")
+          .eq("cliente_id", clienteId)
+          .order("fecha_recepcion", { ascending: false }),
       ]);
 
       if (clienteRes.error) {
@@ -118,7 +133,9 @@ export default function FichaClientePage() {
         return;
       }
 
-      setEsAdmin(rolDeUsuario(userData.user) === "admin");
+      const rol = rolDeUsuario(userData.user);
+      setEsAdmin(rol === "admin");
+      setPuedeDocs(puedeGestionarDocumentos(rol));
       setCliente(clienteRes.data as Cliente);
       setCredito((creditoRes.data ?? null) as ClienteCredito | null);
       setSaldo((saldoRes.data ?? null) as VSaldoCliente | null);
@@ -137,6 +154,7 @@ export default function FichaClientePage() {
       }
 
       setPartidasEstado((partidasEstadoRes.data ?? []) as VPartidaEstado[]);
+      setAnticipos((anticiposRes.data ?? []) as VAnticipoCliente[]);
 
       const frenadas = (frenadasRes.data ?? []) as VPartidasFrenadas[];
       setPartidasFrenadas(frenadas);
@@ -211,6 +229,9 @@ export default function FichaClientePage() {
   const tramiteCompletoCount = partidasAbiertasList.filter(
     (p) => p.hitos_obligatorios > 0 && p.hitos_cumplidos === p.hitos_obligatorios
   ).length;
+  // Brief T7 Tarea 1: un cliente puede tener un anticipo (no_imputar) y seguir debiendo el
+  // total de sus partidas abiertas — el saldo neto solo no cuenta esa historia.
+  const pendienteAbiertas = partidasAbiertasList.reduce((acc, p) => acc.plus(p.pendiente), new Decimal(0));
 
   function trabaDe(p: VPartidaEstado): string | null {
     if (p.hitos_cumplidos === 0 && montoMaximoAbierta.gt(0) && new Decimal(p.total).eq(montoMaximoAbierta)) {
@@ -297,22 +318,27 @@ export default function FichaClientePage() {
         </div>
       )}
 
-      <div style={{ display: "flex", gap: 14, margin: "16px 0 20px" }}>
-        <div className="card" style={{ flex: 1 }}>
+      <div style={{ display: "flex", gap: 14, margin: "16px 0 20px", flexWrap: "wrap" }}>
+        <div className="card" style={{ flex: 1, minWidth: 200 }}>
           <div style={{ fontSize: 11, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.03em", fontWeight: 700 }}>
             Saldo confirmado (contable)
           </div>
+          {/* Brief T7 Tarea 1: "A favor" en verde, no "Debe" en rojo, cuando situacion es
+              ACREEDOR — un ledger se escanea buscando números, así que el signo solo no
+              alcanza, hace falta la palabra. */}
           <div
             style={{ fontSize: 24, fontWeight: 800, marginTop: 4 }}
-            className={saldo && Number(saldo.saldo_confirmado) < 0 ? "money-acreedor" : ""}
+            className={saldo?.situacion === "ACREEDOR" ? "saldo-favor-header" : saldo && Number(saldo.saldo_confirmado) < 0 ? "money-acreedor" : ""}
           >
-            {saldo ? formatBs(saldo.saldo_confirmado) : "—"}
+            {saldo
+              ? `${saldo.situacion === "ACREEDOR" ? "A favor: " : "Debe: "}${formatBs(new Decimal(saldo.saldo_confirmado).abs().toString())}`
+              : "—"}
           </div>
           <div style={{ fontSize: 11, color: "#a9a7a0", marginTop: 3 }}>
-            {saldo && Number(saldo.saldo_confirmado) < 0 ? "A favor del cliente" : "Deuda registrada contablemente"}
+            {saldo?.situacion === "ACREEDOR" ? "A favor del cliente" : "Deuda registrada contablemente"}
           </div>
         </div>
-        <div className="card" style={{ flex: 1, borderStyle: "dashed", borderColor: "#d8b76a" }}>
+        <div className="card" style={{ flex: 1, minWidth: 200, borderStyle: "dashed", borderColor: "#d8b76a" }}>
           <div style={{ fontSize: 11, color: "var(--provisional)", textTransform: "uppercase", letterSpacing: "0.03em", fontWeight: 700 }}>
             Saldo provisional (con pagos sin revisar)
           </div>
@@ -325,11 +351,23 @@ export default function FichaClientePage() {
               : "Incluye pagos sin revisar"}
           </div>
         </div>
+        {/* Brief T7 Tarea 1: un cliente puede tener un anticipo marcado "no imputar" y
+            seguir debiendo el total de sus partidas abiertas — el saldo neto solo confunde
+            a quien mira un solo número. */}
+        <div className="card" style={{ flex: 1, minWidth: 200 }}>
+          <div style={{ fontSize: 11, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.03em", fontWeight: 700 }}>
+            Pendiente de partidas abiertas
+          </div>
+          <div style={{ fontSize: 24, fontWeight: 800, marginTop: 4 }}>{formatBs(pendienteAbiertas.toString())}</div>
+          <div style={{ fontSize: 11, color: "#a9a7a0", marginTop: 3 }}>
+            {partidasAbiertasList.length} partida{partidasAbiertasList.length === 1 ? "" : "s"} abierta{partidasAbiertasList.length === 1 ? "" : "s"}
+          </div>
+        </div>
       </div>
 
-      {partidasEstado.length > 0 && (
+      {(partidasEstado.length > 0 || anticipos.length > 0) && (
         <div style={{ marginBottom: 20 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8, flexWrap: "wrap", gap: 8 }}>
             <div style={{ fontSize: 11, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.03em", fontWeight: 700 }}>
               Partidas · {formatBs(totalImputado.toString())} imputado · {tramiteCompletoCount}/{partidasAbiertasList.length} con trámite completo
             </div>
@@ -348,9 +386,28 @@ export default function FichaClientePage() {
               >
                 Pagadas ({partidasPagadasList.length})
               </button>
+              {/* Brief T7 Tarea 1: junto a Abiertas y Pagadas del PR #16. */}
+              <button
+                type="button"
+                className={tabPartidas === "ANTICIPO" ? "btn btn-secondary" : "btn-link"}
+                onClick={() => setTabPartidas("ANTICIPO")}
+              >
+                Anticipos ({anticipos.length})
+              </button>
             </div>
           </div>
 
+          {tabPartidas === "ANTICIPO" ? (
+            <>
+              {anticipos.length === 0 && (
+                <div className="card" style={{ color: "var(--muted)" }}>Sin anticipos sin imputar.</div>
+              )}
+              {anticipos.map((a) => (
+                <AnticipoCard key={a.pago_id} anticipo={a} puedeDocs={puedeDocs} onCambio={cargar} />
+              ))}
+            </>
+          ) : (
+            <>
           {partidasMostradas.length === 0 && (
             <div className="card" style={{ color: "var(--muted)" }}>
               {tabPartidas === "ABIERTA" ? "Sin partidas abiertas." : "Sin partidas pagadas todavía."}
@@ -399,6 +456,8 @@ export default function FichaClientePage() {
               </Link>
             );
           })}
+            </>
+          )}
         </div>
       )}
 
@@ -546,6 +605,76 @@ export default function FichaClientePage() {
           </form>
         </div>
       )}
+    </div>
+  );
+}
+
+/** Brief T7 Tarea 1: una fila de v_anticipo_cliente — saldo a favor primero (es plata del
+ * cliente, no nuestra), badge "No imputar" cuando el vendedor lo reservó a propósito, y el
+ * comprobante como único requisito (sin expediente de hitos: no hay trámite que perseguir). */
+function AnticipoCard({
+  anticipo,
+  puedeDocs,
+  onCambio,
+}: {
+  anticipo: VAnticipoCliente;
+  puedeDocs: boolean;
+  onCambio: () => void | Promise<void>;
+}) {
+  const [error, setError] = useState<string | null>(null);
+  const imputado = new Decimal(anticipo.imputado);
+
+  async function borrarComprobante() {
+    const res = await fetch("/api/evidencia/eliminar", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ entidad: "pago", entidadId: anticipo.pago_id }),
+    });
+    const data = await res.json().catch(() => null);
+    if (!res.ok) throw new Error(data?.error ?? "No se pudo borrar el comprobante");
+    await onCambio();
+  }
+
+  return (
+    <div className="card anticipo-card">
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", flexWrap: "wrap", gap: 8 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span className="anticipo-saldo-favor" style={{ fontSize: 17 }}>
+            {formatBs(anticipo.saldo_favor)}
+          </span>
+          {anticipo.no_imputar && <span className="badge badge-no-imputar">No imputar</span>}
+        </div>
+        {imputado.gt(0) && (
+          <span style={{ fontSize: 11.5, color: "var(--muted)" }}>
+            {formatBs(anticipo.monto)} original · {formatBs(anticipo.imputado)} imputado
+          </span>
+        )}
+      </div>
+      <div className="anticipo-meta">
+        <span>{anticipo.medio}</span>
+        <span>{anticipo.fecha_recepcion}</span>
+        {anticipo.referencia && <span>{anticipo.referencia}</span>}
+      </div>
+      <div style={{ marginTop: 8 }}>
+        {anticipo.tiene_comprobante && anticipo.comprobante_path ? (
+          <VisorEvidencia
+            storagePath={anticipo.comprobante_path}
+            mimeType={mimeDesdeNombre(anticipo.comprobante_nombre) ?? mimeDesdeNombre(anticipo.comprobante_path)}
+            nombre={anticipo.comprobante_nombre}
+            puedeBorrar={puedeDocs}
+            onBorrado={puedeDocs ? borrarComprobante : undefined}
+            onError={setError}
+          />
+        ) : puedeDocs ? (
+          <div className="evidencia-pendiente">
+            <div style={{ fontSize: 11.5, color: "var(--provisional)", marginBottom: 6 }}>⚠️ Sin comprobante todavía.</div>
+            <SubidaEvidencia entidad="pago" entidadId={anticipo.pago_id} label="Subir comprobante" onSubido={onCambio} />
+          </div>
+        ) : (
+          <div style={{ fontSize: 11.5, color: "var(--provisional)" }}>⚠️ Sin comprobante todavía.</div>
+        )}
+      </div>
+      {error && <div className="field-error" style={{ marginTop: 6 }}>{error}</div>}
     </div>
   );
 }

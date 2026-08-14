@@ -25,3 +25,10 @@ export function rolDeUsuario(user: { app_metadata?: Record<string, unknown> } | 
 export function puedeRegistrarFechas(rol: Rol | null): boolean {
   return rol !== null && ["gerente", "admin", "supervisor", "comercial"].includes(rol);
 }
+
+/** Brief T7 Tarea 2: carga manual de documentos (comprobantes de anticipo y expediente)
+ * es solo para admin y gerente — mismo criterio que evidencia_escritura (RLS) y
+ * borrado_documentos (política del bucket documentos-expediente). */
+export function puedeGestionarDocumentos(rol: Rol | null): boolean {
+  return rol === "admin" || rol === "gerente";
+}

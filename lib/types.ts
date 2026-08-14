@@ -181,6 +181,86 @@ export interface VPartidaEstado {
   dias_abierta: number;
 }
 
+/** Brief T7 Tarea 1: pagos con saldo a favor sin imputar — v_anticipo_cliente ya
+ * filtra por estado CONFIRMADO/ACREDITADO y saldo_favor > 0. */
+export interface VAnticipoCliente {
+  pago_id: number;
+  cliente_id: number;
+  monto: string;
+  imputado: string;
+  saldo_favor: string;
+  no_imputar: boolean;
+  medio: MedioPago;
+  estado: string;
+  referencia: string | null;
+  fecha_recepcion: string;
+  fecha_acreditacion: string | null;
+  confirmado_en: string | null;
+  evidencia_id: number | null;
+  comprobante_path: string | null;
+  comprobante_nombre: string | null;
+  tiene_comprobante: boolean;
+}
+
+export interface Evidencia {
+  id: number;
+  storage_path: string;
+  nombre_original: string;
+  mime_type: string;
+  tamano_bytes: number;
+  hash_sha256: string | null;
+  subido_por: string | null;
+  subido_en: string;
+  notas: string | null;
+}
+
+/** Brief T7 Tarea 3: cation_pedido es una foreign table hacia Cation — solo lectura,
+ * nunca se escribe desde acá. */
+export interface CationPedido {
+  id: number;
+  cliente_id: number | null;
+  categoria: string;
+  estado: string;
+  referencia: string | null;
+  total: string | null;
+  creado_en: string;
+  numero: string;
+  cotizacion_origen_id: number | null;
+}
+
+export interface VCotizacionHermes {
+  id: number;
+  numero: string;
+  cliente_id: number | null;
+  referencia: string | null;
+  asunto: string | null;
+  estado: string;
+  subtotal: string | null;
+  descuento_general: string | null;
+  total: string | null;
+  fecha: string | null;
+  vigencia_hasta: string | null;
+  creado_en: string;
+  aprobado_por: string | null;
+  aprobado_en: string | null;
+}
+
+export interface VPedidoLineaHermes {
+  id: number;
+  pedido_id: number;
+  producto_id: number | null;
+  descripcion: string | null;
+  es_personalizado: boolean;
+  cantidad_base: string;
+  cantidad_presentacion: string | null;
+  cantidad_despachada: string | null;
+  estado: string;
+  precio_unitario: string;
+  descuento_pct: string;
+  subtotal: string;
+  nota: string | null;
+}
+
 export interface Hito {
   id: number;
   partida_abierta_id: number;

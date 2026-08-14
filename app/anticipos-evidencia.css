@@ -1,0 +1,42 @@
+/* Brief T7: pestaña de Anticipos, badge "No imputar", y componentes de carga/visor de
+   comprobantes y documentos de expediente. Archivo propio para no pisar globals.css. */
+
+.anticipo-card {
+  display: block;
+  margin-bottom: 8px;
+}
+
+.anticipo-saldo-favor {
+  color: var(--acreedor);
+  font-weight: 800;
+}
+
+.badge-no-imputar {
+  background: var(--provisional-bg);
+  color: var(--provisional);
+}
+
+.anticipo-meta {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.evidencia-pendiente {
+  border: 1px dashed #d8b76a;
+  background: #fff8ec;
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin-top: 8px;
+}
+
+.detalle-pedido-linea-pendiente {
+  background: #fff8ec;
+}
+
+.saldo-favor-header {
+  color: var(--acreedor) !important;
+}
