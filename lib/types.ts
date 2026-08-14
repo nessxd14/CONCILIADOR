@@ -209,6 +209,71 @@ export interface Documento {
 }
 
 export type MedioPago = "EFECTIVO" | "QR" | "DEPOSITO" | "TRANSFERENCIA" | "SIGEP" | "CHEQUE";
+export type EstadoPago = "PROPUESTO" | "CONFIRMADO" | "ACREDITADO" | "RECHAZADO" | "ANULADO";
+
+export interface VAnticipoCliente {
+  pago_id: number;
+  cliente_id: number;
+  monto: string;
+  imputado: string;
+  saldo_favor: string;
+  no_imputar: boolean;
+  medio: MedioPago;
+  estado: EstadoPago;
+  referencia: string | null;
+  fecha_recepcion: string;
+  fecha_acreditacion: string | null;
+  confirmado_en: string | null;
+  evidencia_id: number | null;
+  comprobante_path: string | null;
+  comprobante_nombre: string | null;
+  tiene_comprobante: boolean;
+}
+
+export interface Evidencia {
+  id: number;
+  storage_path: string;
+  nombre_original: string;
+  mime_type: string;
+  tamano_bytes: number;
+  hash_sha256: string | null;
+  subido_por: string;
+  subido_en: string;
+  notas: string | null;
+}
+
+export interface VCotizacionHermes {
+  id: number;
+  numero: string;
+  cliente_id: number | null;
+  referencia: string | null;
+  asunto: string | null;
+  estado: string;
+  subtotal: string;
+  descuento_general: string;
+  total: string;
+  fecha: string;
+  vigencia_hasta: string | null;
+  creado_en: string;
+  aprobado_por: string | null;
+  aprobado_en: string | null;
+}
+
+export interface VPedidoLineaHermes {
+  id: number;
+  pedido_id: number;
+  producto_id: number | null;
+  descripcion: string;
+  es_personalizado: boolean;
+  cantidad_base: string;
+  cantidad_presentacion: string;
+  cantidad_despachada: string;
+  estado: string;
+  precio_unitario: string;
+  descuento_pct: string;
+  subtotal: string;
+  nota: string | null;
+}
 
 export interface PagoPropuesto {
   id: number;

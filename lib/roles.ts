@@ -25,3 +25,8 @@ export function rolDeUsuario(user: { app_metadata?: Record<string, unknown> } | 
 export function puedeRegistrarFechas(rol: Rol | null): boolean {
   return rol !== null && ["gerente", "admin", "supervisor", "comercial"].includes(rol);
 }
+
+/** Mismo criterio que la política evidencia_escritura en la base: solo admin y gerente suben o borran archivos. */
+export function puedeGestionarEvidencia(rol: Rol | null): boolean {
+  return rol !== null && ["admin", "gerente"].includes(rol);
+}

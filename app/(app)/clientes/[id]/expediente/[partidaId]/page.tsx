@@ -5,9 +5,10 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { formatBs } from "@/lib/money";
-import { rolDeUsuario, puedeRegistrarFechas } from "@/lib/roles";
+import { rolDeUsuario, puedeRegistrarFechas, puedeGestionarEvidencia } from "@/lib/roles";
+import { subirEvidencia, validarArchivo } from "@/lib/uploads";
 import { diasDesde, hoyLocal } from "@/lib/fechas";
-import type { Documento, Hito, PartidaAbierta } from "@/lib/types";
+import type { Documento, Hito, PartidaAbierta, VCotizacionHermes, VPedidoLineaHermes } from "@/lib/types";
 
 type HitoConPendientes = Hito & { habilitantes_pendientes: number };
 type EstadoAccion = { cargando: boolean; error: string | null };
@@ -57,12 +58,21 @@ export default function ExpedientePage() {
   const [documentosPorHito, setDocumentosPorHito] = useState<Record<number, Documento[]>>({});
   const [esGerente, setEsGerente] = useState(false);
   const [puedeFechas, setPuedeFechas] = useState(false);
+  const [puedeSubirArchivo, setPuedeSubirArchivo] = useState(false);
   const [usuario, setUsuario] = useState("desconocido");
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [errorHitos, setErrorHitos] = useState<string | null>(null);
   const [acciones, setAcciones] = useState<Record<string, EstadoAccion>>({});
   const [notas, setNotas] = useState<Record<number, string>>({});
+
+  const [subiendoDocumento, setSubiendoDocumento] = useState<Record<number, boolean>>({});
+  const [errorSubidaDocumento, setErrorSubidaDocumento] = useState<Record<number, string | null>>({});
+
+  const [cotizacion, setCotizacion] = useState<VCotizacionHermes | null>(null);
+  const [lineasPedido, setLineasPedido] = useState<VPedidoLineaHermes[]>([]);
+  const [cargandoDetallePedido, setCargandoDetallePedido] = useState(false);
+  const [errorDetallePedido, setErrorDetallePedido] = useState<string | null>(null);
 
   const [mostrarFormEntrega, setMostrarFormEntrega] = useState(false);
   const [fechaEntregaInput, setFechaEntregaInput] = useState(hoyLocal());
@@ -101,6 +111,7 @@ export default function ExpedientePage() {
     const rol = rolDeUsuario(userData.user);
     setEsGerente(rol === "gerente");
     setPuedeFechas(puedeRegistrarFechas(rol));
+    setPuedeSubirArchivo(puedeGestionarEvidencia(rol));
     setPartida(partidaRes.data as PartidaAbierta);
 
     if (hitosRes.error) {
@@ -146,6 +157,59 @@ export default function ExpedientePage() {
     cargar();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [supabase, partidaId]);
+
+  // Solo lectura, y solo acá (no en la grilla de partidas): cada consulta a
+  // una foreign table de Cation viaja por red, así que se trae el detalle
+  // del pedido únicamente cuando se abre esta pantalla.
+  useEffect(() => {
+    async function cargarDetallePedido(pedidoId: number) {
+      setCargandoDetallePedido(true);
+      setErrorDetallePedido(null);
+
+      const [pedidoRes, lineasRes] = await Promise.all([
+        supabase.from("cation_pedido").select("cotizacion_origen_id").eq("id", pedidoId).maybeSingle(),
+        supabase.from("v_pedido_linea_hermes").select("*").eq("pedido_id", pedidoId).order("id"),
+      ]);
+
+      if (pedidoRes.error || lineasRes.error) {
+        setErrorDetallePedido((pedidoRes.error ?? lineasRes.error)?.message ?? "Error desconocido");
+        setCotizacion(null);
+        setLineasPedido([]);
+        setCargandoDetallePedido(false);
+        return;
+      }
+
+      setLineasPedido((lineasRes.data ?? []) as VPedidoLineaHermes[]);
+
+      const cotizacionOrigenId = pedidoRes.data?.cotizacion_origen_id as number | null | undefined;
+      if (cotizacionOrigenId == null) {
+        setCotizacion(null);
+        setCargandoDetallePedido(false);
+        return;
+      }
+
+      const cotRes = await supabase
+        .from("v_cotizacion_hermes")
+        .select("*")
+        .eq("id", cotizacionOrigenId)
+        .maybeSingle();
+
+      if (cotRes.error) {
+        setErrorDetallePedido(cotRes.error.message);
+        setCotizacion(null);
+      } else {
+        setCotizacion((cotRes.data ?? null) as VCotizacionHermes | null);
+      }
+      setCargandoDetallePedido(false);
+    }
+
+    if (partida?.pedido_id != null) {
+      cargarDetallePedido(partida.pedido_id);
+    } else {
+      setCotizacion(null);
+      setLineasPedido([]);
+    }
+  }, [supabase, partida?.pedido_id]);
 
   const hitoBloqueado = hitos.find((h) => h.habilitantes_pendientes > 0);
   const docBloqueante = hitoBloqueado
@@ -223,6 +287,46 @@ export default function ExpedientePage() {
     } else {
       window.open(data.signedUrl, "_blank", "noopener,noreferrer");
     }
+  }
+
+  /**
+   * Segundo camino de carga, además del de los agentes de Telegram: acá el
+   * archivo lo sube un admin/gerente a mano desde el Conciliador. evidencia
+   * guarda la metadata rica (nombre, mime, tamaño) aunque documento no tenga
+   * una columna que la referencie — subir_documento sigue siendo la única
+   * fuente de verdad sobre estado/storage_path del documento.
+   */
+  async function subirDocumento(doc: Documento, file: File) {
+    const errorValidacion = validarArchivo(file);
+    if (errorValidacion) {
+      setErrorSubidaDocumento((prev) => ({ ...prev, [doc.id]: errorValidacion }));
+      return;
+    }
+
+    setSubiendoDocumento((prev) => ({ ...prev, [doc.id]: true }));
+    setErrorSubidaDocumento((prev) => ({ ...prev, [doc.id]: null }));
+
+    const subida = await subirEvidencia(supabase, `expediente/${doc.id}`, file, usuario);
+    if (subida.error || !subida.data) {
+      setErrorSubidaDocumento((prev) => ({ ...prev, [doc.id]: subida.error ?? "No se pudo subir el archivo." }));
+      setSubiendoDocumento((prev) => ({ ...prev, [doc.id]: false }));
+      return;
+    }
+
+    const { error } = await supabase.rpc("subir_documento", {
+      p_documento_id: doc.id,
+      p_storage_path: subida.data.storagePath,
+      p_usuario: usuario,
+    });
+
+    if (error) {
+      setErrorSubidaDocumento((prev) => ({ ...prev, [doc.id]: error.message }));
+      setSubiendoDocumento((prev) => ({ ...prev, [doc.id]: false }));
+      return;
+    }
+
+    setSubiendoDocumento((prev) => ({ ...prev, [doc.id]: false }));
+    await cargar();
   }
 
   async function registrarFechas(entrega: string | null, factura: string | null, cuf: string | null) {
@@ -501,6 +605,67 @@ export default function ExpedientePage() {
         )}
       </div>
 
+      {errorDetallePedido && (
+        <div className="field-error" style={{ marginBottom: 16 }}>
+          No se pudo cargar el detalle del pedido en Cation ({errorDetallePedido}).
+        </div>
+      )}
+
+      {/* La mayoría de los pedidos viejos no tienen origen y los internos
+          nunca lo van a tener: si no hay cotización, no se muestra la sección. */}
+      {cotizacion && (
+        <div className="card" style={{ margin: "16px 0" }}>
+          <div style={{ fontSize: 11, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.03em", fontWeight: 700, marginBottom: 10 }}>
+            Cotización de origen
+          </div>
+          <div style={{ fontSize: 13.5, fontWeight: 700 }}>{cotizacion.numero}</div>
+          <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 4 }}>
+            {cotizacion.fecha} · {formatBs(cotizacion.total)}
+            {cotizacion.aprobado_por && <> · aprobada por {cotizacion.aprobado_por}</>}
+          </div>
+        </div>
+      )}
+
+      {lineasPedido.length > 0 && (
+        <div className="card" style={{ margin: "16px 0" }}>
+          <div style={{ fontSize: 11, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.03em", fontWeight: 700, marginBottom: 10 }}>
+            Líneas del pedido
+          </div>
+          <div className="table">
+            <div className="table-head" style={{ gridTemplateColumns: "2fr 80px 1fr 80px 1fr" }}>
+              <div>Descripción</div>
+              <div>Cant.</div>
+              <div>Precio unit.</div>
+              <div>Desc.</div>
+              <div>Subtotal</div>
+            </div>
+            {lineasPedido.map((l) => {
+              const despachoPendiente = Number(l.cantidad_despachada) < Number(l.cantidad_base);
+              return (
+                <div key={l.id} className="table-row" style={{ gridTemplateColumns: "2fr 80px 1fr 80px 1fr" }}>
+                  <span style={{ fontSize: 12.5 }}>
+                    {l.descripcion}
+                    {despachoPendiente && (
+                      <span className="linea-despacho-pendiente" style={{ marginLeft: 6, fontSize: 11 }}>
+                        · despacho pendiente ({l.cantidad_despachada}/{l.cantidad_base})
+                      </span>
+                    )}
+                  </span>
+                  <span style={{ fontSize: 12 }}>{l.cantidad_base}</span>
+                  <span style={{ fontSize: 12 }}>{formatBs(l.precio_unitario)}</span>
+                  <span style={{ fontSize: 12 }}>{Number(l.descuento_pct) > 0 ? `${l.descuento_pct}%` : "—"}</span>
+                  <span className="money" style={{ fontSize: 12 }}>{formatBs(l.subtotal)}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {cargandoDetallePedido && lineasPedido.length === 0 && !errorDetallePedido && (
+        <div style={{ color: "var(--muted)", marginBottom: 16, fontSize: 12.5 }}>Cargando detalle del pedido…</div>
+      )}
+
       {hitoBloqueado && docBloqueante && (
         <a href={`#hito-${hitoBloqueado.id}`} className="banner-alerta" style={{ marginBottom: 16, textDecoration: "none", color: "inherit" }}>
           <div>
@@ -584,6 +749,25 @@ export default function ExpedientePage() {
                         value={notas[d.id] ?? ""}
                         onChange={(e) => setNotas((prev) => ({ ...prev, [d.id]: e.target.value }))}
                       />
+                    )}
+                    {puedeSubirArchivo && (d.estado === "PENDIENTE" || d.estado === "RECHAZADO") && (
+                      <div style={{ marginTop: 6, display: "flex", alignItems: "center", gap: 8 }}>
+                        <input
+                          type="file"
+                          accept="image/jpeg,image/png,image/webp,application/pdf"
+                          className="subida-input"
+                          disabled={subiendoDocumento[d.id]}
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            e.target.value = "";
+                            if (file) subirDocumento(d, file);
+                          }}
+                        />
+                        {subiendoDocumento[d.id] && <span style={{ fontSize: 11.5, color: "var(--muted)" }}>Subiendo…</span>}
+                      </div>
+                    )}
+                    {errorSubidaDocumento[d.id] && (
+                      <div className="subida-error">{errorSubidaDocumento[d.id]}</div>
                     )}
                     {d.notas && <div style={{ fontSize: 11, color: "var(--muted)", marginTop: 4 }}>Nota: {d.notas}</div>}
                     {accionDoc?.error && <div className="field-error" style={{ marginTop: 4 }}>{accionDoc.error}</div>}
