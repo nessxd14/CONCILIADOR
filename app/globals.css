@@ -359,6 +359,11 @@ textarea {
   color: var(--alerta);
 }
 
+.badge-pagada {
+  background: var(--acreedor-bg);
+  color: var(--acreedor);
+}
+
 .badge-ambar {
   background: var(--provisional-bg);
   color: var(--provisional);
