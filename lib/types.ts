@@ -132,7 +132,7 @@ export interface VMayorAuxiliar {
   creado_en: string;
 }
 
-export type EstadoPartida = "ABIERTA" | "CANCELADA" | "ANULADA";
+export type EstadoPartida = "ABIERTA" | "CANCELADA" | "ANULADA" | "PAGADA";
 export type EstadoHito = "PENDIENTE" | "COMPLETO";
 export type EstadoDocumento = "PENDIENTE" | "SUBIDO" | "APROBADO" | "RECHAZADO";
 export type TipoDocumento = "HABILITANTE" | "ANEXO";
@@ -159,6 +159,26 @@ export interface PartidaAbierta {
   anulada_en: string | null;
   anulada_por: string | null;
   motivo_anulacion: string | null;
+}
+
+export interface VPartidaEstado {
+  partida_id: number;
+  cliente_id: number;
+  pedido_id: number | null;
+  referencia: string | null;
+  documento_interno: string;
+  estado: EstadoPartida;
+  total: string;
+  creado_en: string;
+  fecha_entrega: string | null;
+  plazo_dias: number;
+  imputado: string;
+  pendiente: string;
+  en_revision: string;
+  hitos_obligatorios: number;
+  hitos_cumplidos: number;
+  proximo_hito: string | null;
+  dias_abierta: number;
 }
 
 export interface Hito {

@@ -10,8 +10,8 @@ import { rolDeUsuario } from "@/lib/roles";
 import type {
   Cliente,
   ClienteCredito,
-  PartidaAbierta,
   VMayorAuxiliar,
+  VPartidaEstado,
   VPartidasFrenadas,
   VSaldoCliente,
 } from "@/lib/types";
@@ -49,7 +49,8 @@ export default function FichaClientePage() {
   const [cargandoMasMovimientos, setCargandoMasMovimientos] = useState(false);
   const [errorMovimientos, setErrorMovimientos] = useState<string | null>(null);
   const [tieneApertura, setTieneApertura] = useState(false);
-  const [partidasAbiertas, setPartidasAbiertas] = useState<PartidaAbierta[]>([]);
+  const [partidasEstado, setPartidasEstado] = useState<VPartidaEstado[]>([]);
+  const [tabPartidas, setTabPartidas] = useState<"ABIERTA" | "PAGADA">("ABIERTA");
   const [partidasFrenadas, setPartidasFrenadas] = useState<VPartidasFrenadas[]>([]);
   const [hitoPorPartida, setHitoPorPartida] = useState<Record<number, number>>({});
   const [esAdmin, setEsAdmin] = useState(false);
@@ -74,7 +75,7 @@ export default function FichaClientePage() {
         saldoRes,
         aperturaRes,
         movRes,
-        partidasRes,
+        partidasEstadoRes,
         frenadasRes,
       ] = await Promise.all([
         supabase.auth.getUser(),
@@ -96,12 +97,14 @@ export default function FichaClientePage() {
           .order("fecha_efectiva", { ascending: false })
           .order("id", { ascending: false })
           .range(0, PAGINA_MOVIMIENTOS - 1),
+        // Ordenadas por antigüedad (más vieja primero): es también el orden
+        // en que calcular_imputacion_fifo va a imputar los pagos.
         supabase
-          .from("partida_abierta")
+          .from("v_partida_estado")
           .select("*")
           .eq("cliente_id", clienteId)
-          .eq("estado", "ABIERTA")
-          .order("fecha_entrega", { ascending: true }),
+          .in("estado", ["ABIERTA", "PAGADA"])
+          .order("creado_en", { ascending: true }),
         supabase
           .from("v_partidas_frenadas")
           .select("*")
@@ -133,7 +136,7 @@ export default function FichaClientePage() {
         setHayMasMovimientos(pagina.length === PAGINA_MOVIMIENTOS);
       }
 
-      setPartidasAbiertas((partidasRes.data ?? []) as PartidaAbierta[]);
+      setPartidasEstado((partidasEstadoRes.data ?? []) as VPartidaEstado[]);
 
       const frenadas = (frenadasRes.data ?? []) as VPartidasFrenadas[];
       setPartidasFrenadas(frenadas);
@@ -193,6 +196,31 @@ export default function FichaClientePage() {
   if (cargando) return <div>Cargando…</div>;
   if (error) return <div className="field-error">{error}</div>;
   if (!cliente) return <div>Cliente no encontrado.</div>;
+
+  const partidasAbiertasList = partidasEstado.filter((p) => p.estado === "ABIERTA");
+  const partidasPagadasList = partidasEstado.filter((p) => p.estado === "PAGADA");
+  const partidasMostradas = tabPartidas === "ABIERTA" ? partidasAbiertasList : partidasPagadasList;
+
+  // Solo el trámite sin iniciar de la partida de mayor monto es accionable:
+  // si aparece en todas las filas deja de significar algo.
+  const montoMaximoAbierta = partidasAbiertasList.reduce(
+    (max, p) => Decimal.max(max, p.total),
+    new Decimal(0)
+  );
+  const totalImputado = partidasEstado.reduce((acc, p) => acc.plus(p.imputado), new Decimal(0));
+  const tramiteCompletoCount = partidasAbiertasList.filter(
+    (p) => p.hitos_obligatorios > 0 && p.hitos_cumplidos === p.hitos_obligatorios
+  ).length;
+
+  function trabaDe(p: VPartidaEstado): string | null {
+    if (p.hitos_cumplidos === 0 && montoMaximoAbierta.gt(0) && new Decimal(p.total).eq(montoMaximoAbierta)) {
+      return "trámite sin iniciar";
+    }
+    if (p.dias_abierta > p.plazo_dias) {
+      return `abierta hace ${p.dias_abierta} días`;
+    }
+    return null;
+  }
 
   function cerrarModalNC() {
     setModalNCAbierto(false);
@@ -299,29 +327,78 @@ export default function FichaClientePage() {
         </div>
       </div>
 
-      {partidasAbiertas.length > 0 && (
+      {partidasEstado.length > 0 && (
         <div style={{ marginBottom: 20 }}>
-          <div style={{ fontSize: 11, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.03em", fontWeight: 700, marginBottom: 8 }}>
-            Partidas abiertas — expediente
-          </div>
-          <div className="table">
-            <div className="table-head" style={{ gridTemplateColumns: "1fr 1fr 1fr auto" }}>
-              <div>Documento</div>
-              <div>Entrega</div>
-              <div>Total</div>
-              <div></div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+            <div style={{ fontSize: 11, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.03em", fontWeight: 700 }}>
+              Partidas · {formatBs(totalImputado.toString())} imputado · {tramiteCompletoCount}/{partidasAbiertasList.length} con trámite completo
             </div>
-            {partidasAbiertas.map((p) => (
-              <div key={p.id} className="table-row" style={{ gridTemplateColumns: "1fr 1fr 1fr auto" }}>
-                <span style={{ fontSize: 12.5 }}>{p.documento_interno}</span>
-                <span style={{ fontSize: 12, color: "var(--muted)" }}>{p.fecha_entrega ?? "—"}</span>
-                <span className="money">{formatBs(p.total)}</span>
-                <Link href={`/clientes/${clienteId}/expediente/${p.id}`} className="btn btn-secondary">
-                  Ver expediente
-                </Link>
-              </div>
-            ))}
+            <div style={{ display: "flex", gap: 6 }}>
+              <button
+                type="button"
+                className={tabPartidas === "ABIERTA" ? "btn btn-secondary" : "btn-link"}
+                onClick={() => setTabPartidas("ABIERTA")}
+              >
+                Abiertas ({partidasAbiertasList.length})
+              </button>
+              <button
+                type="button"
+                className={tabPartidas === "PAGADA" ? "btn btn-secondary" : "btn-link"}
+                onClick={() => setTabPartidas("PAGADA")}
+              >
+                Pagadas ({partidasPagadasList.length})
+              </button>
+            </div>
           </div>
+
+          {partidasMostradas.length === 0 && (
+            <div className="card" style={{ color: "var(--muted)" }}>
+              {tabPartidas === "ABIERTA" ? "Sin partidas abiertas." : "Sin partidas pagadas todavía."}
+            </div>
+          )}
+
+          {partidasMostradas.map((p) => {
+            const pendiente = new Decimal(p.pendiente);
+            const pagada = p.estado === "PAGADA" || pendiente.lte(0);
+            const enRevision = new Decimal(p.en_revision);
+            const traba = tabPartidas === "ABIERTA" ? trabaDe(p) : null;
+
+            return (
+              <Link
+                key={p.partida_id}
+                href={`/clientes/${clienteId}/expediente/${p.partida_id}`}
+                className="card"
+                style={{ display: "block", marginBottom: 8, textDecoration: "none", color: "inherit" }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ fontSize: 13, fontWeight: 700 }}>{p.referencia ?? p.documento_interno}</span>
+                    {p.estado === "PAGADA" && <span className="badge badge-pagada">Pagada</span>}
+                  </div>
+                  <span className="money" style={{ fontSize: 15, fontWeight: 800 }}>
+                    {formatBs(p.total)}
+                  </span>
+                </div>
+                <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginTop: 6, fontSize: 12 }}>
+                  <span className={pagada ? "money-acreedor" : ""}>
+                    💰 {pagada ? "Pagada" : `falta ${formatBs(pendiente.toString())}`}
+                  </span>
+                  <span style={{ color: "var(--muted)" }}>
+                    📄 {p.hitos_cumplidos}/{p.hitos_obligatorios}
+                    {p.proximo_hito ? ` · falta ${p.proximo_hito}` : ""}
+                  </span>
+                  {traba && (
+                    <span style={{ color: "var(--alerta)" }}>⚠️ {traba}</span>
+                  )}
+                </div>
+                {enRevision.gt(0) && (
+                  <div style={{ fontSize: 11.5, color: "var(--provisional)", marginTop: 4 }}>
+                    + {formatBs(enRevision.toString())} en revisión
+                  </div>
+                )}
+              </Link>
+            );
+          })}
         </div>
       )}
 
