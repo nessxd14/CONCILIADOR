@@ -6,10 +6,12 @@ import Link from "next/link";
 import Decimal from "decimal.js";
 import { createClient } from "@/lib/supabase/client";
 import { formatBs } from "@/lib/money";
-import { rolDeUsuario } from "@/lib/roles";
+import { rolDeUsuario, puedeGestionarEvidencia, type Rol } from "@/lib/roles";
+import { subirEvidencia, abrirArchivo, validarArchivo } from "@/lib/uploads";
 import type {
   Cliente,
   ClienteCredito,
+  VAnticipoCliente,
   VMayorAuxiliar,
   VPartidaEstado,
   VPartidasFrenadas,
@@ -50,12 +52,20 @@ export default function FichaClientePage() {
   const [errorMovimientos, setErrorMovimientos] = useState<string | null>(null);
   const [tieneApertura, setTieneApertura] = useState(false);
   const [partidasEstado, setPartidasEstado] = useState<VPartidaEstado[]>([]);
-  const [tabPartidas, setTabPartidas] = useState<"ABIERTA" | "PAGADA">("ABIERTA");
+  const [anticipos, setAnticipos] = useState<VAnticipoCliente[]>([]);
+  const [tabPartidas, setTabPartidas] = useState<"ABIERTA" | "PAGADA" | "ANTICIPO">("ABIERTA");
   const [partidasFrenadas, setPartidasFrenadas] = useState<VPartidasFrenadas[]>([]);
   const [hitoPorPartida, setHitoPorPartida] = useState<Record<number, number>>({});
-  const [esAdmin, setEsAdmin] = useState(false);
+  const [rol, setRol] = useState<Rol | null>(null);
+  const [usuario, setUsuario] = useState("desconocido");
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const [subiendoComprobante, setSubiendoComprobante] = useState<Record<number, boolean>>({});
+  const [errorComprobante, setErrorComprobante] = useState<Record<number, string | null>>({});
+
+  const esAdmin = rol === "admin";
+  const puedeSubir = puedeGestionarEvidencia(rol);
 
   const [modalNCAbierto, setModalNCAbierto] = useState(false);
   const [montoNC, setMontoNC] = useState("");
@@ -77,6 +87,7 @@ export default function FichaClientePage() {
         movRes,
         partidasEstadoRes,
         frenadasRes,
+        anticiposRes,
       ] = await Promise.all([
         supabase.auth.getUser(),
         supabase.from("cliente").select("*").eq("id", clienteId).single(),
@@ -110,6 +121,11 @@ export default function FichaClientePage() {
           .select("*")
           .eq("cliente_id", clienteId)
           .order("dias", { ascending: false }),
+        supabase
+          .from("v_anticipo_cliente")
+          .select("*")
+          .eq("cliente_id", clienteId)
+          .order("fecha_recepcion", { ascending: true }),
       ]);
 
       if (clienteRes.error) {
@@ -118,7 +134,8 @@ export default function FichaClientePage() {
         return;
       }
 
-      setEsAdmin(rolDeUsuario(userData.user) === "admin");
+      setRol(rolDeUsuario(userData.user));
+      setUsuario(userData.user?.email ?? "desconocido");
       setCliente(clienteRes.data as Cliente);
       setCredito((creditoRes.data ?? null) as ClienteCredito | null);
       setSaldo((saldoRes.data ?? null) as VSaldoCliente | null);
@@ -137,6 +154,7 @@ export default function FichaClientePage() {
       }
 
       setPartidasEstado((partidasEstadoRes.data ?? []) as VPartidaEstado[]);
+      setAnticipos((anticiposRes.data ?? []) as VAnticipoCliente[]);
 
       const frenadas = (frenadasRes.data ?? []) as VPartidasFrenadas[];
       setPartidasFrenadas(frenadas);
@@ -211,6 +229,7 @@ export default function FichaClientePage() {
   const tramiteCompletoCount = partidasAbiertasList.filter(
     (p) => p.hitos_obligatorios > 0 && p.hitos_cumplidos === p.hitos_obligatorios
   ).length;
+  const sumaPendientesAbiertas = partidasAbiertasList.reduce((acc, p) => acc.plus(p.pendiente), new Decimal(0));
 
   function trabaDe(p: VPartidaEstado): string | null {
     if (p.hitos_cumplidos === 0 && montoMaximoAbierta.gt(0) && new Decimal(p.total).eq(montoMaximoAbierta)) {
@@ -249,6 +268,72 @@ export default function FichaClientePage() {
     setGuardandoNC(false);
     cerrarModalNC();
     await cargar();
+  }
+
+  async function subirComprobante(pagoId: number, file: File) {
+    const errorValidacion = validarArchivo(file);
+    if (errorValidacion) {
+      setErrorComprobante((prev) => ({ ...prev, [pagoId]: errorValidacion }));
+      return;
+    }
+
+    setSubiendoComprobante((prev) => ({ ...prev, [pagoId]: true }));
+    setErrorComprobante((prev) => ({ ...prev, [pagoId]: null }));
+
+    const subida = await subirEvidencia(supabase, `anticipos/${pagoId}`, file, usuario);
+    if (subida.error || !subida.data) {
+      setErrorComprobante((prev) => ({ ...prev, [pagoId]: subida.error ?? "No se pudo subir el archivo." }));
+      setSubiendoComprobante((prev) => ({ ...prev, [pagoId]: false }));
+      return;
+    }
+
+    // pago no tiene política RLS de UPDATE (solo lectura): asociar el
+    // evidencia_id pasa por este endpoint con service_role, nunca directo
+    // desde el navegador.
+    let respuesta: Response;
+    try {
+      respuesta = await fetch(`/api/pagos/${pagoId}/comprobante`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ evidencia_id: subida.data.evidenciaId }),
+      });
+    } catch {
+      setErrorComprobante((prev) => ({
+        ...prev,
+        [pagoId]: "El archivo se subió pero no se pudo asociar al pago (sin conexión con el servidor).",
+      }));
+      setSubiendoComprobante((prev) => ({ ...prev, [pagoId]: false }));
+      return;
+    }
+
+    if (!respuesta.ok) {
+      const body = await respuesta.json().catch(() => ({}));
+      setErrorComprobante((prev) => ({
+        ...prev,
+        [pagoId]: body.error ?? "El archivo se subió pero no se pudo asociar al pago.",
+      }));
+      setSubiendoComprobante((prev) => ({ ...prev, [pagoId]: false }));
+      return;
+    }
+
+    setSubiendoComprobante((prev) => ({ ...prev, [pagoId]: false }));
+    await cargar();
+  }
+
+  async function abrirComprobante(path: string) {
+    // La pestaña se abre ANTES del await para no perder el gesto del usuario
+    // (mismo patrón que verDocumento en el expediente).
+    const ventana = window.open("", "_blank");
+    const url = await abrirArchivo(supabase, path);
+    if (!url) {
+      ventana?.close();
+      return;
+    }
+    if (ventana) {
+      ventana.location.href = url;
+    } else {
+      window.open(url, "_blank", "noopener,noreferrer");
+    }
   }
 
   return (
@@ -297,22 +382,32 @@ export default function FichaClientePage() {
         </div>
       )}
 
-      <div style={{ display: "flex", gap: 14, margin: "16px 0 20px" }}>
-        <div className="card" style={{ flex: 1 }}>
+      <div style={{ display: "flex", gap: 14, margin: "16px 0 20px", flexWrap: "wrap" }}>
+        <div className="card" style={{ flex: 1, minWidth: 200 }}>
           <div style={{ fontSize: 11, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.03em", fontWeight: 700 }}>
             Saldo confirmado (contable)
           </div>
           <div
+            className={saldo?.situacion === "ACREEDOR" ? "money-favor" : saldo?.situacion === "DEUDOR" ? "money-deudor" : ""}
             style={{ fontSize: 24, fontWeight: 800, marginTop: 4 }}
-            className={saldo && Number(saldo.saldo_confirmado) < 0 ? "money-acreedor" : ""}
           >
-            {saldo ? formatBs(saldo.saldo_confirmado) : "—"}
+            {saldo
+              ? saldo.situacion === "ACREEDOR"
+                ? `A favor: ${formatBs(new Decimal(saldo.saldo_confirmado).abs().toString())}`
+                : saldo.situacion === "DEUDOR"
+                  ? `Debe: ${formatBs(saldo.saldo_confirmado)}`
+                  : formatBs(saldo.saldo_confirmado)
+              : "—"}
           </div>
           <div style={{ fontSize: 11, color: "#a9a7a0", marginTop: 3 }}>
-            {saldo && Number(saldo.saldo_confirmado) < 0 ? "A favor del cliente" : "Deuda registrada contablemente"}
+            {saldo?.situacion === "ACREEDOR"
+              ? "A favor del cliente"
+              : saldo?.situacion === "DEUDOR"
+                ? "Deuda registrada contablemente"
+                : "Al día"}
           </div>
         </div>
-        <div className="card" style={{ flex: 1, borderStyle: "dashed", borderColor: "#d8b76a" }}>
+        <div className="card" style={{ flex: 1, minWidth: 200, borderStyle: "dashed", borderColor: "#d8b76a" }}>
           <div style={{ fontSize: 11, color: "var(--provisional)", textTransform: "uppercase", letterSpacing: "0.03em", fontWeight: 700 }}>
             Saldo provisional (con pagos sin revisar)
           </div>
@@ -325,11 +420,23 @@ export default function FichaClientePage() {
               : "Incluye pagos sin revisar"}
           </div>
         </div>
+        <div className="card" style={{ flex: 1, minWidth: 200 }}>
+          <div style={{ fontSize: 11, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.03em", fontWeight: 700 }}>
+            Pendiente en partidas abiertas
+          </div>
+          <div className="money" style={{ fontSize: 24, fontWeight: 800, marginTop: 4 }}>
+            {formatBs(sumaPendientesAbiertas.toString())}
+          </div>
+          <div style={{ fontSize: 11, color: "#a9a7a0", marginTop: 3 }}>
+            {partidasAbiertasList.length} {partidasAbiertasList.length === 1 ? "partida abierta" : "partidas abiertas"}
+            {saldo?.situacion === "ACREEDOR" ? " — un anticipo no las cierra solo" : ""}
+          </div>
+        </div>
       </div>
 
-      {partidasEstado.length > 0 && (
+      {(partidasEstado.length > 0 || anticipos.length > 0) && (
         <div style={{ marginBottom: 20 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8, flexWrap: "wrap", gap: 8 }}>
             <div style={{ fontSize: 11, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.03em", fontWeight: 700 }}>
               Partidas · {formatBs(totalImputado.toString())} imputado · {tramiteCompletoCount}/{partidasAbiertasList.length} con trámite completo
             </div>
@@ -348,16 +455,87 @@ export default function FichaClientePage() {
               >
                 Pagadas ({partidasPagadasList.length})
               </button>
+              <button
+                type="button"
+                className={tabPartidas === "ANTICIPO" ? "btn btn-secondary" : "btn-link"}
+                onClick={() => setTabPartidas("ANTICIPO")}
+              >
+                Anticipos ({anticipos.length})
+              </button>
             </div>
           </div>
 
-          {partidasMostradas.length === 0 && (
-            <div className="card" style={{ color: "var(--muted)" }}>
-              {tabPartidas === "ABIERTA" ? "Sin partidas abiertas." : "Sin partidas pagadas todavía."}
-            </div>
-          )}
+          {tabPartidas === "ANTICIPO" ? (
+            <>
+              {anticipos.length === 0 && (
+                <div className="card" style={{ color: "var(--muted)" }}>Sin anticipos.</div>
+              )}
+              {anticipos.map((a) => {
+                const saldoFavor = new Decimal(a.saldo_favor);
+                const monto = new Decimal(a.monto);
+                const imputado = new Decimal(a.imputado);
+                const subiendo = subiendoComprobante[a.pago_id];
+                const errorArchivo = errorComprobante[a.pago_id];
 
-          {partidasMostradas.map((p) => {
+                return (
+                  <div key={a.pago_id} className="card" style={{ marginBottom: 8 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", flexWrap: "wrap", gap: 8 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <span className="money-favor" style={{ fontSize: 17 }}>
+                          {formatBs(saldoFavor.toString())} a favor
+                        </span>
+                        {a.no_imputar && <span className="badge badge-no-imputar">No imputar</span>}
+                      </div>
+                      {a.tiene_comprobante && a.comprobante_path ? (
+                        <button
+                          type="button"
+                          className="adjunto-clip"
+                          onClick={() => abrirComprobante(a.comprobante_path!)}
+                        >
+                          📎 {a.comprobante_nombre ?? "Comprobante"}
+                        </button>
+                      ) : puedeSubir ? (
+                        <div>
+                          <span className="aviso-ambar-chip" style={{ marginRight: 8 }}>Sin comprobante</span>
+                          <input
+                            type="file"
+                            accept="image/jpeg,image/png,image/webp,application/pdf"
+                            className="subida-input"
+                            disabled={subiendo}
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              e.target.value = "";
+                              if (file) subirComprobante(a.pago_id, file);
+                            }}
+                          />
+                          {subiendo && <span style={{ fontSize: 11.5, color: "var(--muted)", marginLeft: 6 }}>Subiendo…</span>}
+                        </div>
+                      ) : (
+                        <span className="aviso-ambar-chip">Sin comprobante</span>
+                      )}
+                    </div>
+                    {errorArchivo && <div className="subida-error">{errorArchivo}</div>}
+                    <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 6 }}>
+                      Original {formatBs(monto.toString())}
+                      {imputado.gt(0) && <> · {formatBs(imputado.toString())} ya imputado</>}
+                    </div>
+                    <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 2 }}>
+                      {a.medio} · recibido {a.fecha_recepcion}
+                      {a.referencia && <> · {a.referencia}</>}
+                    </div>
+                  </div>
+                );
+              })}
+            </>
+          ) : (
+            <>
+              {partidasMostradas.length === 0 && (
+                <div className="card" style={{ color: "var(--muted)" }}>
+                  {tabPartidas === "ABIERTA" ? "Sin partidas abiertas." : "Sin partidas pagadas todavía."}
+                </div>
+              )}
+
+              {partidasMostradas.map((p) => {
             const pendiente = new Decimal(p.pendiente);
             const pagada = p.estado === "PAGADA" || pendiente.lte(0);
             const enRevision = new Decimal(p.en_revision);
@@ -399,6 +577,8 @@ export default function FichaClientePage() {
               </Link>
             );
           })}
+            </>
+          )}
         </div>
       )}
 
