@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/client";
 import { formatBs } from "@/lib/money";
 import { rolDeUsuario, puedeGestionarEvidencia, type Rol } from "@/lib/roles";
 import { subirEvidencia, abrirArchivo, validarArchivo } from "@/lib/uploads";
+import { formatDiaMes } from "@/lib/fechas";
 import type {
   Cliente,
   ClienteCredito,
@@ -56,6 +57,9 @@ export default function FichaClientePage() {
   const [tabPartidas, setTabPartidas] = useState<"ABIERTA" | "PAGADA" | "ANTICIPO">("ABIERTA");
   const [partidasFrenadas, setPartidasFrenadas] = useState<VPartidasFrenadas[]>([]);
   const [hitoPorPartida, setHitoPorPartida] = useState<Record<number, number>>({});
+  const [despachoPorPartida, setDespachoPorPartida] = useState<
+    Record<number, { despachado_en: string; despachado_sincronizando: boolean }>
+  >({});
   const [rol, setRol] = useState<Rol | null>(null);
   const [usuario, setUsuario] = useState("desconocido");
   const [cargando, setCargando] = useState(true);
@@ -162,20 +166,40 @@ export default function FichaClientePage() {
       const listoPartidaIds = frenadas
         .filter((f) => f.accion === "LISTO_PARA_COMPLETAR")
         .map((f) => f.partida_id);
-      if (listoPartidaIds.length > 0) {
+
+      // Se trae para TODAS las partidas abiertas (no solo las LISTO_PARA_COMPLETAR):
+      // el aviso de "despachado, sincronizando" puede aplicar a cualquiera con
+      // inicio_computo = 'ENTREGA', que la vista ya filtra sola.
+      const idsAbiertas = ((partidasEstadoRes.data ?? []) as VPartidaEstado[])
+        .filter((p) => p.estado === "ABIERTA")
+        .map((p) => p.partida_id);
+
+      if (idsAbiertas.length > 0) {
         const { data: frenteData } = await supabase
           .from("v_frente_partida")
-          .select("partida_id, hito_id")
-          .in("partida_id", listoPartidaIds);
+          .select("partida_id, hito_id, despachado_en, despachado_sincronizando")
+          .in("partida_id", idsAbiertas);
+
         setHitoPorPartida(
           Object.fromEntries(
             (frenteData ?? [])
-              .filter((f) => f.hito_id != null)
+              .filter((f) => f.hito_id != null && listoPartidaIds.includes(f.partida_id as number))
               .map((f) => [f.partida_id as number, f.hito_id as number])
+          )
+        );
+        setDespachoPorPartida(
+          Object.fromEntries(
+            (frenteData ?? [])
+              .filter((f) => f.despachado_sincronizando && f.despachado_en != null)
+              .map((f) => [
+                f.partida_id as number,
+                { despachado_en: f.despachado_en as string, despachado_sincronizando: true },
+              ])
           )
         );
       } else {
         setHitoPorPartida({});
+        setDespachoPorPartida({});
       }
 
       setCargando(false);
@@ -540,6 +564,7 @@ export default function FichaClientePage() {
             const pagada = p.estado === "PAGADA" || pendiente.lte(0);
             const enRevision = new Decimal(p.en_revision);
             const traba = tabPartidas === "ABIERTA" ? trabaDe(p) : null;
+            const despacho = tabPartidas === "ABIERTA" ? despachoPorPartida[p.partida_id] : undefined;
 
             return (
               <Link
@@ -572,6 +597,11 @@ export default function FichaClientePage() {
                 {enRevision.gt(0) && (
                   <div style={{ fontSize: 11.5, color: "var(--provisional)", marginTop: 4 }}>
                     + {formatBs(enRevision.toString())} en revisión
+                  </div>
+                )}
+                {despacho && (
+                  <div className="nota-sincronizando">
+                    Despachado el {formatDiaMes(despacho.despachado_en)} — sincronizando con el sistema
                   </div>
                 )}
               </Link>
