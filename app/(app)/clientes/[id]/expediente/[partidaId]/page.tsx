@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { formatBs } from "@/lib/money";
 import { rolDeUsuario, puedeRegistrarFechas, puedeGestionarEvidencia } from "@/lib/roles";
 import { subirEvidencia, validarArchivo } from "@/lib/uploads";
-import { diasDesde, hoyLocal } from "@/lib/fechas";
+import { diasDesde, hoyLocal, formatDiaMes } from "@/lib/fechas";
 import type { Documento, Hito, PartidaAbierta, VCotizacionHermes, VPedidoLineaHermes } from "@/lib/types";
 
 type HitoConPendientes = Hito & { habilitantes_pendientes: number };
@@ -69,6 +69,8 @@ export default function ExpedientePage() {
   const [subiendoDocumento, setSubiendoDocumento] = useState<Record<number, boolean>>({});
   const [errorSubidaDocumento, setErrorSubidaDocumento] = useState<Record<number, string | null>>({});
 
+  const [despacho, setDespacho] = useState<{ despachado_en: string; despachado_sincronizando: boolean } | null>(null);
+
   const [cotizacion, setCotizacion] = useState<VCotizacionHermes | null>(null);
   const [lineasPedido, setLineasPedido] = useState<VPedidoLineaHermes[]>([]);
   const [cargandoDetallePedido, setCargandoDetallePedido] = useState(false);
@@ -95,10 +97,17 @@ export default function ExpedientePage() {
     setError(null);
     setErrorHitos(null);
 
-    const [{ data: userData }, partidaRes, hitosRes] = await Promise.all([
+    const [{ data: userData }, partidaRes, hitosRes, frenteRes] = await Promise.all([
       supabase.auth.getUser(),
       supabase.from("partida_abierta").select("*").eq("id", partidaId).single(),
       supabase.from("hito").select("*").eq("partida_abierta_id", partidaId).order("orden"),
+      // Nota informativa de "despachado, sincronizando" — nada que ver con
+      // v_partidas_frenadas ni con la bandeja de Telegram.
+      supabase
+        .from("v_frente_partida")
+        .select("despachado_en, despachado_sincronizando")
+        .eq("partida_id", partidaId)
+        .maybeSingle(),
     ]);
 
     if (partidaRes.error) {
@@ -113,6 +122,11 @@ export default function ExpedientePage() {
     setPuedeFechas(puedeRegistrarFechas(rol));
     setPuedeSubirArchivo(puedeGestionarEvidencia(rol));
     setPartida(partidaRes.data as PartidaAbierta);
+    setDespacho(
+      frenteRes.data?.despachado_sincronizando && frenteRes.data.despachado_en
+        ? { despachado_en: frenteRes.data.despachado_en, despachado_sincronizando: true }
+        : null
+    );
 
     if (hitosRes.error) {
       setErrorHitos(hitosRes.error.message);
@@ -433,6 +447,11 @@ export default function ExpedientePage() {
           <div className="page-sub">
             {partida.cliente_nombre} · {formatBs(partida.total)}
           </div>
+          {despacho && (
+            <div className="nota-sincronizando">
+              Despachado el {formatDiaMes(despacho.despachado_en)} — sincronizando con el sistema
+            </div>
+          )}
         </div>
         {esGerente && (
           <div style={{ display: "flex", gap: 10 }}>
@@ -476,7 +495,10 @@ export default function ExpedientePage() {
                 className="btn btn-orange"
                 style={{ marginTop: 10 }}
                 onClick={() => {
-                  setFechaEntregaInput(hoyLocal());
+                  // Sugerencia, no candado: si Cation ya despachó y todavía
+                  // no llegó el sync, se precarga esa fecha real en vez de
+                  // hoy — la persona la puede cambiar igual.
+                  setFechaEntregaInput(despacho?.despachado_en ?? hoyLocal());
                   setMostrarFormEntrega(true);
                 }}
               >

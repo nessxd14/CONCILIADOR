@@ -13,3 +13,9 @@ export const diasDesde = (fechaISO: string): number => {
   const desde = new Date(`${fechaISO}T00:00:00Z`).getTime();
   return Math.round((hoyUTC - desde) / 86400000);
 };
+
+/** YYYY-MM-DD a dd/mm, para notas cortas donde el año sobra. */
+export const formatDiaMes = (fechaISO: string): string => {
+  const [, mes, dia] = fechaISO.split("-");
+  return `${dia}/${mes}`;
+};
