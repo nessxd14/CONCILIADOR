@@ -60,6 +60,10 @@ export default function FichaClientePage() {
   const [despachoPorPartida, setDespachoPorPartida] = useState<
     Record<number, { despachado_en: string; despachado_sincronizando: boolean }>
   >({});
+  const [cadenaPorPartida, setCadenaPorPartida] = useState<
+    Record<number, { partida_raiz_id: number; entrega_numero: number }>
+  >({});
+  const [entregasPorRaiz, setEntregasPorRaiz] = useState<Record<number, number>>({});
   const [rol, setRol] = useState<Rol | null>(null);
   const [usuario, setUsuario] = useState("desconocido");
   const [cargando, setCargando] = useState(true);
@@ -92,6 +96,7 @@ export default function FichaClientePage() {
         partidasEstadoRes,
         frenadasRes,
         anticiposRes,
+        cadenaRes,
       ] = await Promise.all([
         supabase.auth.getUser(),
         supabase.from("cliente").select("*").eq("id", clienteId).single(),
@@ -130,6 +135,11 @@ export default function FichaClientePage() {
           .select("*")
           .eq("cliente_id", clienteId)
           .order("fecha_recepcion", { ascending: true }),
+        // Cadena de entregas (raíz + hijas): se trae de partida_abierta
+        // directo, sin filtrar por estado, porque el conteo de "N entregas"
+        // en la raíz tiene que reflejar el pedido completo, aunque alguna
+        // hija ya esté PAGADA y otra siga ABIERTA.
+        supabase.from("partida_abierta").select("id, partida_raiz_id, entrega_numero").eq("cliente_id", clienteId),
       ]);
 
       if (clienteRes.error) {
@@ -159,6 +169,22 @@ export default function FichaClientePage() {
 
       setPartidasEstado((partidasEstadoRes.data ?? []) as VPartidaEstado[]);
       setAnticipos((anticiposRes.data ?? []) as VAnticipoCliente[]);
+
+      const cadenaRows = (cadenaRes.data ?? []) as {
+        id: number;
+        partida_raiz_id: number;
+        entrega_numero: number;
+      }[];
+      setCadenaPorPartida(
+        Object.fromEntries(
+          cadenaRows.map((r) => [r.id, { partida_raiz_id: r.partida_raiz_id, entrega_numero: r.entrega_numero }])
+        )
+      );
+      const conteoPorRaiz: Record<number, number> = {};
+      for (const r of cadenaRows) {
+        conteoPorRaiz[r.partida_raiz_id] = (conteoPorRaiz[r.partida_raiz_id] ?? 0) + 1;
+      }
+      setEntregasPorRaiz(conteoPorRaiz);
 
       const frenadas = (frenadasRes.data ?? []) as VPartidasFrenadas[];
       setPartidasFrenadas(frenadas);
@@ -254,6 +280,45 @@ export default function FichaClientePage() {
     (p) => p.hitos_obligatorios > 0 && p.hitos_cumplidos === p.hitos_obligatorios
   ).length;
   const sumaPendientesAbiertas = partidasAbiertasList.reduce((acc, p) => acc.plus(p.pendiente), new Decimal(0));
+
+  // Agrupa por partida_raiz_id preservando el orden relativo de cada grupo
+  // (la lista ya viene ordenada por antigüedad) y ordena cada grupo por
+  // entrega_numero — la raíz (1) primero, hijas después.
+  function agruparPorRaiz(
+    lista: VPartidaEstado[]
+  ): (VPartidaEstado & { entregaNumero: number; esHija: boolean; totalEntregas: number })[] {
+    const grupos = new Map<number, VPartidaEstado[]>();
+    const ordenGrupos: number[] = [];
+
+    for (const p of lista) {
+      const raizId = cadenaPorPartida[p.partida_id]?.partida_raiz_id ?? p.partida_id;
+      if (!grupos.has(raizId)) {
+        grupos.set(raizId, []);
+        ordenGrupos.push(raizId);
+      }
+      grupos.get(raizId)!.push(p);
+    }
+
+    const resultado: (VPartidaEstado & { entregaNumero: number; esHija: boolean; totalEntregas: number })[] = [];
+    for (const raizId of ordenGrupos) {
+      const items = grupos.get(raizId)!;
+      items.sort(
+        (a, b) =>
+          (cadenaPorPartida[a.partida_id]?.entrega_numero ?? 1) -
+          (cadenaPorPartida[b.partida_id]?.entrega_numero ?? 1)
+      );
+      for (const p of items) {
+        const entregaNumero = cadenaPorPartida[p.partida_id]?.entrega_numero ?? 1;
+        resultado.push({
+          ...p,
+          entregaNumero,
+          esHija: entregaNumero > 1,
+          totalEntregas: entregasPorRaiz[raizId] ?? 1,
+        });
+      }
+    }
+    return resultado;
+  }
 
   function trabaDe(p: VPartidaEstado): string | null {
     if (p.hitos_cumplidos === 0 && montoMaximoAbierta.gt(0) && new Decimal(p.total).eq(montoMaximoAbierta)) {
@@ -559,24 +624,37 @@ export default function FichaClientePage() {
                 </div>
               )}
 
-              {partidasMostradas.map((p) => {
+              {agruparPorRaiz(partidasMostradas).map((p) => {
             const pendiente = new Decimal(p.pendiente);
             const pagada = p.estado === "PAGADA" || pendiente.lte(0);
             const enRevision = new Decimal(p.en_revision);
             const traba = tabPartidas === "ABIERTA" ? trabaDe(p) : null;
             const despacho = tabPartidas === "ABIERTA" ? despachoPorPartida[p.partida_id] : undefined;
+            // documento_interno ya trae el sufijo "· Entrega N" armado desde
+            // la base para las hijas; la raíz sigue mostrando su referencia
+            // como siempre, para que el caso sin hijas quede idéntico.
+            const titulo = p.esHija ? p.documento_interno : (p.referencia ?? p.documento_interno);
 
             return (
               <Link
                 key={p.partida_id}
                 href={`/clientes/${clienteId}/expediente/${p.partida_id}`}
                 className="card"
-                style={{ display: "block", marginBottom: 8, textDecoration: "none", color: "inherit" }}
+                style={{
+                  display: "block",
+                  marginBottom: 8,
+                  marginLeft: p.esHija ? 24 : 0,
+                  textDecoration: "none",
+                  color: "inherit",
+                }}
               >
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <span style={{ fontSize: 13, fontWeight: 700 }}>{p.referencia ?? p.documento_interno}</span>
+                    <span style={{ fontSize: 13, fontWeight: 700 }}>{titulo}</span>
                     {p.estado === "PAGADA" && <span className="badge badge-pagada">Pagada</span>}
+                    {!p.esHija && p.totalEntregas > 1 && (
+                      <span className="badge">{p.totalEntregas} entregas</span>
+                    )}
                   </div>
                   <span className="money" style={{ fontSize: 15, fontWeight: 800 }}>
                     {formatBs(p.total)}
