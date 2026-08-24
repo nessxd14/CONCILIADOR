@@ -174,48 +174,32 @@ export default function ExpedientePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [supabase, partidaId]);
 
-  // Solo lectura, y solo acá (no en la grilla de partidas): cada consulta a
-  // una foreign table de Cation viaja por red, así que se trae el detalle
-  // del pedido únicamente cuando se abre esta pantalla.
+  // Solo lectura, y solo acá (no en la grilla de partidas): se trae el
+  // detalle del pedido únicamente cuando se abre esta pantalla. Va por RPC
+  // (obtener_detalle_pedido_cation, SECURITY DEFINER) y no por foreign tables
+  // directas — authenticated ya no tiene SELECT sobre cation_pedido /
+  // v_pedido_linea_hermes / v_cotizacion_hermes (Tanda 1, Script 1B: tenían
+  // RLS=false y exponían el maestro completo de Cation sin filtro).
   useEffect(() => {
     async function cargarDetallePedido(pedidoId: number) {
       setCargandoDetallePedido(true);
       setErrorDetallePedido(null);
 
-      const [pedidoRes, lineasRes] = await Promise.all([
-        supabase.from("cation_pedido").select("cotizacion_origen_id").eq("id", pedidoId).maybeSingle(),
-        supabase.from("v_pedido_linea_hermes").select("*").eq("pedido_id", pedidoId).order("id"),
-      ]);
+      const { data, error } = await supabase.rpc("obtener_detalle_pedido_cation", {
+        p_pedido_id: pedidoId,
+      });
 
-      if (pedidoRes.error || lineasRes.error) {
-        setErrorDetallePedido((pedidoRes.error ?? lineasRes.error)?.message ?? "Error desconocido");
+      if (error) {
+        setErrorDetallePedido(error.message);
         setCotizacion(null);
         setLineasPedido([]);
         setCargandoDetallePedido(false);
         return;
       }
 
-      setLineasPedido((lineasRes.data ?? []) as VPedidoLineaHermes[]);
-
-      const cotizacionOrigenId = pedidoRes.data?.cotizacion_origen_id as number | null | undefined;
-      if (cotizacionOrigenId == null) {
-        setCotizacion(null);
-        setCargandoDetallePedido(false);
-        return;
-      }
-
-      const cotRes = await supabase
-        .from("v_cotizacion_hermes")
-        .select("*")
-        .eq("id", cotizacionOrigenId)
-        .maybeSingle();
-
-      if (cotRes.error) {
-        setErrorDetallePedido(cotRes.error.message);
-        setCotizacion(null);
-      } else {
-        setCotizacion((cotRes.data ?? null) as VCotizacionHermes | null);
-      }
+      const detalle = data as { cotizacion_origen_id: number | null; lineas: VPedidoLineaHermes[]; cotizacion: VCotizacionHermes | null } | null;
+      setLineasPedido(detalle?.lineas ?? []);
+      setCotizacion(detalle?.cotizacion ?? null);
       setCargandoDetallePedido(false);
     }
 
