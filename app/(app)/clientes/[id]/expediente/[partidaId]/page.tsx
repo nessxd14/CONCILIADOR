@@ -71,6 +71,8 @@ export default function ExpedientePage() {
 
   const [despacho, setDespacho] = useState<{ despachado_en: string; despachado_sincronizando: boolean } | null>(null);
 
+  const [hermanas, setHermanas] = useState<{ id: number; entrega_numero: number; documento_interno: string }[]>([]);
+
   const [cotizacion, setCotizacion] = useState<VCotizacionHermes | null>(null);
   const [lineasPedido, setLineasPedido] = useState<VPedidoLineaHermes[]>([]);
   const [cargandoDetallePedido, setCargandoDetallePedido] = useState(false);
@@ -224,6 +226,24 @@ export default function ExpedientePage() {
       setLineasPedido([]);
     }
   }, [supabase, partida?.pedido_id]);
+
+  // Navegación entre entregas hermanas (raíz + hijas del mismo pedido).
+  useEffect(() => {
+    async function cargarHermanas(partidaRaizId: number) {
+      const { data } = await supabase
+        .from("partida_abierta")
+        .select("id, entrega_numero, documento_interno")
+        .eq("partida_raiz_id", partidaRaizId)
+        .order("entrega_numero");
+      setHermanas((data ?? []) as { id: number; entrega_numero: number; documento_interno: string }[]);
+    }
+
+    if (partida?.partida_raiz_id != null) {
+      cargarHermanas(partida.partida_raiz_id);
+    } else {
+      setHermanas([]);
+    }
+  }, [supabase, partida?.partida_raiz_id]);
 
   const hitoBloqueado = hitos.find((h) => h.habilitantes_pendientes > 0);
   const docBloqueante = hitoBloqueado
@@ -438,6 +458,20 @@ export default function ExpedientePage() {
       <Link href={`/clientes/${clienteId}`} className="btn-link">
         ← Ficha del cliente
       </Link>
+
+      {hermanas.length > 1 && (
+        <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+          {hermanas.map((h) => (
+            <Link
+              key={h.id}
+              href={`/clientes/${clienteId}/expediente/${h.id}`}
+              className={h.id === partidaId ? "btn btn-secondary" : "btn-link"}
+            >
+              Entrega {h.entrega_numero}
+            </Link>
+          ))}
+        </div>
+      )}
 
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginTop: 8 }}>
         <div>

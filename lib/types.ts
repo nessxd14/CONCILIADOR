@@ -159,6 +159,9 @@ export interface PartidaAbierta {
   anulada_en: string | null;
   anulada_por: string | null;
   motivo_anulacion: string | null;
+  parent_partida_id: number | null;
+  partida_raiz_id: number;
+  entrega_numero: number;
 }
 
 export interface VPartidaEstado {
