@@ -8,6 +8,8 @@ export const dynamic = "force-dynamic";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Icon } from "@/components/Icon";
+import { obtenerSesionHermes } from "@/lib/supabase/session";
 import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
@@ -22,25 +24,33 @@ export default function LoginPage() {
     setError(null);
     setCargando(true);
 
+    try {
     const supabase = createClient();
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
-    setCargando(false);
-
     if (error) {
       setError("Correo o contraseña incorrectos.");
       return;
     }
 
+    const sesion = await obtenerSesionHermes(supabase);
+    if (sesion.error || !sesion.data.rol) {
+      await supabase.auth.signOut();
+      setError(sesion.error ? "No se pudo validar tu acceso a Hermes. Reintenta." : "Tu cuenta no tiene acceso a Hermes. Solicita la habilitación al administrador.");
+      return;
+    }
+
     router.push("/dia");
     router.refresh();
+    } catch { setError("No se pudo conectar. Reintenta."); } finally { setCargando(false); }
   }
 
   return (
     <div className="login-shell">
+      <aside className="login-story"><div className="sidebar-brand"><span className="sidebar-mark">H</span><span><span className="sidebar-title">Hermes<span className="brand-dot">.</span></span><span className="sidebar-sub">Cuentas por cobrar</span></span></div><h1>Claridad en cada cuenta.</h1><p>Saldos, movimientos y documentos. Todo el detalle que necesitas para dar el siguiente paso.</p><footer>Libro auxiliar · ROARI / Cation</footer></aside>
       <div className="login-card">
         <div className="sidebar-brand" style={{ padding: "0 0 24px" }}>
           <div className="sidebar-mark">H</div>
@@ -52,6 +62,7 @@ export default function LoginPage() {
           </div>
         </div>
 
+<h2>Bienvenido a Hermes</h2><p className="login-intro">Ingresa para consultar tu cartera.</p>
         <form onSubmit={handleSubmit}>
           <div className="field">
             <label htmlFor="email">Correo</label>
@@ -62,7 +73,7 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              autoFocus
+              autoComplete="username"
             />
           </div>
           <div className="field">
@@ -70,6 +81,7 @@ export default function LoginPage() {
             <input
               id="password"
               type="password"
+              autoComplete="current-password"
               className="input"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -78,9 +90,9 @@ export default function LoginPage() {
           </div>
           {error && <div className="field-error" style={{ marginBottom: 14 }}>{error}</div>}
           <button type="submit" className="btn btn-orange" style={{ width: "100%", justifyContent: "center" }} disabled={cargando}>
-            {cargando ? "Entrando…" : "Entrar"}
+            {cargando ? "Entrando…" : "Iniciar sesión"}<Icon name="arrow" size={17} />
           </button>
-        </form>
+        </form><p className="login-footnote">Acceso con tu cuenta de Hermes.</p>
       </div>
     </div>
   );

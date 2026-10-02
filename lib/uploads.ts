@@ -39,7 +39,7 @@ export interface ResultadoSubida {
  * éxito parcial que reportar: se propaga el error tal cual.
  */
 export async function subirEvidencia(
-  supabase: SupabaseClient,
+  supabase: SupabaseClient<any, "public" | "hermes">,
   prefijo: string,
   file: File,
   subidoPor: string
@@ -83,7 +83,7 @@ export async function subirEvidencia(
   return { data: { storagePath: path, evidenciaId: evidenciaRes.data.id as number }, error: null };
 }
 
-export async function abrirArchivo(supabase: SupabaseClient, storagePath: string): Promise<string | null> {
+export async function abrirArchivo(supabase: SupabaseClient<any, "public" | "hermes">, storagePath: string): Promise<string | null> {
   const { data, error } = await supabase.storage.from(BUCKET_DOCUMENTOS).createSignedUrl(storagePath, 60);
   if (error || !data) return null;
   return data.signedUrl;

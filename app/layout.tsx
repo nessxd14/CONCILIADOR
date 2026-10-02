@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
+import "@fontsource-variable/manrope";
 import "./globals.css";
 import "./anticipos.css";
 import "./despacho.css";
+import "./redesign.css";
 
 export const metadata: Metadata = {
   title: "Hermes",

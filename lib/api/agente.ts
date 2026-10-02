@@ -1,5 +1,4 @@
 import { createServiceClient } from "@/lib/supabase/service";
-import type { SupabaseClient } from "@supabase/supabase-js";
 
 export type Agente = "OPENCLAW" | "HERMES_AGENT";
 
@@ -26,7 +25,7 @@ export function metodoNoPermitido() {
  */
 export function autenticarAgente(
   request: Request
-): { ok: true; agente: Agente; supabase: SupabaseClient } | { ok: false; response: Response } {
+): { ok: true; agente: Agente; supabase: NonNullable<ReturnType<typeof createServiceClient>> } | { ok: false; response: Response } {
   const secreto = request.headers.get("x-agente-secret");
   const agente = agenteDesdeSecreto(secreto);
   if (!agente) {

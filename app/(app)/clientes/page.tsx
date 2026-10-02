@@ -2,12 +2,11 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { useHermesRefresh } from "@/lib/supabase/use-refresh";
 import { formatBs } from "@/lib/money";
 import type { CategoriaCliente, VSaldoCliente } from "@/lib/types";
 
-type ResultadoSync = { actualizados: number; sin_mapeo: number; no_importados: number };
 
 const CATEGORIAS: CategoriaCliente[] = ["RETAIL", "MAYORISTA", "INSTITUCIONAL", "CORPORATIVO"];
 
@@ -19,7 +18,6 @@ function badgeSituacion(situacion: VSaldoCliente["situacion"]) {
 
 export default function ClientesPage() {
   const supabase = useMemo(() => createClient(), []);
-  const router = useRouter();
   const [clientes, setClientes] = useState<VSaldoCliente[]>([]);
   const [conApertura, setConApertura] = useState<Set<number>>(new Set());
   const [cargando, setCargando] = useState(true);
@@ -27,10 +25,8 @@ export default function ClientesPage() {
   const [busqueda, setBusqueda] = useState("");
   const [categoria, setCategoria] = useState<CategoriaCliente | "">("");
   const [errorAperturas, setErrorAperturas] = useState<string | null>(null);
-  const [sincronizando, setSincronizando] = useState(false);
-  const [resultadoSync, setResultadoSync] = useState<ResultadoSync | null>(null);
-  const [errorSync, setErrorSync] = useState<string | null>(null);
 
+  useHermesRefresh(cargar);
   async function cargar() {
     setCargando(true);
     setError(null);
@@ -64,24 +60,6 @@ export default function ClientesPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [supabase]);
 
-  async function sincronizar() {
-    setSincronizando(true);
-    setErrorSync(null);
-    setResultadoSync(null);
-
-    const { data, error: errSync } = await supabase.rpc("sincronizar_clientes_cation");
-
-    if (errSync) {
-      setErrorSync(errSync.message);
-      setSincronizando(false);
-      return;
-    }
-
-    setResultadoSync((data as ResultadoSync[])[0] ?? null);
-    setSincronizando(false);
-    await cargar();
-    router.refresh();
-  }
 
   const filtrados = useMemo(() => {
     const q = busqueda.trim().toLowerCase();
@@ -98,12 +76,12 @@ export default function ClientesPage() {
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
         <div>
-          <div className="page-title">Clientes</div>
+          <h1 className="page-title">Clientes</h1>
           <div className="page-sub">Una cuenta corriente viva por cliente.</div>
         </div>
         <div style={{ display: "flex", gap: 10 }}>
-          <button type="button" className="btn btn-secondary" disabled={sincronizando} onClick={sincronizar}>
-            {sincronizando ? "Sincronizando…" : "Sincronizar ahora"}
+          <button type="button" className="btn btn-secondary" disabled={cargando} onClick={cargar}>
+            {cargando ? "Actualizando…" : "Actualizar"}
           </button>
           <Link href="/clientes/importar" className="btn btn-secondary">
             Importar desde POS
@@ -117,24 +95,7 @@ export default function ClientesPage() {
         </div>
       </div>
 
-      {errorSync && (
-        <div className="field-error" style={{ marginBottom: 16 }}>
-          {errorSync}
-        </div>
-      )}
 
-      {resultadoSync && (
-        <div className="banner-warn" style={{ marginBottom: 16, alignItems: "center" }}>
-          <div style={{ fontSize: 13, fontWeight: 600 }}>
-            {`${resultadoSync.actualizados} clientes actualizados · ${resultadoSync.no_importados} sin cuenta en Hermes`}
-          </div>
-          {resultadoSync.sin_mapeo > 0 && (
-            <div style={{ fontSize: 12.5, marginTop: 4 }}>
-              {`${resultadoSync.sin_mapeo} clientes tienen un tipo_precio en Cation sin categoría equivalente en Hermes y se quedaron con la categoría anterior.`}
-            </div>
-          )}
-        </div>
-      )}
 
       {!cargando && errorAperturas && (
         <div className="field-error" style={{ marginBottom: 16 }}>
@@ -159,13 +120,14 @@ export default function ClientesPage() {
         <input
           className="input"
           placeholder="Buscar por nombre…"
+          aria-label="Buscar cliente por nombre"
           value={busqueda}
           onChange={(e) => setBusqueda(e.target.value)}
-          autoFocus
           style={{ maxWidth: 320 }}
         />
         <select
           className="select"
+          aria-label="Categoría del cliente"
           value={categoria}
           onChange={(e) => setCategoria(e.target.value as CategoriaCliente | "")}
           style={{ maxWidth: 200 }}
