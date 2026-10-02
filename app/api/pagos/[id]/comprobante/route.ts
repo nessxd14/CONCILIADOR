@@ -1,28 +1,24 @@
+import { obtenerSesionHermes } from "@/lib/supabase/session";
 import { createClient as createServerSessionClient } from "@/lib/supabase/server";
-import { createServiceClient } from "@/lib/supabase/service";
-import { rolDeUsuario, puedeGestionarEvidencia } from "@/lib/roles";
+import { puedeGestionarEvidencia } from "@/lib/roles";
 
-// El cliente de service_role no debe correr en edge.
 export const runtime = "nodejs";
 
-/**
- * pago no tiene política RLS de UPDATE (solo lectura): asociar un comprobante
- * requiere este endpoint con service_role, autenticado por la sesión propia
- * del usuario (no por secreto compartido, a diferencia de /api/expediente/*).
- * El rol se valida acá server-side desde app_metadata, nunca se confía en lo
- * que mande el body.
- */
+/** La sesión del usuario llama una RPC que valida el rol y modifica solo el vínculo del comprobante. */
 async function autenticarGerenteOAdmin() {
   const supabaseSesion = await createServerSessionClient();
   const {
-    data: { user },
-  } = await supabaseSesion.auth.getUser();
+    data: { user, rol },
+    error: errorSesion,
+  } = await obtenerSesionHermes(supabaseSesion);
 
   if (!user) {
     return { ok: false as const, response: Response.json({ error: "No autenticado" }, { status: 401 }) };
   }
 
-  const rol = rolDeUsuario(user);
+  if (errorSesion) {
+    return { ok: false as const, response: Response.json({ error: "No se pudo validar el acceso a Hermes" }, { status: 503 }) };
+  }
   if (!puedeGestionarEvidencia(rol)) {
     return {
       ok: false as const,
@@ -30,15 +26,7 @@ async function autenticarGerenteOAdmin() {
     };
   }
 
-  const supabaseServicio = createServiceClient();
-  if (!supabaseServicio) {
-    return {
-      ok: false as const,
-      response: Response.json({ error: "Hermes no está configurado en el servidor" }, { status: 500 }),
-    };
-  }
-
-  return { ok: true as const, supabase: supabaseServicio, usuario: user.email ?? "desconocido" };
+  return { ok: true as const, supabase: supabaseSesion };
 }
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -64,15 +52,10 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     return Response.json({ error: "evidencia_id debe ser un entero positivo" }, { status: 400 });
   }
 
-  const { data, error } = await supabase
-    .from("pago")
-    .update({ evidencia_id: evidenciaId })
-    .eq("id", pagoId)
-    .select("id, evidencia_id")
-    .maybeSingle();
+  const { data, error } = await supabase.rpc("asociar_comprobante_pago", { p_pago_id: pagoId, p_evidencia_id: evidenciaId });
 
   if (error) {
-    return Response.json({ error: error.message }, { status: 400 });
+    return Response.json({ error: error.message }, { status: error.code === "P0002" ? 404 : error.code === "42501" ? 403 : 400 });
   }
   if (!data) {
     return Response.json({ error: `Pago ${pagoId} no existe` }, { status: 404 });
@@ -92,15 +75,10 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
     return Response.json({ error: "id debe ser un entero positivo" }, { status: 400 });
   }
 
-  const { data, error } = await supabase
-    .from("pago")
-    .update({ evidencia_id: null })
-    .eq("id", pagoId)
-    .select("id, evidencia_id")
-    .maybeSingle();
+  const { data, error } = await supabase.rpc("asociar_comprobante_pago", { p_pago_id: pagoId, p_evidencia_id: null });
 
   if (error) {
-    return Response.json({ error: error.message }, { status: 400 });
+    return Response.json({ error: error.message }, { status: error.code === "P0002" ? 404 : error.code === "42501" ? 403 : 400 });
   }
   if (!data) {
     return Response.json({ error: `Pago ${pagoId} no existe` }, { status: 404 });

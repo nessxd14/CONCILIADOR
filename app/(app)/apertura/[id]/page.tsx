@@ -1,11 +1,11 @@
 "use client";
 
+import { obtenerSesionHermes } from "@/lib/supabase/session";
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { formatBs, parseMontoInput } from "@/lib/money";
-import { rolDeUsuario } from "@/lib/roles";
 import type { Cliente } from "@/lib/types";
 
 type Paso = "cargando" | "sin_permiso" | "ya_cargada" | "formulario" | "confirmar" | "enviando";
@@ -25,8 +25,8 @@ export default function CargarAperturaPage() {
 
   useEffect(() => {
     async function cargar() {
-      const [{ data: userData }, clienteRes, parametroRes, movRes] = await Promise.all([
-        supabase.auth.getUser(),
+      const [{ data: userData, error: errorSesion }, clienteRes, parametroRes, movRes] = await Promise.all([
+        obtenerSesionHermes(supabase),
         supabase.from("cliente").select("*").eq("id", clienteId).single(),
         supabase.from("parametro").select("valor").eq("clave", "fecha_corte_apertura").maybeSingle(),
         supabase
@@ -37,7 +37,9 @@ export default function CargarAperturaPage() {
           .maybeSingle(),
       ]);
 
-      if (rolDeUsuario(userData.user) !== "admin") {
+      if (errorSesion) { setError("No se pudo validar el acceso a Hermes. Reintenta la consulta."); setPaso("sin_permiso"); return; }
+
+      if (userData.rol !== "admin") {
         setPaso("sin_permiso");
         return;
       }

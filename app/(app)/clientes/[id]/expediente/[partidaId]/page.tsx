@@ -1,11 +1,16 @@
 "use client";
 
+import { obtenerSesionHermes } from "@/lib/supabase/session";
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { formatBs } from "@/lib/money";
-import { rolDeUsuario, puedeRegistrarFechas, puedeGestionarEvidencia } from "@/lib/roles";
+import { resumirPago } from "@/lib/pago-estado";
+import { ExpedienteOrigen } from "@/components/ExpedienteOrigen";
+import { cantidadDocumento, etiquetasOrigen, lineasVigentes, resumenHitoOrigen, type OrigenExpediente } from "@/lib/expediente-origen";
+import { useHermesRefresh } from "@/lib/supabase/use-refresh";
+import { puedeRegistrarFechas, puedeGestionarEvidencia, puedeConfirmarPagos } from "@/lib/roles";
 import { subirEvidencia, validarArchivo } from "@/lib/uploads";
 import { diasDesde, hoyLocal, formatDiaMes } from "@/lib/fechas";
 import type { Documento, Hito, PartidaAbierta, VCotizacionHermes, VPedidoLineaHermes } from "@/lib/types";
@@ -73,6 +78,9 @@ export default function ExpedientePage() {
 
   const [hermanas, setHermanas] = useState<{ id: number; entrega_numero: number; documento_interno: string }[]>([]);
 
+  const [origen, setOrigen] = useState<OrigenExpediente | null>(null);
+  const [errorOrigen, setErrorOrigen] = useState<string | null>(null);
+  const [modalOrigenAbierto, setModalOrigenAbierto] = useState(false);
   const [cotizacion, setCotizacion] = useState<VCotizacionHermes | null>(null);
   const [lineasPedido, setLineasPedido] = useState<VPedidoLineaHermes[]>([]);
   const [cargandoDetallePedido, setCargandoDetallePedido] = useState(false);
@@ -95,12 +103,13 @@ export default function ExpedientePage() {
   const [errorPartir, setErrorPartir] = useState<string | null>(null);
 
   async function cargar() {
-    setCargando(true);
+    // Al volver a la ventana conservamos el expediente visible durante la consulta.
+    if (!partida || partida.id !== partidaId) setCargando(true);
     setError(null);
     setErrorHitos(null);
 
-    const [{ data: userData }, partidaRes, hitosRes, frenteRes] = await Promise.all([
-      supabase.auth.getUser(),
+    const [{ data: userData, error: errorSesion }, partidaRes, hitosRes, frenteRes, origenRes] = await Promise.all([
+      obtenerSesionHermes(supabase),
       supabase.from("partida_abierta").select("*").eq("id", partidaId).single(),
       supabase.from("hito").select("*").eq("partida_abierta_id", partidaId).order("orden"),
       // Nota informativa de "despachado, sincronizando" — nada que ver con
@@ -110,7 +119,10 @@ export default function ExpedientePage() {
         .select("despachado_en, despachado_sincronizando")
         .eq("partida_id", partidaId)
         .maybeSingle(),
+      supabase.rpc("obtener_origen_expediente", { p_partida_id: partidaId }),
     ]);
+
+      if (errorSesion) { setError("No se pudo validar el acceso a Hermes. Reintenta la consulta."); setCargando(false); return; }
 
     if (partidaRes.error) {
       setError(partidaRes.error.message);
@@ -119,11 +131,13 @@ export default function ExpedientePage() {
     }
 
     setUsuario(userData.user?.email ?? "desconocido");
-    const rol = rolDeUsuario(userData.user);
-    setEsGerente(rol === "gerente");
+    const rol = userData.rol;
+    setEsGerente(puedeConfirmarPagos(rol));
     setPuedeFechas(puedeRegistrarFechas(rol));
     setPuedeSubirArchivo(puedeGestionarEvidencia(rol));
     setPartida(partidaRes.data as PartidaAbierta);
+    setOrigen((origenRes.data ?? null) as OrigenExpediente | null);
+    setErrorOrigen(partidaRes.data.cliente_categoria === "MAYORISTA" ? origenRes.error?.message ?? null : null);
     setDespacho(
       frenteRes.data?.despachado_sincronizando && frenteRes.data.despachado_en
         ? { despachado_en: frenteRes.data.despachado_en, despachado_sincronizando: true }
@@ -166,6 +180,7 @@ export default function ExpedientePage() {
 
     setHitos(hitosConPendientes);
     setDocumentosPorHito(porHito);
+    await cargarDetallePedido(partidaRes.data.pedido_id);
     setCargando(false);
   }
 
@@ -174,42 +189,23 @@ export default function ExpedientePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [supabase, partidaId]);
 
-  // Solo lectura, y solo acá (no en la grilla de partidas): se trae el
-  // detalle del pedido únicamente cuando se abre esta pantalla. Va por RPC
-  // (obtener_detalle_pedido_cation, SECURITY DEFINER) y no por foreign tables
-  // directas — authenticated ya no tiene SELECT sobre cation_pedido /
-  // v_pedido_linea_hermes / v_cotizacion_hermes (Tanda 1, Script 1B: tenían
-  // RLS=false y exponían el maestro completo de Cation sin filtro).
-  useEffect(() => {
-    async function cargarDetallePedido(pedidoId: number) {
-      setCargandoDetallePedido(true);
-      setErrorDetallePedido(null);
+  useHermesRefresh(cargar, !cargando && !modalOrigenAbierto && !mostrarFormEntrega && !mostrarFormFactura
+    && !modalAnularAbierto && !modalPartirAbierto && !Object.values(subiendoDocumento).some(Boolean)
+    && !Object.values(notas).some(n => n.trim().length > 0));
 
-      const { data, error } = await supabase.rpc("obtener_detalle_pedido_cation", {
-        p_pedido_id: pedidoId,
-      });
-
-      if (error) {
-        setErrorDetallePedido(error.message);
-        setCotizacion(null);
-        setLineasPedido([]);
-        setCargandoDetallePedido(false);
-        return;
-      }
-
-      const detalle = data as { cotizacion_origen_id: number | null; lineas: VPedidoLineaHermes[]; cotizacion: VCotizacionHermes | null } | null;
-      setLineasPedido(detalle?.lineas ?? []);
-      setCotizacion(detalle?.cotizacion ?? null);
-      setCargandoDetallePedido(false);
-    }
-
-    if (partida?.pedido_id != null) {
-      cargarDetallePedido(partida.pedido_id);
+  async function cargarDetallePedido(pedidoId: number | null) {
+    if (pedidoId == null) { setLineasPedido([]); setCotizacion(null); return; }
+    setCargandoDetallePedido(true);
+    setErrorDetallePedido(null);
+    const { data, error } = await supabase.rpc("obtener_detalle_pedido_cation", { p_pedido_id: pedidoId });
+    if (error) {
+      setErrorDetallePedido(error.message); setLineasPedido([]); setCotizacion(null);
     } else {
-      setCotizacion(null);
-      setLineasPedido([]);
+      const detalle = data as { lineas: VPedidoLineaHermes[]; cotizacion: VCotizacionHermes | null } | null;
+      setLineasPedido(detalle?.lineas ?? []); setCotizacion(detalle?.cotizacion ?? null);
     }
-  }, [supabase, partida?.pedido_id]);
+    setCargandoDetallePedido(false);
+  }
 
   // Navegación entre entregas hermanas (raíz + hijas del mismo pedido).
   useEffect(() => {
@@ -228,6 +224,9 @@ export default function ExpedientePage() {
       setHermanas([]);
     }
   }, [supabase, partida?.partida_raiz_id]);
+
+  const lineasActivas = lineasVigentes(lineasPedido);
+  const lineasHistoricas = lineasPedido.filter(l => !lineasActivas.includes(l));
 
   const hitoBloqueado = hitos.find((h) => h.habilitantes_pendientes > 0);
   const docBloqueante = hitoBloqueado
@@ -436,12 +435,14 @@ export default function ExpedientePage() {
   const vencimiento = calcularVencimiento(partida);
   const vencida = Boolean(vencimiento && vencimiento < hoyLocal());
   const accionFechas = acciones["fechas"];
+  const estadoPago = resumirPago(origen?.pago);
 
   return (
     <div>
-      <Link href={`/clientes/${clienteId}`} className="btn-link">
-        ← Ficha del cliente
-      </Link>
+      <div className="expediente-navegacion">
+        <Link href={`/clientes/${clienteId}`} className="btn-link">← Ficha del cliente</Link>
+        <button type="button" className="btn btn-secondary" onClick={cargar}>Actualizar</button>
+      </div>
 
       {hermanas.length > 1 && (
         <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
@@ -457,7 +458,7 @@ export default function ExpedientePage() {
         </div>
       )}
 
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginTop: 8 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12, marginTop: 8 }}>
         <div>
           <div className="page-title" style={{ marginBottom: 0 }}>
             Expediente — {partida.documento_interno}
@@ -556,7 +557,7 @@ export default function ExpedientePage() {
         {partida.fecha_entrega && !partida.fecha_factura && (
           <div>
             <div style={{ fontSize: 13, marginBottom: 10 }}>
-              Entregada el <b>{partida.fecha_entrega}</b> · hace {diasDesde(partida.fecha_entrega)}{" "}
+              {origen && !origen.recepcion.fecha ? "Fecha de entrega registrada" : "Entregada"} el <b>{partida.fecha_entrega}</b> · hace {diasDesde(partida.fecha_entrega)}{" "}
               {diasDesde(partida.fecha_entrega) === 1 ? "día" : "días"}
             </div>
             {puedeFechas && !mostrarFormFactura && (
@@ -607,7 +608,7 @@ export default function ExpedientePage() {
         {partida.fecha_entrega && partida.fecha_factura && (
           <div style={{ fontSize: 13 }}>
             <div>
-              Entregada el <b>{partida.fecha_entrega}</b> · Facturada el <b>{partida.fecha_factura}</b>
+              {origen && !origen.recepcion.fecha ? "Fecha de entrega registrada" : "Entregada"} el <b>{partida.fecha_entrega}</b> · Facturada el <b>{partida.fecha_factura}</b>
               {partida.cuf && (
                 <>
                   {" "}
@@ -645,6 +646,9 @@ export default function ExpedientePage() {
         )}
       </div>
 
+      {origen && <ExpedienteOrigen origen={origen} lineas={lineasPedido} fechaHermes={partida.fecha_entrega} clienteNombre={partida.cliente_nombre} onDocumentoAbierto={setModalOrigenAbierto} />}
+      {errorOrigen && <div className="field-error" style={{ marginBottom: 16 }}>No se pudo consultar el seguimiento de Seller ({errorOrigen}). Usa Actualizar para reintentar.</div>}
+
       {errorDetallePedido && (
         <div className="field-error" style={{ marginBottom: 16 }}>
           No se pudo cargar el detalle del pedido en Cation ({errorDetallePedido}).
@@ -653,7 +657,7 @@ export default function ExpedientePage() {
 
       {/* La mayoría de los pedidos viejos no tienen origen y los internos
           nunca lo van a tener: si no hay cotización, no se muestra la sección. */}
-      {cotizacion && (
+      {!origen && cotizacion && (
         <div className="card" style={{ margin: "16px 0" }}>
           <div style={{ fontSize: 11, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.03em", fontWeight: 700, marginBottom: 10 }}>
             Cotización de origen
@@ -667,10 +671,8 @@ export default function ExpedientePage() {
       )}
 
       {lineasPedido.length > 0 && (
-        <div className="card" style={{ margin: "16px 0" }}>
-          <div style={{ fontSize: 11, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.03em", fontWeight: 700, marginBottom: 10 }}>
-            Líneas del pedido
-          </div>
+        <details className="card" style={{ margin: "16px 0" }} open={!origen}>
+          <summary style={{ fontSize: 13, fontWeight: 650, cursor: "pointer", marginBottom: 10 }}>Productos del pedido · {lineasActivas.length} líneas vigentes</summary>
           <div className="table">
             <div className="table-head" style={{ gridTemplateColumns: "2fr 80px 1fr 80px 1fr" }}>
               <div>Descripción</div>
@@ -679,19 +681,22 @@ export default function ExpedientePage() {
               <div>Desc.</div>
               <div>Subtotal</div>
             </div>
-            {lineasPedido.map((l) => {
-              const despachoPendiente = Number(l.cantidad_despachada) < Number(l.cantidad_base);
+            {lineasActivas.map((l) => {
+              const cantidadDespachada = origen?.salida.lineas.find(d => d.id === l.id)?.cantidad_despachada ?? l.cantidad_despachada;
+              const fueraAlmacen = ["COMPRADO_DIRECTO", "ESPECIAL"].includes(l.estado);
+              const despachoPendiente = !fueraAlmacen && Number(cantidadDespachada) < Number(l.cantidad_base);
               return (
                 <div key={l.id} className="table-row" style={{ gridTemplateColumns: "2fr 80px 1fr 80px 1fr" }}>
                   <span style={{ fontSize: 12.5 }}>
                     {l.descripcion}
+                    {fueraAlmacen && <span className="field-hint"> · {l.estado === "COMPRADO_DIRECTO" ? "Compra directa" : "Especial"}</span>}
                     {despachoPendiente && (
                       <span className="linea-despacho-pendiente" style={{ marginLeft: 6, fontSize: 11 }}>
-                        · despacho pendiente ({l.cantidad_despachada}/{l.cantidad_base})
+                        · despacho pendiente ({cantidadDespachada}/{l.cantidad_base})
                       </span>
                     )}
                   </span>
-                  <span style={{ fontSize: 12 }}>{l.cantidad_base}</span>
+                  <span style={{ fontSize: 12 }} title={`${l.cantidad_base} unidades base`}>{cantidadDocumento(l)}</span>
                   <span style={{ fontSize: 12 }}>{formatBs(l.precio_unitario)}</span>
                   <span style={{ fontSize: 12 }}>{Number(l.descuento_pct) > 0 ? `${l.descuento_pct}%` : "—"}</span>
                   <span className="money" style={{ fontSize: 12 }}>{formatBs(l.subtotal)}</span>
@@ -699,7 +704,8 @@ export default function ExpedientePage() {
               );
             })}
           </div>
-        </div>
+          {lineasHistoricas.length > 0 && <details className="origen-historial"><summary>Ver {lineasHistoricas.length} líneas sustituidas, retiradas o rechazadas</summary>{lineasHistoricas.map(l => <p key={l.id}>{l.descripcion} · {l.estado.toLowerCase()}</p>)}</details>}
+        </details>
       )}
 
       {cargandoDetallePedido && lineasPedido.length === 0 && !errorDetallePedido && (
@@ -709,7 +715,7 @@ export default function ExpedientePage() {
       {hitoBloqueado && docBloqueante && (
         <a href={`#hito-${hitoBloqueado.id}`} className="banner-alerta" style={{ marginBottom: 16, textDecoration: "none", color: "inherit" }}>
           <div>
-            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--alerta)" }}>Esto frena el cobro</div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--alerta)" }}>{estadoPago?.registrado.gt(0) ? "Documentación pendiente del expediente" : "Esto frena el cobro"}</div>
             <div style={{ fontSize: 12.5, marginTop: 2 }}>
               Falta {docBloqueante.estado === "RECHAZADO" ? "resolver" : "aprobar"}: <b>{docBloqueante.etiqueta}</b> ({hitoBloqueado.nombre})
             </div>
@@ -721,16 +727,17 @@ export default function ExpedientePage() {
         {hitos.map((h) => {
           const docs = documentosPorHito[h.id] ?? [];
           const accionHito = acciones[`hito-${h.id}`];
-          const puedeCompletar = esGerente && h.estado === "PENDIENTE" && h.habilitantes_pendientes === 0;
+          const pagoRegistrado = h.nombre === "Pago" && estadoPago?.registrado.gt(0) ? estadoPago : null;
+          const puedeCompletar = !h.origen_sistema && esGerente && h.estado === "PENDIENTE" && h.habilitantes_pendientes === 0;
 
           return (
             <div key={h.id} id={`hito-${h.id}`} className="timeline-hito">
-              <span className={`timeline-dot ${h.estado === "COMPLETO" ? "completo" : ""}`} />
+              <span className={`timeline-dot ${pagoRegistrado ? pagoRegistrado.pagado ? "completo" : "registrado" : h.estado === "COMPLETO" ? "completo" : ""}`} />
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <div>
                   <b style={{ fontSize: 13.5 }}>{h.nombre}</b>
-                  <span className={h.estado === "COMPLETO" ? "badge badge-aldia" : "badge badge-pendiente"} style={{ marginLeft: 8 }}>
-                    {h.estado}
+                  <span className={pagoRegistrado ? pagoRegistrado.pagado ? "badge badge-aldia" : "badge badge-ambar" : h.estado === "COMPLETO" ? "badge badge-aldia" : "badge badge-pendiente"} style={{ marginLeft: 8 }}>
+                    {pagoRegistrado ? pagoRegistrado.etiqueta : h.origen_estado ? h.estado === "PENDIENTE" && ["COMPLETO", "NO_APLICA"].includes(h.origen_estado) ? "Respaldo pendiente" : etiquetasOrigen[h.origen_estado] : h.estado}
                   </span>
                 </div>
                 {puedeCompletar && (
@@ -739,6 +746,8 @@ export default function ExpedientePage() {
                   </button>
                 )}
               </div>
+              {pagoRegistrado && <p className="origen-hito"><strong>{pagoRegistrado.titulo}</strong> · {pagoRegistrado.mensaje}<br />Respaldo documental: {h.estado === "COMPLETO" ? "completo" : "pendiente"}.</p>}
+              {h.origen_sistema && h.origen_datos && <p className="origen-hito"><strong>{h.origen_sistema === "SELLER" ? "Desde Seller" : "Desde almacén"}</strong> · {resumenHitoOrigen(h.nombre, h.origen_datos)}</p>}
               {accionHito?.error && <div className="field-error" style={{ marginTop: 6 }}>{accionHito.error}</div>}
 
               {docs.map((d) => {
@@ -750,7 +759,7 @@ export default function ExpedientePage() {
                         <span className={`estado-dot ${d.estado}`} />
                         <span style={{ fontSize: 12.5 }}>{d.etiqueta}</span>
                         <span className="badge" style={{ marginLeft: 8 }}>{d.tipo}</span>
-                        <span style={{ fontSize: 11, color: "var(--muted)", marginLeft: 8 }}>{d.estado}</span>
+                        <span style={{ fontSize: 11, color: "var(--muted)", marginLeft: 8 }}>{h.origen_sistema && d.tipo === "ANEXO" && d.estado === "PENDIENTE" ? "Sin adjunto (opcional)" : d.estado}</span>
                       </div>
                       <div style={{ display: "flex", gap: 8 }}>
                         {d.storage_path && (
@@ -794,6 +803,7 @@ export default function ExpedientePage() {
                       <div style={{ marginTop: 6, display: "flex", alignItems: "center", gap: 8 }}>
                         <input
                           type="file"
+                          aria-label={`Adjuntar ${d.etiqueta}${h.origen_sistema && d.tipo === "ANEXO" ? " (opcional)" : ""}`}
                           accept="image/jpeg,image/png,image/webp,application/pdf"
                           className="subida-input"
                           disabled={subiendoDocumento[d.id]}

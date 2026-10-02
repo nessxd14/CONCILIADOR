@@ -1,10 +1,10 @@
 "use client";
 
+import { obtenerSesionHermes } from "@/lib/supabase/session";
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
-import { rolDeUsuario } from "@/lib/roles";
 import type { CategoriaCliente, Cliente, ClienteCredito, SectorCliente } from "@/lib/types";
 
 export default function EditarClientePage() {
@@ -32,11 +32,13 @@ export default function EditarClientePage() {
   useEffect(() => {
     async function cargar() {
       setCargando(true);
-      const [{ data: userData }, clienteRes, creditoRes] = await Promise.all([
-        supabase.auth.getUser(),
+      const [{ data: userData, error: errorSesion }, clienteRes, creditoRes] = await Promise.all([
+        obtenerSesionHermes(supabase),
         supabase.from("cliente").select("*").eq("id", clienteId).single(),
         supabase.from("cliente_credito").select("*").eq("cliente_id", clienteId).maybeSingle(),
       ]);
+
+      if (errorSesion) { setError("No se pudo validar el acceso a Hermes. Reintenta la consulta."); setCargando(false); return; }
 
       if (clienteRes.error) {
         setError(clienteRes.error.message);
@@ -44,7 +46,7 @@ export default function EditarClientePage() {
         return;
       }
 
-      setEsGerente(rolDeUsuario(userData.user) === "gerente");
+      setEsGerente(userData.rol === "gerente");
 
       const cliente = clienteRes.data as Cliente;
       const credito = creditoRes.data as ClienteCredito | null;

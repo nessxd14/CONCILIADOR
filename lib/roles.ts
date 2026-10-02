@@ -30,3 +30,13 @@ export function puedeRegistrarFechas(rol: Rol | null): boolean {
 export function puedeGestionarEvidencia(rol: Rol | null): boolean {
   return rol !== null && ["admin", "gerente"].includes(rol);
 }
+
+/** Rol devuelto por rol_actual(): en Cation valida perfil, activo y hermes_acceso. */
+export function rolDesdeBase(value: unknown): Rol | null {
+  if (value === "cajero") return "caja";
+  return typeof value === "string" && ROLES_VALIDOS.includes(value as Rol) ? value as Rol : null;
+}
+
+export function puedeConfirmarPagos(rol: Rol | null): boolean {
+  return rol === "admin" || rol === "gerente";
+}

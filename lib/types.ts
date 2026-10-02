@@ -1,3 +1,4 @@
+import type { EstadoOrigen, OrigenExpediente } from "./expediente-origen";
 export type CategoriaCliente = "RETAIL" | "MAYORISTA" | "INSTITUCIONAL" | "CORPORATIVO";
 export type SectorCliente = "PUBLICO" | "PRIVADO";
 export type InicioComputo = "ENTREGA" | "FACTURA" | "CONTADO";
@@ -194,6 +195,9 @@ export interface Hito {
   completado_en: string | null;
   completado_por: string | null;
   habilitantes_pendientes: number;
+  origen_sistema?: "SELLER" | "ALMACEN" | null;
+  origen_estado?: EstadoOrigen | null;
+  origen_datos?: OrigenExpediente;
 }
 
 export interface Documento {
@@ -268,13 +272,13 @@ export interface VPedidoLineaHermes {
   producto_id: number | null;
   descripcion: string;
   es_personalizado: boolean;
-  cantidad_base: string;
-  cantidad_presentacion: string;
-  cantidad_despachada: string;
+  cantidad_base: string | number;
+  cantidad_presentacion: string | number | null;
+  cantidad_despachada: string | number | null;
   estado: string;
-  precio_unitario: string;
+  precio_unitario: string | number | null;
   descuento_pct: string;
-  subtotal: string;
+  subtotal: string | number | null;
   nota: string | null;
 }
 

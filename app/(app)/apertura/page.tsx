@@ -1,14 +1,15 @@
+import { obtenerSesionHermes } from "@/lib/supabase/session";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { rolDeUsuario } from "@/lib/roles";
 
 export default async function AperturaIndexPage() {
   const supabase = await createClient();
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data: { user, rol },
+    error: errorSesion,
+  } = await obtenerSesionHermes(supabase);
 
-  if (rolDeUsuario(user) !== "admin") {
+  if (errorSesion || rol !== "admin") {
     return (
       <div className="card" style={{ maxWidth: 480 }}>
         Solo el rol <b>admin</b> puede cargar saldos de apertura.

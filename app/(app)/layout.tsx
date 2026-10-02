@@ -1,6 +1,7 @@
+import { obtenerSesionHermes } from "@/lib/supabase/session";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { rolDeUsuario } from "@/lib/roles";
+import { AccessNotice } from "@/components/AccessNotice";
 import { Sidebar } from "@/components/Sidebar";
 
 export default async function AppLayout({
@@ -10,14 +11,20 @@ export default async function AppLayout({
 }) {
   const supabase = await createClient();
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data: { user, rol },
+    error: errorSesion,
+  } = await obtenerSesionHermes(supabase);
 
   if (!user) {
     redirect("/login");
   }
 
-  const rol = rolDeUsuario(user);
+
+  if (errorSesion || !rol) {
+    return <AccessNotice message={errorSesion
+      ? "No pudimos validar tu acceso a Hermes. Intenta nuevamente."
+      : "Tu cuenta no tiene acceso a Hermes. Solicita la habilitación al administrador."} />;
+  }
 
   const [{ count: pendientesImportar }, { count: pedidosAccionables }] = await Promise.all([
     supabase.from("v_clientes_cation_pendientes").select("*", { count: "exact", head: true }),
@@ -28,14 +35,14 @@ export default async function AppLayout({
   ]);
 
   return (
-    <div className="shell">
+    <div className="shell"><a className="skip-link" href="#contenido">Ir al contenido</a>
       <Sidebar
         email={user.email ?? ""}
         rol={rol}
         pendientesImportar={pendientesImportar ?? 0}
         pedidosAccionables={pedidosAccionables ?? 0}
       />
-      <div className="content">{children}</div>
+      <main id="contenido" className="content">{children}</main>
     </div>
   );
 }

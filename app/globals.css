@@ -1,5 +1,3 @@
-@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap");
-
 :root {
   --orange: #f26b2b;
   --orange-dark: #dc5519;
@@ -518,3 +516,72 @@ textarea {
   border-radius: 12px;
   padding: 32px;
 }
+
+.expediente-navegacion { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+
+/* Seguimiento comercial desde los registros de Seller y almacén. */
+.expediente-origen { margin: 18px 0 24px; padding: 22px; }
+.expediente-origen-header, .origen-card-title, .origen-documento-header { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+.origen-eyebrow { margin: 0 0 6px; color: var(--muted); font-size: 11px; font-weight: 650; text-transform: uppercase; letter-spacing: .07em; }
+.expediente-origen h2, .documento-origen h2 { margin: 0 0 4px; font-size: 19px; letter-spacing: -.02em; }
+.origen-documentos { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); margin-top: 20px; gap: 16px; }
+.origen-documentos article { padding: 16px; border: 1px solid var(--line); border-radius: 10px; }
+.origen-card-title h3 { margin: 0 0 8px; font-size: 13px; }
+.origen-card-title .badge { margin-bottom: 8px; }
+.origen-documentos article > b { font-size: 15px; }
+.expediente-origen p { font-size: 13px; line-height: 1.6; }
+.origen-documentos article > p { color: var(--muted); }
+.origen-salida, .origen-recepcion { margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--line); }
+.origen-salida p, .origen-recepcion p { margin: 4px 0; }
+.origen-pagos { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 16px; padding-top: 18px; margin-top: 18px; border-top: 1px solid var(--line); }
+.origen-pagos span { display: block; font-size: 11px; color: var(--muted); margin-bottom: 6px; }
+.origen-pagos b { font-variant-numeric: tabular-nums; font-size: 17px; }
+.origen-aviso { background: var(--provisional-bg); color: var(--provisional); padding: 10px 12px; border-radius: 8px; margin: 18px 0 0; }
+.origen-hito { color: var(--muted); font-size: 12px; line-height: 1.6; margin: 7px 0; }
+.origen-hito strong { color: var(--charcoal); font-weight: 600; }
+.documento-origen { width: min(960px,calc(100vw - 32px)); max-height: calc(100dvh - 48px); overflow: auto; padding: 24px; }
+.origen-tabla-scroll { overflow-x: auto; margin-top: 20px; }
+.origen-tabla { width: 100%; border-collapse: collapse; font-size: 12px; }
+.origen-tabla th, .origen-tabla td { text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.origen-tabla th { color: var(--muted); font-weight: 600; }
+.origen-tabla td:first-child { width: 44%; }
+.origen-tabla td:not(:first-child) { font-variant-numeric: tabular-nums; }
+.origen-tabla small { display: block; font-size: 10px; color: var(--muted); margin-top: 3px; }
+.origen-total { text-align: right; font-size: 13px; margin-top: 20px; }
+.origen-total b { margin-left: 12px; font-size: 18px; }
+.origen-documento-actions { display: flex; justify-content: flex-end; margin-top: 16px; }
+.origen-historial { margin: 12px 0; font-size: 12px; }
+.origen-historial summary { cursor: pointer; color: var(--muted); padding: 8px 0; }
+@media(max-width:720px) {
+  .expediente-origen { padding: 16px; }
+  .expediente-origen-header { align-items: flex-start; flex-direction: column; }
+  .origen-documentos, .origen-pagos { grid-template-columns: 1fr; }
+  .documento-origen { padding: 16px; }
+  .origen-tabla { min-width: 600px; }
+}
+@media print {
+  body:has(.documento-origen) > *:not(.modal-overlay:has(.documento-origen)) { display: none !important; }
+  .modal-overlay:has(.documento-origen) { visibility: visible; background: white; display: block; position: static; padding: 0; }
+  .documento-origen, .documento-origen * { visibility: visible; }
+  .documento-origen { width: 100%; max-height: none; overflow: visible; border: 0; border-radius: 0; box-shadow: none; padding: 0; }
+  .documento-origen .no-print { display: none; }
+  .origen-tabla-scroll { overflow: visible; }
+  .origen-tabla thead { display: table-header-group; }
+  .origen-tabla tr { break-inside: avoid; }
+}
+
+
+/* El registro del cobro y su verificación son estados distintos. */
+.pago-seguimiento { margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--line); }
+.pago-seguimiento .origen-card-title { align-items: flex-start; }
+.pago-seguimiento .origen-card-title h3 { margin: 0; font-size: 15px; }
+.pago-seguimiento .origen-card-title .badge { margin-bottom: 0; flex-shrink: 0; }
+.pago-mensaje { margin: 8px 0 0; line-height: 1.6; }
+.pago-seguimiento .origen-pagos { margin-top: 14px; padding-top: 0; border-top: 0; }
+.pago-contable { margin: 12px 0 0; }
+.pago-aviso { display: flex; align-items: flex-start; gap: 12px; padding: 14px 18px; margin: 0 0 16px; border-radius: 10px; background: var(--provisional-bg); color: var(--provisional); }
+.pago-aviso svg { flex-shrink: 0; margin-top: 2px; }
+.pago-aviso strong { font-size: 14px; }
+.pago-aviso p { margin: 4px 0 0; font-size: 12px; line-height: 1.6; }
+
+.timeline-dot.registrado { background: var(--provisional); border-color: var(--provisional); }

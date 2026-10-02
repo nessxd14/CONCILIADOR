@@ -5,7 +5,9 @@ import Decimal from "decimal.js";
  * parseFloat ni se opera con `number`: se envuelve en Decimal solo para
  * mostrarlo. El saldo en sí siempre viene calculado por la vista.
  */
-export function formatBs(valor: string | number): string {
+export function formatBs(valor: string | number | null | undefined): string {
+  // Una línea histórica puede no tener subtotal o precio. No equivale a cero.
+  if (valor == null) return "Sin registrar";
   const d = new Decimal(valor);
   const abs = d.abs().toFixed(2);
   const [entero, decimales] = abs.split(".");
