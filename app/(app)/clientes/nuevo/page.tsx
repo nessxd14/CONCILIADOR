@@ -124,7 +124,6 @@ export default function NuevoClientePage() {
             value={categoria}
             onChange={(e) => setCategoria(e.target.value as CategoriaCliente)}
           >
-            <option value="RETAIL">RETAIL</option>
             <option value="MAYORISTA">MAYORISTA</option>
             <option value="INSTITUCIONAL">INSTITUCIONAL</option>
             <option value="CORPORATIVO">CORPORATIVO</option>

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import {
   DEFAULTS_CREDITO_POR_CATEGORIA,
+  CATEGORIAS_CONCILIADOR,
   sectorDesdeCategoria,
   type ClienteCationPendiente,
 } from "@/lib/types";
@@ -30,6 +31,7 @@ export default function ImportarClientesPage() {
     const { data, error: errCation } = await supabase
       .from("v_clientes_cation_pendientes")
       .select("*")
+      .in("categoria_sugerida", [...CATEGORIAS_CONCILIADOR])
       .order("nombre");
 
     if (errCation) {
@@ -59,7 +61,7 @@ export default function ImportarClientesPage() {
 
   async function importar(cliente: ClienteCationPendiente) {
     const categoria = cliente.categoria_sugerida;
-    if (!categoria) {
+    if (!categoria || categoria === "RETAIL") {
       setEstadoFilas((prev) => ({
         ...prev,
         [cliente.id]: {
@@ -132,10 +134,10 @@ export default function ImportarClientesPage() {
         ← Clientes
       </Link>
       <div className="page-title" style={{ marginTop: 8 }}>
-        Importar desde POS
+        Clientes pendientes de vincular
       </div>
       <div className="page-sub">
-        Clientes activos de Cation que todavía no tienen cuenta corriente en Hermes.
+        Los mayoristas, institucionales y corporativos se vinculan automáticamente desde Seller. Esta pantalla permite recuperar registros anteriores pendientes; retail queda fuera.
       </div>
 
       {avisos.length > 0 && (
