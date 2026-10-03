@@ -1,5 +1,6 @@
 import type { EstadoOrigen, OrigenExpediente } from "./expediente-origen";
 export type CategoriaCliente = "RETAIL" | "MAYORISTA" | "INSTITUCIONAL" | "CORPORATIVO";
+export const CATEGORIAS_CONCILIADOR = ["MAYORISTA", "INSTITUCIONAL", "CORPORATIVO"] as const;
 export type SectorCliente = "PUBLICO" | "PRIVADO";
 export type InicioComputo = "ENTREGA" | "FACTURA" | "CONTADO";
 export type Situacion = "DEUDOR" | "AL_DIA" | "ACREEDOR";

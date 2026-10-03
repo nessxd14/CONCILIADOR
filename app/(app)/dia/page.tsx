@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useHermesRefresh } from "@/lib/supabase/use-refresh";
 import { Dashboard, type DashboardData } from "@/components/Dashboard";
 import { puedeConfirmarPagos } from "@/lib/roles";
-import type { PagoPropuesto, VSaldoCliente } from "@/lib/types";
+import { CATEGORIAS_CONCILIADOR, type PagoPropuesto, type VSaldoCliente } from "@/lib/types";
 
 export default function MiDiaPage() {
   const supabase = useMemo(() => createClient(), []);
@@ -17,15 +17,15 @@ export default function MiDiaPage() {
   async function leerSaldos() {
     const rows: VSaldoCliente[] = [];
     for (let offset = 0; ; offset += 1000) {
-      const res = await supabase.from("v_saldo_cliente").select("*").order("cliente").order("cliente_id").range(offset, offset + 999);
+      const res = await supabase.from("v_saldo_cliente").select("*").in("categoria", [...CATEGORIAS_CONCILIADOR]).order("cliente").order("cliente_id").range(offset, offset + 999);
       if (res.error) return { data: null, error: res.error };
       rows.push(...(res.data ?? []) as VSaldoCliente[]);
       if ((res.data?.length ?? 0) < 1000) return { data: rows, error: null };
     }
   }
-  useHermesRefresh(cargar);
-  async function cargar() {
-    setData(prev => ({ ...prev, cargando: true, error: null, errorSaldos: null, errorPagos: null }));
+  useHermesRefresh(() => cargar(true), !Object.values(confirmando).some(Boolean));
+  async function cargar(enSegundoPlano = false) {
+    setData(prev => ({ ...prev, cargando: enSegundoPlano ? prev.cargando : true, error: null, errorSaldos: null, errorPagos: null }));
     try {
       const [userRes, saldosRes, bloqueadosRes] = await Promise.all([
         obtenerSesionHermes(supabase), leerSaldos(),

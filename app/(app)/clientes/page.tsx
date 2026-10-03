@@ -5,10 +5,10 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { useHermesRefresh } from "@/lib/supabase/use-refresh";
 import { formatBs } from "@/lib/money";
-import type { CategoriaCliente, VSaldoCliente } from "@/lib/types";
+import { CATEGORIAS_CONCILIADOR, type CategoriaCliente, type VSaldoCliente } from "@/lib/types";
 
 
-const CATEGORIAS: CategoriaCliente[] = ["RETAIL", "MAYORISTA", "INSTITUCIONAL", "CORPORATIVO"];
+const CATEGORIAS = CATEGORIAS_CONCILIADOR;
 
 function badgeSituacion(situacion: VSaldoCliente["situacion"]) {
   if (situacion === "DEUDOR") return "badge badge-deudor";
@@ -26,14 +26,14 @@ export default function ClientesPage() {
   const [categoria, setCategoria] = useState<CategoriaCliente | "">("");
   const [errorAperturas, setErrorAperturas] = useState<string | null>(null);
 
-  useHermesRefresh(cargar);
-  async function cargar() {
-    setCargando(true);
+  useHermesRefresh(() => cargar(true), !cargando);
+  async function cargar(enSegundoPlano = false) {
+    if (!enSegundoPlano) setCargando(true);
     setError(null);
     setErrorAperturas(null);
 
     const [saldos, aperturas] = await Promise.all([
-      supabase.from("v_saldo_cliente").select("*").order("cliente"),
+      supabase.from("v_saldo_cliente").select("*").in("categoria", [...CATEGORIAS]).order("cliente"),
       supabase.from("movimiento_cuenta").select("cliente_id").eq("tipo", "SALDO_APERTURA"),
     ]);
 
@@ -70,21 +70,21 @@ export default function ClientesPage() {
     });
   }, [clientes, busqueda, categoria]);
 
-  const pendientes = clientes.length - conApertura.size;
+  const pendientes = clientes.filter(c => !conApertura.has(c.cliente_id)).length;
 
   return (
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
         <div>
           <h1 className="page-title">Clientes</h1>
-          <div className="page-sub">Una cuenta corriente viva por cliente.</div>
+          <div className="page-sub">Clientes y pedidos de Seller se sincronizan automáticamente. La lista se actualiza cada 15 segundos.</div>
         </div>
         <div style={{ display: "flex", gap: 10 }}>
-          <button type="button" className="btn btn-secondary" disabled={cargando} onClick={cargar}>
+          <button type="button" className="btn btn-secondary" disabled={cargando} onClick={() => void cargar()}>
             {cargando ? "Actualizando…" : "Actualizar"}
           </button>
           <Link href="/clientes/importar" className="btn btn-secondary">
-            Importar desde POS
+            Revisar clientes pendientes
           </Link>
           <Link href="/pedidos-pendientes" className="btn btn-secondary">
             Pedidos pendientes
@@ -111,7 +111,7 @@ export default function ClientesPage() {
           <div style={{ fontSize: 13, fontWeight: 600 }}>
             {pendientes === 0
               ? "Todos los clientes tienen saldo de apertura cargado."
-              : `Faltan ${pendientes} de ${clientes.length} clientes por cargar su saldo de apertura.`}
+              : `${pendientes} clientes sin saldo inicial declarado. Cárgalo solo si tenían un saldo previo al conciliador.`}
           </div>
         </div>
       )}
@@ -176,7 +176,7 @@ export default function ClientesPage() {
                 <span className="badge">—</span>
               ) : (
                 <span className={conApertura.has(c.cliente_id) ? "badge badge-aldia" : "badge badge-pendiente"}>
-                  {conApertura.has(c.cliente_id) ? "Cargada" : "Pendiente"}
+                  {conApertura.has(c.cliente_id) ? "Cargada" : "Sin saldo inicial"}
                 </span>
               )}
               <Link href={`/clientes/${c.cliente_id}`} className="btn btn-secondary">

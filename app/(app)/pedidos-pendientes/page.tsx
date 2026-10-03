@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { useHermesRefresh } from "@/lib/supabase/use-refresh";
 import { formatBs } from "@/lib/money";
 import type { MotivoPedidoPendiente, VPedidoCationPendiente } from "@/lib/types";
 
@@ -11,7 +12,7 @@ type ResultadoSync = { abiertas: number; omitidas: number; con_error: number };
 const MOTIVOS_ORDEN: { motivo: MotivoPedidoPendiente; label: string }[] = [
   { motivo: "SIN_CLIENTE", label: "Sin cliente asignado en el POS" },
   { motivo: "CLIENTE_SIN_CUENTA", label: "Cliente no importado en Hermes" },
-  { motivo: "ABRE", label: "Se abriría en la próxima corrida" },
+  { motivo: "ABRE", label: "Pedido anterior pendiente de vincular" },
   { motivo: "SIN_TOTAL", label: "Sin total" },
   { motivo: "SIN_FICHA_CREDITO", label: "Sin ficha de crédito" },
   { motivo: "CATEGORIA_NO_ELEGIBLE", label: "Categoría no elegible" },
@@ -36,8 +37,9 @@ export default function PedidosPendientesPage() {
   const [resultadoSync, setResultadoSync] = useState<ResultadoSync | null>(null);
   const [errorSync, setErrorSync] = useState<string | null>(null);
 
-  async function cargar() {
-    setCargando(true);
+  useHermesRefresh(() => cargar(true), !sincronizando && !cargando);
+  async function cargar(enSegundoPlano = false) {
+    if (!enSegundoPlano) setCargando(true);
     setError(null);
 
     // PostgREST corta cualquier select en 1000 filas: contar en el navegador
@@ -117,15 +119,15 @@ export default function PedidosPendientesPage() {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginTop: 8 }}>
         <div>
           <div className="page-title">Pedidos pendientes</div>
-          <div className="page-sub">Pedidos de Cation todavía no procesados en Hermes, agrupados por motivo.</div>
+          <div className="page-sub">Estado de vinculación de los pedidos mayoristas, institucionales y corporativos.</div>
         </div>
         <button type="button" className="btn btn-secondary" disabled={sincronizando} onClick={sincronizar}>
-          {sincronizando ? "Sincronizando…" : "Sincronizar pedidos"}
+          {sincronizando ? "Vinculando…" : "Recuperar pedidos anteriores"}
         </button>
       </div>
 
       <div className="field-hint" style={{ margin: "8px 0 16px" }}>
-        Orden importante: sincronizá clientes primero. Un pedido de un cliente no importado se omite acá.
+        Los pedidos nuevos llegan automáticamente con su cliente vinculado primero. La pantalla se actualiza cada 15 segundos; el botón recupera pedidos anteriores pendientes.
       </div>
 
       {errorSync && <div className="field-error" style={{ marginBottom: 16 }}>{errorSync}</div>}

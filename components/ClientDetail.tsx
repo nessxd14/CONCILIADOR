@@ -91,10 +91,12 @@ export function ClientDetail({ fixture }: { fixture?: ClientFixture }) {
   const [guardandoNC, setGuardandoNC] = useState(false);
   const [errorNC, setErrorNC] = useState<string | null>(null);
 
-  useHermesRefresh(cargar, !fixture);
+  useHermesRefresh(() => cargar(true), !fixture && !cargando && !modalNCAbierto
+    && !cargandoMasMovimientos && offsetMovimientos <= PAGINA_MOVIMIENTOS
+    && !Object.values(subiendoComprobante).some(Boolean));
 
-  async function cargar() {
-      setCargando(true);
+  async function cargar(enSegundoPlano = false) {
+      if (!enSegundoPlano) setCargando(true);
       setError(null);
       setErrorMovimientos(null);
       setErroresSecciones([]);
@@ -293,7 +295,7 @@ export function ClientDetail({ fixture }: { fixture?: ClientFixture }) {
   }
 
   if (cargando) return <div className="loading-state" role="status">Consultando la cuenta del cliente…</div>;
-  if (error) return <div className="empty-state" role="alert"><h2>No pudimos cargar la ficha</h2><p>{error}</p><button className="btn btn-secondary" onClick={cargar}>Reintentar</button></div>;
+  if (error) return <div className="empty-state" role="alert"><h2>No pudimos cargar la ficha</h2><p>{error}</p><button className="btn btn-secondary" onClick={() => void cargar()}>Reintentar</button></div>;
   if (!cliente) return <div>Cliente no encontrado.</div>;
 
   const nombresMovimiento: Record<string, string> = { SALDO_APERTURA: "Saldo de apertura", CARGO: "Cargo", PAGO: "Pago", ANTICIPO: "Anticipo", NOTA_CREDITO: "Nota de crédito", AJUSTE: "Ajuste" };
@@ -471,7 +473,7 @@ export function ClientDetail({ fixture }: { fixture?: ClientFixture }) {
           {esAdmin && !tieneApertura && <Link href={`/apertura/${cliente.id}`} className="btn btn-orange">Cargar apertura</Link>}
         </div>}
       </header>
-      {erroresSecciones.length > 0 && <div className="banner-alerta" role="alert"><div><strong>Hay información que no pudimos consultar</strong><p>{erroresSecciones.join(" ")}</p><button className="btn-link" onClick={cargar}>Reintentar</button></div></div>}
+      {erroresSecciones.length > 0 && <div className="banner-alerta" role="alert"><div><strong>Hay información que no pudimos consultar</strong><p>{erroresSecciones.join(" ")}</p><button className="btn-link" onClick={() => void cargar()}>Reintentar</button></div></div>}
       {!tieneApertura && !erroresSecciones.some(e => e.startsWith("Apertura:")) && <div className="banner-warn"><Icon name="alert" /><span>Este cliente no tiene saldo de apertura. La cuenta puede no reflejar toda su deuda.</span></div>}
       {hayPagosPorVerificar && <div className="pago-aviso"><Icon name="clock" /><div><strong>Pagos registrados · por verificar</strong><p>Los pagos ya están registrados. Su verificación actualizará el saldo contable de la cuenta.</p></div></div>}
       <section className="balance-strip client-summary" aria-label="Saldos del cliente">
@@ -712,7 +714,7 @@ export function ClientDetail({ fixture }: { fixture?: ClientFixture }) {
           <div className="field-error" style={{ marginBottom: 10 }}>
             No se pudieron cargar los movimientos ({errorMovimientos}).
           </div>
-          <button type="button" className="btn btn-secondary" onClick={cargar}>
+          <button type="button" className="btn btn-secondary" onClick={() => void cargar()}>
             Reintentar
           </button>
         </div>
