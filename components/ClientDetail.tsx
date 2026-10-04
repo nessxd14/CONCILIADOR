@@ -488,7 +488,8 @@ export function ClientDetail({ fixture }: { fixture?: ClientFixture }) {
       ]} />
       <section id="cliente-panel" role="tabpanel" aria-labelledby={`cliente-tab-${panel}`} tabIndex={0}>
       <div hidden={panel !== "PARTIDAS" && panel !== "ANTICIPOS"}>
-      <div className="client-panel-heading"><div><h2>{panel === "ANTICIPOS" ? "Anticipos y comprobantes" : "Partidas del cliente"}</h2><p>{panel === "ANTICIPOS" ? "Saldos a favor e imputaciones registradas." : "Consulta el estado de cada pedido y abre su expediente."}</p></div></div>
+      <div className="client-panel-heading"><div><h2>{panel === "ANTICIPOS" ? "Anticipos y comprobantes" : "Partidas del cliente"}</h2><p>{panel === "ANTICIPOS" ? "Anticipos confirmados que todavía tienen saldo disponible." : "Consulta el estado de cada pedido y abre su expediente."}</p></div></div>
+      {panel === "ANTICIPOS" && saldo?.situacion === "ACREEDOR" && <div className="card" style={{ marginBottom: 12 }}><strong className="money-favor">El cliente tiene saldo a favor confirmado.</strong><p>El saldo de apertura y las notas de crédito figuran en Cuenta corriente. En Seller puedes aplicar el saldo disponible a una compra o a un pedido; aquí se actualizarán la cuenta y el pendiente del pedido.</p></div>}
       {partidasEstado.length === 0 && anticipos.length === 0 && <div className="empty-state"><h3>Sin registros todavía</h3><p>Las partidas y anticipos aparecerán aquí cuando se registren.</p></div>}
       {(partidasEstado.length > 0 || anticipos.length > 0) && (
         <div style={{ marginBottom: 20 }}>
@@ -567,7 +568,7 @@ export function ClientDetail({ fixture }: { fixture?: ClientFixture }) {
                     {errorArchivo && <div className="subida-error">{errorArchivo}</div>}
                     <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 6 }}>
                       Original {formatBs(monto.toString())}
-                      {imputado.gt(0) && <> · {formatBs(imputado.toString())} ya imputado</>}
+                      {imputado.gt(0) && <> · {formatBs(imputado.toString())} ya aplicado</>}
                     </div>
                     <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 2 }}>
                       {a.medio} · recibido {a.fecha_recepcion}
