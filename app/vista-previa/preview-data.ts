@@ -6,7 +6,7 @@ export const clientes: VSaldoCliente[] = [
   [1, "Comercial Altiplano", "MAYORISTA", "28450.00", "1500.00", "DEUDOR"],
   [2, "Distribuidora del Sur", "CORPORATIVO", "12800.50", "0", "DEUDOR"],
   [3, "Instituto Nueva Esperanza", "INSTITUCIONAL", "6400.00", "800.00", "DEUDOR"],
-  [4, "Papelería Central", "RETAIL", "-2200.00", "0", "ACREEDOR"],
+  [4, "Papelería Central", "MAYORISTA", "-2200.00", "0", "ACREEDOR"],
   [5, "Corporación Horizonte", "CORPORATIVO", "18500.00", "0", "DEUDOR"],
   [6, "Librería San Miguel", "MAYORISTA", "0.00", "0", "AL_DIA"],
   [7, "Colegio Los Olivos", "INSTITUCIONAL", "9750.00", "300.00", "DEUDOR"],
@@ -15,11 +15,17 @@ export const clientes: VSaldoCliente[] = [
 
 export const dashboardFixture: DashboardData = {
   saldos: clientes, cargando: false, error: null, errorSaldos: null, errorPagos: null, puedeConfirmar: true, actualizado: null,
+  vencidas: { monto: "6400.00", clientes: 1 }, pedidosPorRevisar: 2, errorVencidas: null,
   bloqueados: [
     { cliente_id: 1, cliente: "Comercial Altiplano", categoria: "MAYORISTA", partidas_bloqueadas: 2, monto_bloqueado: "6400", dias_maximo: 12, motivos: "VENCIDA" },
     { cliente_id: 3, cliente: "Instituto Nueva Esperanza", categoria: "INSTITUCIONAL", partidas_bloqueadas: 1, monto_bloqueado: "3200", dias_maximo: 5, motivos: "ENTREGADO_SIN_FACTURAR" },
   ],
-  pagos: [{ id: 1, cliente_id: 1, cliente: "Comercial Altiplano", monto: "1500", medio: "TRANSFERENCIA", referencia: "Ejemplo 001", creado_por: "pos:administracion", creado_en: "2026-10-01T12:00:00Z" }],
+  pagos: [
+    { id: 1, cliente_id: 1, cliente: "Comercial Altiplano", monto: "900", medio: "TRANSFERENCIA", referencia: "Ejemplo 001", creado_por: "pos:administracion", creado_en: "2026-10-01T12:00:00Z" },
+    { id: 2, cliente_id: 3, cliente: "Instituto Nueva Esperanza", monto: "800", medio: "DEPOSITO", referencia: "Ejemplo 002", creado_por: "pos:cajero", creado_en: "2026-10-02T12:00:00Z" },
+    { id: 3, cliente_id: 7, cliente: "Colegio Los Olivos", monto: "300", medio: "QR", referencia: "Ejemplo 003", creado_por: "pos:cajero", creado_en: "2026-10-03T12:00:00Z" },
+    { id: 4, cliente_id: 1, cliente: "Comercial Altiplano", monto: "600", medio: "EFECTIVO", referencia: "Ejemplo 004", creado_por: "pos:cajero", creado_en: "2026-10-04T12:00:00Z" },
+  ],
 };
 
 export type ClientFixture = {

@@ -9,12 +9,14 @@ export const dynamic = "force-dynamic";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "@/components/Icon";
+import { HermesMark } from "@/components/HermesMark";
 import { obtenerSesionHermes } from "@/lib/supabase/session";
 import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
+  const [mostrarPassword, setMostrarPassword] = useState(false);
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [cargando, setCargando] = useState(false);
@@ -50,10 +52,10 @@ export default function LoginPage() {
 
   return (
     <div className="login-shell">
-      <aside className="login-story"><div className="sidebar-brand"><span className="sidebar-mark">H</span><span><span className="sidebar-title">Hermes<span className="brand-dot">.</span></span><span className="sidebar-sub">Cuentas por cobrar</span></span></div><h1>Claridad en cada cuenta.</h1><p>Saldos, movimientos y documentos. Todo el detalle que necesitas para dar el siguiente paso.</p><footer>Libro auxiliar · ROARI / Cation</footer></aside>
+      <aside className="login-story"><div className="sidebar-brand"><span className="sidebar-mark"><HermesMark /></span><span className="sidebar-title">Hermes.</span></div><h1>Claridad para decidir.</h1><p>Cartera, pagos y movimientos en una sola visión.</p><div className="login-pillars"><span><Icon name="wallet" size={32} />Cartera</span><span><Icon name="chart" size={32} />Cuentas</span><span><Icon name="lock" size={32} />Control</span></div><footer>Libro auxiliar · ROARI / Cation</footer></aside>
       <div className="login-card">
-        <div className="sidebar-brand" style={{ padding: "0 0 24px" }}>
-          <div className="sidebar-mark">H</div>
+        <div className="sidebar-brand login-mobile-brand" style={{ padding: "0 0 24px" }}>
+          <div className="sidebar-mark"><HermesMark /></div>
           <div>
             <div style={{ fontWeight: 700, fontSize: 15 }}>Hermes</div>
             <div style={{ color: "var(--muted)", fontSize: 11 }}>
@@ -62,10 +64,10 @@ export default function LoginPage() {
           </div>
         </div>
 
-<h2>Bienvenido a Hermes</h2><p className="login-intro">Ingresa para consultar tu cartera.</p>
+<h1>Bienvenido a Hermes</h1><p className="login-intro">Ingresa con tu cuenta de Cation</p>
         <form onSubmit={handleSubmit}>
           <div className="field">
-            <label htmlFor="email">Correo</label>
+            <label htmlFor="email">Correo electrónico</label>
             <input
               id="email"
               type="email"
@@ -80,7 +82,7 @@ export default function LoginPage() {
             <label htmlFor="password">Contraseña</label>
             <input
               id="password"
-              type="password"
+              type={mostrarPassword ? "text" : "password"}
               autoComplete="current-password"
               className="input"
               value={password}
@@ -88,11 +90,12 @@ export default function LoginPage() {
               required
             />
           </div>
-          {error && <div className="field-error" style={{ marginBottom: 14 }}>{error}</div>}
+          <button type="button" className="btn-link password-toggle" aria-pressed={mostrarPassword} onClick={() => setMostrarPassword(!mostrarPassword)}>{mostrarPassword ? "Ocultar contraseña" : "Mostrar contraseña"}</button>
+          {error && <div role="alert" className="field-error" style={{ marginBottom: 14 }}>{error}</div>}
           <button type="submit" className="btn btn-orange" style={{ width: "100%", justifyContent: "center" }} disabled={cargando}>
             {cargando ? "Entrando…" : "Iniciar sesión"}<Icon name="arrow" size={17} />
           </button>
-        </form><p className="login-footnote">Acceso con tu cuenta de Hermes.</p>
+        </form><p className="login-footnote">Usa tu cuenta del POS · Seller / Cation</p>
       </div>
     </div>
   );

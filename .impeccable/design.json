@@ -1,448 +1,583 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-01T13:28:02.439155+00:00",
+  "generatedAt": "2026-10-06T12:43:36.106426+00:00",
   "title": "Design System: Hermes",
   "extensions": {
     "colorMeta": {
       "orange": {
         "role": "primary",
-        "displayName": "Naranja de acción",
+        "displayName": "Naranja Hermes",
         "tonalRamp": [
-          "oklch(15% 0.15879 40.77)",
-          "oklch(27% 0.15879 40.77)",
-          "oklch(38% 0.15879 40.77)",
-          "oklch(49% 0.15879 40.77)",
-          "oklch(61% 0.15879 40.77)",
-          "oklch(72% 0.15879 40.77)",
-          "oklch(84% 0.15879 40.77)",
-          "oklch(95% 0.15879 40.77)"
+          "oklch(15% 0.14470 54.32)",
+          "oklch(27% 0.14470 54.32)",
+          "oklch(38% 0.14470 54.32)",
+          "oklch(49% 0.14470 54.32)",
+          "oklch(61% 0.14470 54.32)",
+          "oklch(72% 0.14470 54.32)",
+          "oklch(84% 0.14470 54.32)",
+          "oklch(95% 0.14470 54.32)"
         ]
       },
       "orange-dark": {
         "role": "primary",
-        "displayName": "Naranja profundo",
+        "displayName": "Naranja legible",
         "tonalRamp": [
-          "oklch(15% 0.14418 39.82)",
-          "oklch(27% 0.14418 39.82)",
-          "oklch(38% 0.14418 39.82)",
-          "oklch(49% 0.14418 39.82)",
-          "oklch(61% 0.14418 39.82)",
-          "oklch(72% 0.14418 39.82)",
-          "oklch(84% 0.14418 39.82)",
-          "oklch(95% 0.14418 39.82)"
+          "oklch(15% 0.11109 58.84)",
+          "oklch(27% 0.11109 58.84)",
+          "oklch(38% 0.11109 58.84)",
+          "oklch(49% 0.11109 58.84)",
+          "oklch(61% 0.11109 58.84)",
+          "oklch(72% 0.11109 58.84)",
+          "oklch(84% 0.11109 58.84)",
+          "oklch(95% 0.11109 58.84)"
         ]
       },
-      "focus": {
+      "action": {
         "role": "primary",
-        "displayName": "Naranja de foco",
+        "displayName": "Naranja de acción",
         "tonalRamp": [
-          "oklch(15% 0.14315 41.40)",
-          "oklch(27% 0.14315 41.40)",
-          "oklch(38% 0.14315 41.40)",
-          "oklch(49% 0.14315 41.40)",
-          "oklch(61% 0.14315 41.40)",
-          "oklch(72% 0.14315 41.40)",
-          "oklch(84% 0.14315 41.40)",
-          "oklch(95% 0.14315 41.40)"
+          "oklch(15% 0.13183 57.75)",
+          "oklch(27% 0.13183 57.75)",
+          "oklch(38% 0.13183 57.75)",
+          "oklch(49% 0.13183 57.75)",
+          "oklch(61% 0.13183 57.75)",
+          "oklch(72% 0.13183 57.75)",
+          "oklch(84% 0.13183 57.75)",
+          "oklch(95% 0.13183 57.75)"
+        ]
+      },
+      "action-hover": {
+        "role": "primary",
+        "displayName": "Naranja de hover",
+        "tonalRamp": [
+          "oklch(15% 0.10552 61.48)",
+          "oklch(27% 0.10552 61.48)",
+          "oklch(38% 0.10552 61.48)",
+          "oklch(49% 0.10552 61.48)",
+          "oklch(61% 0.10552 61.48)",
+          "oklch(72% 0.10552 61.48)",
+          "oklch(84% 0.10552 61.48)",
+          "oklch(95% 0.10552 61.48)"
+        ]
+      },
+      "action-ink": {
+        "role": "neutral",
+        "displayName": "Tinta de acción",
+        "tonalRamp": [
+          "oklch(15% 0.02417 147.22)",
+          "oklch(27% 0.02417 147.22)",
+          "oklch(38% 0.02417 147.22)",
+          "oklch(49% 0.02417 147.22)",
+          "oklch(61% 0.02417 147.22)",
+          "oklch(72% 0.02417 147.22)",
+          "oklch(84% 0.02417 147.22)",
+          "oklch(95% 0.02417 147.22)"
         ]
       },
       "acreedor": {
         "role": "secondary",
-        "displayName": "Verde de crédito",
+        "displayName": "Menta confirmada",
         "tonalRamp": [
-          "oklch(15% 0.09211 159.09)",
-          "oklch(27% 0.09211 159.09)",
-          "oklch(38% 0.09211 159.09)",
-          "oklch(49% 0.09211 159.09)",
-          "oklch(61% 0.09211 159.09)",
-          "oklch(72% 0.09211 159.09)",
-          "oklch(84% 0.09211 159.09)",
-          "oklch(95% 0.09211 159.09)"
+          "oklch(15% 0.12773 172.27)",
+          "oklch(27% 0.12773 172.27)",
+          "oklch(38% 0.12773 172.27)",
+          "oklch(49% 0.12773 172.27)",
+          "oklch(61% 0.12773 172.27)",
+          "oklch(72% 0.12773 172.27)",
+          "oklch(84% 0.12773 172.27)",
+          "oklch(95% 0.12773 172.27)"
         ]
       },
       "acreedor-bg": {
         "role": "secondary",
-        "displayName": "Fondo de crédito",
+        "displayName": "Menta de fondo",
         "tonalRamp": [
-          "oklch(15% 0.01572 154.47)",
-          "oklch(27% 0.01572 154.47)",
-          "oklch(38% 0.01572 154.47)",
-          "oklch(49% 0.01572 154.47)",
-          "oklch(61% 0.01572 154.47)",
-          "oklch(72% 0.01572 154.47)",
-          "oklch(84% 0.01572 154.47)",
-          "oklch(95% 0.01572 154.47)"
+          "oklch(15% 0.05135 173.21)",
+          "oklch(27% 0.05135 173.21)",
+          "oklch(38% 0.05135 173.21)",
+          "oklch(49% 0.05135 173.21)",
+          "oklch(61% 0.05135 173.21)",
+          "oklch(72% 0.05135 173.21)",
+          "oklch(84% 0.05135 173.21)",
+          "oklch(95% 0.05135 173.21)"
+        ]
+      },
+      "credit": {
+        "role": "secondary",
+        "displayName": "Azul de crédito",
+        "tonalRamp": [
+          "oklch(15% 0.10024 245.32)",
+          "oklch(27% 0.10024 245.32)",
+          "oklch(38% 0.10024 245.32)",
+          "oklch(49% 0.10024 245.32)",
+          "oklch(61% 0.10024 245.32)",
+          "oklch(72% 0.10024 245.32)",
+          "oklch(84% 0.10024 245.32)",
+          "oklch(95% 0.10024 245.32)"
+        ]
+      },
+      "info-bg": {
+        "role": "secondary",
+        "displayName": "Azul de aviso",
+        "tonalRamp": [
+          "oklch(15% 0.04287 231.11)",
+          "oklch(27% 0.04287 231.11)",
+          "oklch(38% 0.04287 231.11)",
+          "oklch(49% 0.04287 231.11)",
+          "oklch(61% 0.04287 231.11)",
+          "oklch(72% 0.04287 231.11)",
+          "oklch(84% 0.04287 231.11)",
+          "oklch(95% 0.04287 231.11)"
         ]
       },
       "provisional": {
         "role": "secondary",
         "displayName": "Ámbar de revisión",
         "tonalRamp": [
-          "oklch(15% 0.09884 78.91)",
-          "oklch(27% 0.09884 78.91)",
-          "oklch(38% 0.09884 78.91)",
-          "oklch(49% 0.09884 78.91)",
-          "oklch(61% 0.09884 78.91)",
-          "oklch(72% 0.09884 78.91)",
-          "oklch(84% 0.09884 78.91)",
-          "oklch(95% 0.09884 78.91)"
+          "oklch(15% 0.11755 82.16)",
+          "oklch(27% 0.11755 82.16)",
+          "oklch(38% 0.11755 82.16)",
+          "oklch(49% 0.11755 82.16)",
+          "oklch(61% 0.11755 82.16)",
+          "oklch(72% 0.11755 82.16)",
+          "oklch(84% 0.11755 82.16)",
+          "oklch(95% 0.11755 82.16)"
         ]
       },
       "provisional-bg": {
         "role": "secondary",
-        "displayName": "Fondo de revisión",
+        "displayName": "Ámbar de fondo",
         "tonalRamp": [
-          "oklch(15% 0.03078 86.46)",
-          "oklch(27% 0.03078 86.46)",
-          "oklch(38% 0.03078 86.46)",
-          "oklch(49% 0.03078 86.46)",
-          "oklch(61% 0.03078 86.46)",
-          "oklch(72% 0.03078 86.46)",
-          "oklch(84% 0.03078 86.46)",
-          "oklch(95% 0.03078 86.46)"
+          "oklch(15% 0.04354 81.09)",
+          "oklch(27% 0.04354 81.09)",
+          "oklch(38% 0.04354 81.09)",
+          "oklch(49% 0.04354 81.09)",
+          "oklch(61% 0.04354 81.09)",
+          "oklch(72% 0.04354 81.09)",
+          "oklch(84% 0.04354 81.09)",
+          "oklch(95% 0.04354 81.09)"
         ]
       },
       "alerta": {
         "role": "secondary",
-        "displayName": "Rojo de incidencia",
+        "displayName": "Coral de incidencia",
         "tonalRamp": [
-          "oklch(15% 0.15296 24.37)",
-          "oklch(27% 0.15296 24.37)",
-          "oklch(38% 0.15296 24.37)",
-          "oklch(49% 0.15296 24.37)",
-          "oklch(61% 0.15296 24.37)",
-          "oklch(72% 0.15296 24.37)",
-          "oklch(84% 0.15296 24.37)",
-          "oklch(95% 0.15296 24.37)"
+          "oklch(15% 0.11091 19.78)",
+          "oklch(27% 0.11091 19.78)",
+          "oklch(38% 0.11091 19.78)",
+          "oklch(49% 0.11091 19.78)",
+          "oklch(61% 0.11091 19.78)",
+          "oklch(72% 0.11091 19.78)",
+          "oklch(84% 0.11091 19.78)",
+          "oklch(95% 0.11091 19.78)"
         ]
       },
       "alerta-bg": {
         "role": "secondary",
-        "displayName": "Fondo de incidencia",
+        "displayName": "Coral de fondo",
         "tonalRamp": [
-          "oklch(15% 0.01417 22.76)",
-          "oklch(27% 0.01417 22.76)",
-          "oklch(38% 0.01417 22.76)",
-          "oklch(49% 0.01417 22.76)",
-          "oklch(61% 0.01417 22.76)",
-          "oklch(72% 0.01417 22.76)",
-          "oklch(84% 0.01417 22.76)",
-          "oklch(95% 0.01417 22.76)"
-        ]
-      },
-      "info": {
-        "role": "secondary",
-        "displayName": "Azul informativo",
-        "tonalRamp": [
-          "oklch(15% 0.08138 237.90)",
-          "oklch(27% 0.08138 237.90)",
-          "oklch(38% 0.08138 237.90)",
-          "oklch(49% 0.08138 237.90)",
-          "oklch(61% 0.08138 237.90)",
-          "oklch(72% 0.08138 237.90)",
-          "oklch(84% 0.08138 237.90)",
-          "oklch(95% 0.08138 237.90)"
-        ]
-      },
-      "info-bg": {
-        "role": "secondary",
-        "displayName": "Fondo informativo",
-        "tonalRamp": [
-          "oklch(15% 0.01089 234.82)",
-          "oklch(27% 0.01089 234.82)",
-          "oklch(38% 0.01089 234.82)",
-          "oklch(49% 0.01089 234.82)",
-          "oklch(61% 0.01089 234.82)",
-          "oklch(72% 0.01089 234.82)",
-          "oklch(84% 0.01089 234.82)",
-          "oklch(95% 0.01089 234.82)"
-        ]
-      },
-      "deudor": {
-        "role": "secondary",
-        "displayName": "Terracota de deuda",
-        "tonalRamp": [
-          "oklch(15% 0.13731 39.56)",
-          "oklch(27% 0.13731 39.56)",
-          "oklch(38% 0.13731 39.56)",
-          "oklch(49% 0.13731 39.56)",
-          "oklch(61% 0.13731 39.56)",
-          "oklch(72% 0.13731 39.56)",
-          "oklch(84% 0.13731 39.56)",
-          "oklch(95% 0.13731 39.56)"
+          "oklch(15% 0.03440 19.16)",
+          "oklch(27% 0.03440 19.16)",
+          "oklch(38% 0.03440 19.16)",
+          "oklch(49% 0.03440 19.16)",
+          "oklch(61% 0.03440 19.16)",
+          "oklch(72% 0.03440 19.16)",
+          "oklch(84% 0.03440 19.16)",
+          "oklch(95% 0.03440 19.16)"
         ]
       },
       "deudor-bg": {
         "role": "secondary",
-        "displayName": "Fondo de deuda",
+        "displayName": "Terracota de deuda",
         "tonalRamp": [
-          "oklch(15% 0.01695 50.44)",
-          "oklch(27% 0.01695 50.44)",
-          "oklch(38% 0.01695 50.44)",
-          "oklch(49% 0.01695 50.44)",
-          "oklch(61% 0.01695 50.44)",
-          "oklch(72% 0.01695 50.44)",
-          "oklch(84% 0.01695 50.44)",
-          "oklch(95% 0.01695 50.44)"
+          "oklch(15% 0.04177 46.53)",
+          "oklch(27% 0.04177 46.53)",
+          "oklch(38% 0.04177 46.53)",
+          "oklch(49% 0.04177 46.53)",
+          "oklch(61% 0.04177 46.53)",
+          "oklch(72% 0.04177 46.53)",
+          "oklch(84% 0.04177 46.53)",
+          "oklch(95% 0.04177 46.53)"
         ]
       },
       "aldia": {
         "role": "secondary",
-        "displayName": "Verde gris de equilibrio",
+        "displayName": "Menta de equilibrio",
         "tonalRamp": [
-          "oklch(15% 0.04435 154.92)",
-          "oklch(27% 0.04435 154.92)",
-          "oklch(38% 0.04435 154.92)",
-          "oklch(49% 0.04435 154.92)",
-          "oklch(61% 0.04435 154.92)",
-          "oklch(72% 0.04435 154.92)",
-          "oklch(84% 0.04435 154.92)",
-          "oklch(95% 0.04435 154.92)"
+          "oklch(15% 0.08343 169.29)",
+          "oklch(27% 0.08343 169.29)",
+          "oklch(38% 0.08343 169.29)",
+          "oklch(49% 0.08343 169.29)",
+          "oklch(61% 0.08343 169.29)",
+          "oklch(72% 0.08343 169.29)",
+          "oklch(84% 0.08343 169.29)",
+          "oklch(95% 0.08343 169.29)"
         ]
       },
       "aldia-bg": {
         "role": "secondary",
-        "displayName": "Fondo de cuenta al día",
+        "displayName": "Equilibrio de fondo",
         "tonalRamp": [
-          "oklch(15% 0.00749 151.89)",
-          "oklch(27% 0.00749 151.89)",
-          "oklch(38% 0.00749 151.89)",
-          "oklch(49% 0.00749 151.89)",
-          "oklch(61% 0.00749 151.89)",
-          "oklch(72% 0.00749 151.89)",
-          "oklch(84% 0.00749 151.89)",
-          "oklch(95% 0.00749 151.89)"
+          "oklch(15% 0.04557 174.97)",
+          "oklch(27% 0.04557 174.97)",
+          "oklch(38% 0.04557 174.97)",
+          "oklch(49% 0.04557 174.97)",
+          "oklch(61% 0.04557 174.97)",
+          "oklch(72% 0.04557 174.97)",
+          "oklch(84% 0.04557 174.97)",
+          "oklch(95% 0.04557 174.97)"
         ]
       },
       "charcoal": {
         "role": "neutral",
-        "displayName": "Carbón",
+        "displayName": "Texto de registro",
         "tonalRamp": [
-          "oklch(15% 0.00603 179.22)",
-          "oklch(27% 0.00603 179.22)",
-          "oklch(38% 0.00603 179.22)",
-          "oklch(49% 0.00603 179.22)",
-          "oklch(61% 0.00603 179.22)",
-          "oklch(72% 0.00603 179.22)",
-          "oklch(84% 0.00603 179.22)",
-          "oklch(95% 0.00603 179.22)"
+          "oklch(15% 0.00841 168.75)",
+          "oklch(27% 0.00841 168.75)",
+          "oklch(38% 0.00841 168.75)",
+          "oklch(49% 0.00841 168.75)",
+          "oklch(61% 0.00841 168.75)",
+          "oklch(72% 0.00841 168.75)",
+          "oklch(84% 0.00841 168.75)",
+          "oklch(95% 0.00841 168.75)"
         ]
       },
       "muted": {
         "role": "neutral",
-        "displayName": "Gris de contexto",
+        "displayName": "Contexto",
         "tonalRamp": [
-          "oklch(15% 0.01056 161.09)",
-          "oklch(27% 0.01056 161.09)",
-          "oklch(38% 0.01056 161.09)",
-          "oklch(49% 0.01056 161.09)",
-          "oklch(61% 0.01056 161.09)",
-          "oklch(72% 0.01056 161.09)",
-          "oklch(84% 0.01056 161.09)",
-          "oklch(95% 0.01056 161.09)"
+          "oklch(15% 0.02096 177.28)",
+          "oklch(27% 0.02096 177.28)",
+          "oklch(38% 0.02096 177.28)",
+          "oklch(49% 0.02096 177.28)",
+          "oklch(61% 0.02096 177.28)",
+          "oklch(72% 0.02096 177.28)",
+          "oklch(84% 0.02096 177.28)",
+          "oklch(95% 0.02096 177.28)"
         ]
       },
       "line": {
         "role": "neutral",
         "displayName": "Línea de registro",
         "tonalRamp": [
-          "oklch(15% 0.00757 151.88)",
-          "oklch(27% 0.00757 151.88)",
-          "oklch(38% 0.00757 151.88)",
-          "oklch(49% 0.00757 151.88)",
-          "oklch(61% 0.00757 151.88)",
-          "oklch(72% 0.00757 151.88)",
-          "oklch(84% 0.00757 151.88)",
-          "oklch(95% 0.00757 151.88)"
+          "oklch(15% 0.01943 176.38 / 0.2510)",
+          "oklch(27% 0.01943 176.38 / 0.2510)",
+          "oklch(38% 0.01943 176.38 / 0.2510)",
+          "oklch(49% 0.01943 176.38 / 0.2510)",
+          "oklch(61% 0.01943 176.38 / 0.2510)",
+          "oklch(72% 0.01943 176.38 / 0.2510)",
+          "oklch(84% 0.01943 176.38 / 0.2510)",
+          "oklch(95% 0.01943 176.38 / 0.2510)"
         ]
       },
       "surface-0": {
         "role": "neutral",
-        "displayName": "Piedra de página",
+        "displayName": "Carbón de fondo",
         "tonalRamp": [
-          "oklch(15% 0.00409 121.56)",
-          "oklch(27% 0.00409 121.56)",
-          "oklch(38% 0.00409 121.56)",
-          "oklch(49% 0.00409 121.56)",
-          "oklch(61% 0.00409 121.56)",
-          "oklch(72% 0.00409 121.56)",
-          "oklch(84% 0.00409 121.56)",
-          "oklch(95% 0.00409 121.56)"
+          "oklch(15% 0.01725 189.28)",
+          "oklch(27% 0.01725 189.28)",
+          "oklch(38% 0.01725 189.28)",
+          "oklch(49% 0.01725 189.28)",
+          "oklch(61% 0.01725 189.28)",
+          "oklch(72% 0.01725 189.28)",
+          "oklch(84% 0.01725 189.28)",
+          "oklch(95% 0.01725 189.28)"
         ]
       },
       "surface-1": {
         "role": "neutral",
-        "displayName": "Piedra de apoyo",
+        "displayName": "Apoyo de entrada",
         "tonalRamp": [
-          "oklch(15% 0.00618 137.77)",
-          "oklch(27% 0.00618 137.77)",
-          "oklch(38% 0.00618 137.77)",
-          "oklch(49% 0.00618 137.77)",
-          "oklch(61% 0.00618 137.77)",
-          "oklch(72% 0.00618 137.77)",
-          "oklch(84% 0.00618 137.77)",
-          "oklch(95% 0.00618 137.77)"
+          "oklch(15% 0.02129 191.21)",
+          "oklch(27% 0.02129 191.21)",
+          "oklch(38% 0.02129 191.21)",
+          "oklch(49% 0.02129 191.21)",
+          "oklch(61% 0.02129 191.21)",
+          "oklch(72% 0.02129 191.21)",
+          "oklch(84% 0.02129 191.21)",
+          "oklch(95% 0.02129 191.21)"
         ]
       },
       "surface-2": {
         "role": "neutral",
-        "displayName": "Piedra de etiqueta",
+        "displayName": "Apoyo de estado",
         "tonalRamp": [
-          "oklch(15% 0.00569 128.53)",
-          "oklch(27% 0.00569 128.53)",
-          "oklch(38% 0.00569 128.53)",
-          "oklch(49% 0.00569 128.53)",
-          "oklch(61% 0.00569 128.53)",
-          "oklch(72% 0.00569 128.53)",
-          "oklch(84% 0.00569 128.53)",
-          "oklch(95% 0.00569 128.53)"
+          "oklch(15% 0.02031 190.83)",
+          "oklch(27% 0.02031 190.83)",
+          "oklch(38% 0.02031 190.83)",
+          "oklch(49% 0.02031 190.83)",
+          "oklch(61% 0.02031 190.83)",
+          "oklch(72% 0.02031 190.83)",
+          "oklch(84% 0.02031 190.83)",
+          "oklch(95% 0.02031 190.83)"
         ]
       },
       "white": {
         "role": "neutral",
-        "displayName": "Blanco de registro",
+        "displayName": "Superficie oscura heredada",
         "tonalRamp": [
-          "oklch(15% 0.00000 0.00)",
-          "oklch(27% 0.00000 0.00)",
-          "oklch(38% 0.00000 0.00)",
-          "oklch(49% 0.00000 0.00)",
-          "oklch(61% 0.00000 0.00)",
-          "oklch(72% 0.00000 0.00)",
-          "oklch(84% 0.00000 0.00)",
-          "oklch(95% 0.00000 0.00)"
+          "oklch(15% 0.02213 181.67)",
+          "oklch(27% 0.02213 181.67)",
+          "oklch(38% 0.02213 181.67)",
+          "oklch(49% 0.02213 181.67)",
+          "oklch(61% 0.02213 181.67)",
+          "oklch(72% 0.02213 181.67)",
+          "oklch(84% 0.02213 181.67)",
+          "oklch(95% 0.02213 181.67)"
+        ]
+      },
+      "glass": {
+        "role": "neutral",
+        "displayName": "Cristal principal",
+        "tonalRamp": [
+          "oklch(15% 0.02344 183.71 / 0.4300)",
+          "oklch(27% 0.02344 183.71 / 0.4300)",
+          "oklch(38% 0.02344 183.71 / 0.4300)",
+          "oklch(49% 0.02344 183.71 / 0.4300)",
+          "oklch(61% 0.02344 183.71 / 0.4300)",
+          "oklch(72% 0.02344 183.71 / 0.4300)",
+          "oklch(84% 0.02344 183.71 / 0.4300)",
+          "oklch(95% 0.02344 183.71 / 0.4300)"
+        ]
+      },
+      "glass-solid": {
+        "role": "neutral",
+        "displayName": "Cristal sólido",
+        "tonalRamp": [
+          "oklch(15% 0.02213 181.67)",
+          "oklch(27% 0.02213 181.67)",
+          "oklch(38% 0.02213 181.67)",
+          "oklch(49% 0.02213 181.67)",
+          "oklch(61% 0.02213 181.67)",
+          "oklch(72% 0.02213 181.67)",
+          "oklch(84% 0.02213 181.67)",
+          "oklch(95% 0.02213 181.67)"
+        ]
+      },
+      "input-bg": {
+        "role": "neutral",
+        "displayName": "Entrada oscura",
+        "tonalRamp": [
+          "oklch(15% 0.02079 178.67 / 0.4600)",
+          "oklch(27% 0.02079 178.67 / 0.4600)",
+          "oklch(38% 0.02079 178.67 / 0.4600)",
+          "oklch(49% 0.02079 178.67 / 0.4600)",
+          "oklch(61% 0.02079 178.67 / 0.4600)",
+          "oklch(72% 0.02079 178.67 / 0.4600)",
+          "oklch(84% 0.02079 178.67 / 0.4600)",
+          "oklch(95% 0.02079 178.67 / 0.4600)"
+        ]
+      },
+      "panel-border": {
+        "role": "neutral",
+        "displayName": "Borde de cristal",
+        "tonalRamp": [
+          "oklch(15% 0.02766 170.15 / 0.4784)",
+          "oklch(27% 0.02766 170.15 / 0.4784)",
+          "oklch(38% 0.02766 170.15 / 0.4784)",
+          "oklch(49% 0.02766 170.15 / 0.4784)",
+          "oklch(61% 0.02766 170.15 / 0.4784)",
+          "oklch(72% 0.02766 170.15 / 0.4784)",
+          "oklch(84% 0.02766 170.15 / 0.4784)",
+          "oklch(95% 0.02766 170.15 / 0.4784)"
         ]
       },
       "control-border": {
         "role": "neutral",
         "displayName": "Borde de control",
         "tonalRamp": [
-          "oklch(15% 0.01282 149.23)",
-          "oklch(27% 0.01282 149.23)",
-          "oklch(38% 0.01282 149.23)",
-          "oklch(49% 0.01282 149.23)",
-          "oklch(61% 0.01282 149.23)",
-          "oklch(72% 0.01282 149.23)",
-          "oklch(84% 0.01282 149.23)",
-          "oklch(95% 0.01282 149.23)"
+          "oklch(15% 0.02780 159.37 / 0.2510)",
+          "oklch(27% 0.02780 159.37 / 0.2510)",
+          "oklch(38% 0.02780 159.37 / 0.2510)",
+          "oklch(49% 0.02780 159.37 / 0.2510)",
+          "oklch(61% 0.02780 159.37 / 0.2510)",
+          "oklch(72% 0.02780 159.37 / 0.2510)",
+          "oklch(84% 0.02780 159.37 / 0.2510)",
+          "oklch(95% 0.02780 159.37 / 0.2510)"
         ]
       },
-      "nav-text": {
-        "role": "neutral",
-        "displayName": "Texto de navegación",
-        "tonalRamp": [
-          "oklch(15% 0.01201 153.63)",
-          "oklch(27% 0.01201 153.63)",
-          "oklch(38% 0.01201 153.63)",
-          "oklch(49% 0.01201 153.63)",
-          "oklch(61% 0.01201 153.63)",
-          "oklch(72% 0.01201 153.63)",
-          "oklch(84% 0.01201 153.63)",
-          "oklch(95% 0.01201 153.63)"
-        ]
-      },
-      "nav-active": {
-        "role": "neutral",
-        "displayName": "Selección de carbón",
-        "tonalRamp": [
-          "oklch(15% 0.00987 176.77)",
-          "oklch(27% 0.00987 176.77)",
-          "oklch(38% 0.00987 176.77)",
-          "oklch(49% 0.00987 176.77)",
-          "oklch(61% 0.00987 176.77)",
-          "oklch(72% 0.00987 176.77)",
-          "oklch(84% 0.00987 176.77)",
-          "oklch(95% 0.00987 176.77)"
-        ]
-      },
-      "nav-hover": {
-        "role": "neutral",
-        "displayName": "Carbón de hover",
-        "tonalRamp": [
-          "oklch(15% 0.01260 154.63)",
-          "oklch(27% 0.01260 154.63)",
-          "oklch(38% 0.01260 154.63)",
-          "oklch(49% 0.01260 154.63)",
-          "oklch(61% 0.01260 154.63)",
-          "oklch(72% 0.01260 154.63)",
-          "oklch(84% 0.01260 154.63)",
-          "oklch(95% 0.01260 154.63)"
-        ]
-      },
-      "nav-accent": {
+      "secondary-bg": {
         "role": "primary",
-        "displayName": "Naranja sobre carbón",
+        "displayName": "Velo de acción",
         "tonalRamp": [
-          "oklch(15% 0.12049 47.71)",
-          "oklch(27% 0.12049 47.71)",
-          "oklch(38% 0.12049 47.71)",
-          "oklch(49% 0.12049 47.71)",
-          "oklch(61% 0.12049 47.71)",
-          "oklch(72% 0.12049 47.71)",
-          "oklch(84% 0.12049 47.71)",
-          "oklch(95% 0.12049 47.71)"
+          "oklch(15% 0.00000 0.00 / 0.0275)",
+          "oklch(27% 0.00000 0.00 / 0.0275)",
+          "oklch(38% 0.00000 0.00 / 0.0275)",
+          "oklch(49% 0.00000 0.00 / 0.0275)",
+          "oklch(61% 0.00000 0.00 / 0.0275)",
+          "oklch(72% 0.00000 0.00 / 0.0275)",
+          "oklch(84% 0.00000 0.00 / 0.0275)",
+          "oklch(95% 0.00000 0.00 / 0.0275)"
+        ]
+      },
+      "secondary-hover": {
+        "role": "primary",
+        "displayName": "Velo de hover",
+        "tonalRamp": [
+          "oklch(15% 0.13238 64.14 / 0.1020)",
+          "oklch(27% 0.13238 64.14 / 0.1020)",
+          "oklch(38% 0.13238 64.14 / 0.1020)",
+          "oklch(49% 0.13238 64.14 / 0.1020)",
+          "oklch(61% 0.13238 64.14 / 0.1020)",
+          "oklch(72% 0.13238 64.14 / 0.1020)",
+          "oklch(84% 0.13238 64.14 / 0.1020)",
+          "oklch(95% 0.13238 64.14 / 0.1020)"
+        ]
+      },
+      "nav-active-text": {
+        "role": "neutral",
+        "displayName": "Texto activo cálido",
+        "tonalRamp": [
+          "oklch(15% 0.02125 65.32)",
+          "oklch(27% 0.02125 65.32)",
+          "oklch(38% 0.02125 65.32)",
+          "oklch(49% 0.02125 65.32)",
+          "oklch(61% 0.02125 65.32)",
+          "oklch(72% 0.02125 65.32)",
+          "oklch(84% 0.02125 65.32)",
+          "oklch(95% 0.02125 65.32)"
+        ]
+      },
+      "cyan-context": {
+        "role": "secondary",
+        "displayName": "Cian de contexto",
+        "tonalRamp": [
+          "oklch(15% 0.06170 213.05)",
+          "oklch(27% 0.06170 213.05)",
+          "oklch(38% 0.06170 213.05)",
+          "oklch(49% 0.06170 213.05)",
+          "oklch(61% 0.06170 213.05)",
+          "oklch(72% 0.06170 213.05)",
+          "oklch(84% 0.06170 213.05)",
+          "oklch(95% 0.06170 213.05)"
+        ]
+      },
+      "contrast-line": {
+        "role": "neutral",
+        "displayName": "Línea reforzada",
+        "tonalRamp": [
+          "oklch(15% 0.02655 152.70 / 0.5020)",
+          "oklch(27% 0.02655 152.70 / 0.5020)",
+          "oklch(38% 0.02655 152.70 / 0.5020)",
+          "oklch(49% 0.02655 152.70 / 0.5020)",
+          "oklch(61% 0.02655 152.70 / 0.5020)",
+          "oklch(72% 0.02655 152.70 / 0.5020)",
+          "oklch(84% 0.02655 152.70 / 0.5020)",
+          "oklch(95% 0.02655 152.70 / 0.5020)"
+        ]
+      },
+      "contrast-muted": {
+        "role": "neutral",
+        "displayName": "Contexto reforzado",
+        "tonalRamp": [
+          "oklch(15% 0.01872 166.31)",
+          "oklch(27% 0.01872 166.31)",
+          "oklch(38% 0.01872 166.31)",
+          "oklch(49% 0.01872 166.31)",
+          "oklch(61% 0.01872 166.31)",
+          "oklch(72% 0.01872 166.31)",
+          "oklch(84% 0.01872 166.31)",
+          "oklch(95% 0.01872 166.31)"
         ]
       }
     },
     "typographyMeta": {
       "display": {
-        "displayName": "Saldo principal",
-        "purpose": "Saldo confirmado o pendiente de cobro; cifras tabulares."
+        "displayName": "display",
+        "purpose": "Importes de indicadores en peso 700 con clamp(1.5rem, calc(4.8vw - 36px), 2.5rem); a 1300px usa clamp(1.375rem, 1.875vw, 1.6875rem), a 760px usa 1.25rem."
       },
       "headline": {
-        "displayName": "Título de página",
-        "purpose": "Mi día o nombre del cliente."
+        "displayName": "headline",
+        "purpose": "Título de página."
       },
       "title": {
-        "displayName": "Título de registro",
-        "purpose": "Encabezados de cartera y bloques auxiliares."
+        "displayName": "title",
+        "purpose": "Encabezados de panel."
       },
       "title-client": {
-        "displayName": "Título de panel",
-        "purpose": "Encabezados de la ficha del cliente."
+        "displayName": "title-client",
+        "purpose": "Encabezados interiores de ficha."
       },
       "body": {
-        "displayName": "Texto general",
-        "purpose": "Descripciones y campos."
+        "displayName": "body",
+        "purpose": "Lectura y entrada de datos."
       },
       "label": {
-        "displayName": "Etiqueta",
-        "purpose": "Etiquetas de formulario."
+        "displayName": "label",
+        "purpose": "Etiquetas de campo."
       },
       "action": {
-        "displayName": "Acción",
-        "purpose": "Texto de botones y enlaces operativos."
+        "displayName": "action",
+        "purpose": "Botones y enlaces operativos."
       },
       "navigation": {
-        "displayName": "Destino",
-        "purpose": "Navegación persistente."
+        "displayName": "navigation",
+        "purpose": "Destinos de navegación."
       },
       "caption": {
-        "displayName": "Contexto menor",
-        "purpose": "Categorías y notas de registro."
+        "displayName": "caption",
+        "purpose": "Contexto y referencias."
+      },
+      "table-body": {
+        "displayName": "Table body",
+        "purpose": "Datos de pagos y movimientos: 1rem en escritorio, .875rem en móvil."
       }
     },
-    "shadows": [],
+    "shadows": [
+      {
+        "name": "cristal-registro",
+        "value": "inset 0 1px 1px #e2ede957, inset 0 0 24px #ffffff06, 0 0 14px #f6a36218",
+        "purpose": "Paneles y registros del mundo oscuro."
+      },
+      {
+        "name": "cristal-navegacion",
+        "value": "inset 0 1px 1px #e2ede975, inset 0 0 20px #fcb27510, 0 0 12px #ffa65a25",
+        "purpose": "Sidebar persistente."
+      },
+      {
+        "name": "seleccion-calida",
+        "value": "inset 0 0 0 1px #ffaa6766, inset 0 0 17px #ff9f4233, 0 0 8px #ff9d571f",
+        "purpose": "Destino activo de navegación."
+      },
+      {
+        "name": "cristal-acceso",
+        "value": "inset 0 1px 2px #ffcf8fc2, inset 0 0 30px #ff9b4321, 0 0 26px #ff9e5724",
+        "purpose": "Variante del formulario de login."
+      }
+    ],
     "motion": [
       {
         "name": "ease-out",
         "value": "cubic-bezier(0.23, 1, 0.32, 1)",
-        "purpose": "Easing de la pulsación de botones con superficie."
+        "purpose": "Feedback de pulsación de controles."
       },
       {
-        "name": "button-press",
-        "value": "transform 120ms var(--ease-out)",
-        "purpose": "Feedback de pulsación con scale(.97)."
+        "name": "press-duration",
+        "value": "120ms",
+        "purpose": "Escala .97 al pulsar; no anima cifras ni carga de páginas."
       },
       {
-        "name": "reduced-motion",
-        "value": "animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important;",
-        "purpose": "Respuesta a prefers-reduced-motion; el botón elimina la transformación."
+        "name": "reduced-motion-duration",
+        "value": ".01ms",
+        "purpose": "Preferencia de movimiento reducido; transformación de pulsación eliminada."
       }
     ],
     "breakpoints": [
       {
-        "name": "tablet",
+        "name": "wide-desktop",
+        "value": "1301px"
+      },
+      {
+        "name": "compact-desktop",
+        "value": "1300px"
+      },
+      {
+        "name": "wide-tablet",
         "value": "1200px"
+      },
+      {
+        "name": "stacked",
+        "value": "1000px"
       },
       {
         "name": "mobile",
@@ -452,125 +587,128 @@
   },
   "components": [
     {
-      "name": "Botón primario",
+      "name": "Acción primaria",
       "kind": "button",
       "refersTo": "button-primary",
-      "description": "Confirmar una acción con naranja profundo, foco visible y pulsación breve.",
-      "html": "<button type=\"button\" class=\"ds-btn-primary\">Confirmar</button>",
-      "css": ".ds-btn-primary{font-family:\"Manrope Variable\", \"Segoe UI\", ui-sans-serif, system-ui, sans-serif;min-height:42px;padding:10px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;touch-action:manipulation;transition:transform 120ms var(--ease-out,cubic-bezier(0.23,1,0.32,1));border:0;background:var(--orange,#c45121);color:var(--white,#fff)}.ds-btn-primary:focus-visible{outline:3px solid #ba542a;outline-offset:4px;}.ds-btn-primary:active:not(:disabled){transform:scale(.97)}.ds-btn-primary:disabled{opacity:.55;cursor:not-allowed}@media(prefers-reduced-motion:reduce){.ds-btn-primary{transition-duration:.01ms}.ds-btn-primary:active:not(:disabled){transform:none}}@media(hover:hover) and (pointer:fine){.ds-btn-primary:hover{background:var(--orange-dark,#a53f16)}}"
+      "description": "Verificar un pago después de reconocer explícitamente su recepción e importe.",
+      "html": "<div class=\"ds-canvas\"><button type=\"button\" class=\"ds-btn ds-primary\"><svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12l4 4L19 6\"/></svg>Verificar pago</button></div>",
+      "css": ".ds-canvas{background:var(--surface-0,#0d1918);padding:16px;border-radius:14px}.ds-btn{font-family:\"Manrope Variable\",\"Segoe UI\",ui-sans-serif,system-ui,sans-serif;min-height:44px;padding:10px 16px;border-radius:8px;font-size:.8125rem;font-weight:600;line-height:1.5;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;touch-action:manipulation;transition:transform 120ms var(--ease-out,cubic-bezier(0.23,1,0.32,1));}.ds-primary{background:#ffa965;color:#1b261c;border:1px solid #ffd09780}.ds-btn:focus-visible{outline:3px solid var(--orange-dark,#ffb77e);outline-offset:4px;transition:none}.ds-btn:active:not(:disabled){transform:scale(.97)}.ds-btn:disabled{opacity:.6;cursor:not-allowed}@media(prefers-reduced-motion:reduce){.ds-btn{transition-duration:.01ms}.ds-btn:active:not(:disabled){transform:none}}@media(hover:hover) and (pointer:fine){.ds-primary:hover{background:#ffbd84}}@media(prefers-contrast:more){.ds-canvas{--glass:#1c2c29;--line:#9bac9f80;--muted:#cbdad3}}"
     },
     {
-      "name": "Botón secundario",
+      "name": "Acción secundaria",
       "kind": "button",
       "refersTo": "button-secondary",
-      "description": "Actualizar o ejecutar una acción secundaria sobre superficie blanca.",
-      "html": "<button type=\"button\" class=\"ds-btn-secondary\">Actualizar</button>",
-      "css": ".ds-btn-secondary{font-family:\"Manrope Variable\", \"Segoe UI\", ui-sans-serif, system-ui, sans-serif;min-height:42px;padding:10px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;touch-action:manipulation;transition:transform 120ms var(--ease-out,cubic-bezier(0.23,1,0.32,1));border:1px solid #d1d9d2;background:var(--white,#fff);color:var(--charcoal,#242827)}.ds-btn-secondary:focus-visible{outline:3px solid #ba542a;outline-offset:4px;}.ds-btn-secondary:active:not(:disabled){transform:scale(.97)}.ds-btn-secondary:disabled{opacity:.55;cursor:not-allowed}@media(prefers-reduced-motion:reduce){.ds-btn-secondary{transition-duration:.01ms}.ds-btn-secondary:active:not(:disabled){transform:none}}@media(hover:hover) and (pointer:fine){.ds-btn-secondary:hover{background:#f1f5ef;border-color:#aab7ac}}"
+      "description": "Abrir una ficha o actualizar la consulta sin competir con la verificación.",
+      "html": "<div class=\"ds-canvas\"><button type=\"button\" class=\"ds-btn ds-secondary\">Actualizar</button></div>",
+      "css": ".ds-canvas{background:var(--surface-0,#0d1918);padding:16px;border-radius:14px}.ds-btn{font-family:\"Manrope Variable\",\"Segoe UI\",ui-sans-serif,system-ui,sans-serif;min-height:44px;padding:10px 16px;border-radius:8px;font-size:.8125rem;font-weight:600;line-height:1.5;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;touch-action:manipulation;transition:transform 120ms var(--ease-out,cubic-bezier(0.23,1,0.32,1));}.ds-secondary{background:#ffffff07;color:var(--orange-dark,#ffb77e);border:1px solid #ffab6766}.ds-btn:focus-visible{outline:3px solid var(--orange-dark,#ffb77e);outline-offset:4px;transition:none}.ds-btn:active:not(:disabled){transform:scale(.97)}.ds-btn:disabled{opacity:.6;cursor:not-allowed}@media(prefers-reduced-motion:reduce){.ds-btn{transition-duration:.01ms}.ds-btn:active:not(:disabled){transform:none}}@media(hover:hover) and (pointer:fine){.ds-secondary:hover{background:#e699491a;border-color:#ffb77e88}}@media(prefers-contrast:more){.ds-canvas{--glass:#1c2c29;--line:#9bac9f80;--muted:#cbdad3}}"
     },
     {
       "name": "Enlace de acción",
       "kind": "button",
       "refersTo": "button-link",
-      "description": "Reintentar dentro de un mensaje sin introducir otra superficie.",
-      "html": "<button type=\"button\" class=\"ds-btn-link\">Reintentar</button>",
-      "css": ".ds-btn-link{font-family:\"Manrope Variable\", \"Segoe UI\", ui-sans-serif, system-ui, sans-serif;background:transparent;border:0;color:var(--orange-dark,#a53f16);font-size:13px;font-weight:600;padding:0;cursor:pointer}.ds-btn-link:hover{color:var(--orange-dark,#a53f16)}.ds-btn-link:focus-visible{outline:3px solid #ba542a;outline-offset:4px;}"
+      "description": "Reintentar dentro de un mensaje o cambiar el conjunto mostrado.",
+      "html": "<div class=\"ds-canvas\"><button type=\"button\" class=\"ds-link\">Reintentar</button></div>",
+      "css": ".ds-canvas{background:var(--surface-0,#0d1918);padding:16px;border-radius:14px}.ds-link{font-family:\"Manrope Variable\",\"Segoe UI\",ui-sans-serif,system-ui,sans-serif;background:transparent;border:0;color:var(--orange-dark,#ffb77e);font-size:.8125rem;font-weight:600;padding:0;cursor:pointer;min-height:36px}.ds-link:focus-visible{outline:3px solid var(--orange-dark,#ffb77e);outline-offset:4px;}@media(prefers-contrast:more){.ds-canvas{--glass:#1c2c29;--line:#9bac9f80;--muted:#cbdad3}}"
     },
     {
       "name": "Búsqueda de registro",
       "kind": "input",
       "refersTo": "search-field",
-      "description": "Buscar un cliente o un movimiento dentro de los datos cargados.",
-      "html": "<label class=\"ds-search\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14M16 16l5 5\"/></svg><input aria-label=\"Buscar cliente\" placeholder=\"Buscar un cliente…\"/></label>",
-      "css": ".ds-search{font-family:\"Manrope Variable\", \"Segoe UI\", ui-sans-serif, system-ui, sans-serif;display:flex;align-items:center;gap:9px;border:1px solid #d1d9d2;border-radius:8px;padding:0 12px;color:#6a756d;background:var(--white,#fff);min-width:160px}.ds-search input{font-family:\"Manrope Variable\", \"Segoe UI\", ui-sans-serif, system-ui, sans-serif;font-size:14px;color:var(--charcoal,#242827);border:0;outline:0;width:100%;height:43px;padding:0;background:transparent;min-width:0;caret-color:var(--orange,#c45121)}.ds-search input::placeholder{color:#606b63}.ds-search:focus-within{outline:2px solid var(--orange,#c45121);outline-offset:2px}.ds-search input:focus-visible{outline:0}"
+      "description": "Buscar una cuenta o los movimientos que ya están cargados.",
+      "html": "<div class=\"ds-canvas\"><label class=\"ds-search\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14M16 16l5 5\"/></svg><input aria-label=\"Buscar cliente\" placeholder=\"Buscar un cliente…\"/></label></div>",
+      "css": ".ds-canvas{background:var(--surface-0,#0d1918);padding:16px;border-radius:14px}.ds-search{font-family:\"Manrope Variable\",\"Segoe UI\",ui-sans-serif,system-ui,sans-serif;display:flex;align-items:center;gap:9px;border:1px solid #a4b8ac40;border-radius:8px;padding:0 12px;color:var(--charcoal,#edf4f1);background:var(--input-bg,rgb(8 22 19 / 46%));min-width:160px}.ds-search input{font-family:\"Manrope Variable\",\"Segoe UI\",ui-sans-serif,system-ui,sans-serif;font-size:.875rem;color:var(--charcoal,#edf4f1);border:0;outline:0;width:100%;height:43px;background:transparent;min-width:0;caret-color:var(--orange,#ff9d57)}.ds-search input::placeholder{color:#adbfba}.ds-search:focus-within{outline:2px solid var(--orange,#ff9d57);outline-offset:2px}.ds-search input:focus-visible{outline:0}@media(prefers-contrast:more){.ds-canvas{--glass:#1c2c29;--line:#9bac9f80;--muted:#cbdad3}}"
     },
     {
-      "name": "Navegación de carbón",
+      "name": "Navegación de cristal",
       "kind": "nav",
       "refersTo": "navigation-item",
-      "description": "Destinos con texto e icono; selección tonal sobre carbón.",
-      "html": "<nav class=\"ds-navigation\" aria-label=\"Navegación principal\"><a href=\"#dia\" class=\"ds-nav-item ds-nav-active\" aria-current=\"page\"><svg width=\"19\" height=\"19\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M3 10 12 3l9 7M5 9v11h14V9M9 20v-7h6v7\"/></svg><span>Mi día</span></a><a href=\"#clientes\" class=\"ds-nav-item\"><svg width=\"19\" height=\"19\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M17 4a4 4 0 0 1 0 8M22 21v-2a4 4 0 0 0-3-3.87\"/></svg><span>Clientes</span></a></nav>",
-      "css": ".ds-navigation{font-family:\"Manrope Variable\", \"Segoe UI\", ui-sans-serif, system-ui, sans-serif;background:var(--charcoal,#242827);padding:30px 16px 18px;display:grid;gap:5px}.ds-nav-item{display:flex;align-items:center;gap:11px;min-height:45px;padding:12px;border-radius:8px;font-size:13px;font-weight:500;line-height:1.5;color:#c3cbc5;text-decoration:none}.ds-nav-item svg{flex:0 0 auto}.ds-nav-active{background:#3b4240;color:var(--white,#fff)}.ds-nav-active svg{color:#f29b6e}.ds-nav-item:focus-visible{outline:3px solid #ba542a;outline-offset:4px;}@media(hover:hover) and (pointer:fine){.ds-nav-item:hover{background:#39403b;color:var(--white,#fff)}}@media(max-width:760px){.ds-navigation{display:flex;overflow-x:auto;padding:16px 12px 12px;gap:6px}.ds-nav-item{min-height:44px;padding:10px 12px;font-size:12px;gap:8px;white-space:nowrap;flex-shrink:0}}"
+      "description": "Destinos con selección cálida; la muestra móvil representa el menú abierto.",
+      "html": "<div class=\"ds-canvas\"><nav class=\"ds-navigation\" aria-label=\"Navegación principal\"><a class=\"ds-nav ds-active\" href=\"#dia\" aria-current=\"page\"><svg width=\"21\" height=\"21\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M4 5h16v16H4ZM8 3v4M16 3v4M4 10h16\"/></svg><span>Mi día</span></a><a class=\"ds-nav\" href=\"#clientes\"><svg width=\"21\" height=\"21\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8\"/></svg><span>Clientes</span></a></nav></div>",
+      "css": ".ds-canvas{background:var(--surface-0,#0d1918);padding:16px;border-radius:14px}.ds-navigation{font-family:\"Manrope Variable\",\"Segoe UI\",ui-sans-serif,system-ui,sans-serif;background:var(--glass,rgb(51 69 66 / 43%));border:1px solid #c6d4c780;border-radius:14px;padding:20px 10px 18px;display:grid;gap:5px;backdrop-filter:blur(16px);box-shadow:inset 0 1px 1px #e2ede975,inset 0 0 20px #fcb27510,0 0 12px #ffa65a25}.ds-nav{display:flex;align-items:center;gap:11px;min-height:50px;padding:10px 12px;border-radius:8px;font-size:.875rem;font-weight:500;line-height:1.5;color:var(--charcoal,#edf4f1);text-decoration:none}.ds-nav svg{flex:0 0 auto}.ds-nav.ds-active{color:#fff2e6;background:linear-gradient(110deg,#ef8a394d,#b46a2938);border-left:3px solid #ffa34f;box-shadow:inset 0 0 0 1px #ffaa6766,inset 0 0 17px #ff9f4233,0 0 8px #ff9d571f;padding-left:9px}.ds-nav.ds-active svg{color:#ffb16f}.ds-nav:focus-visible{outline:3px solid var(--orange-dark,#ffb77e);outline-offset:4px;}@media(hover:hover) and (pointer:fine){.ds-nav:hover{background:#ffffff0b;color:#fff}}@media(max-width:760px){.ds-navigation{grid-template-columns:1fr 1fr;background:#172823;backdrop-filter:none;border-radius:0;box-shadow:none;padding:18px 16px}.ds-nav{padding:12px 8px}}@media(prefers-reduced-transparency:reduce){.ds-navigation{background:var(--glass-solid,#1c2c29);backdrop-filter:none}}@supports not(backdrop-filter:blur(1px)){.ds-navigation{background:var(--glass-solid,#1c2c29)}}@media(hover:hover) and (pointer:fine){.ds-nav.ds-active:hover{background:linear-gradient(110deg,#ef8a394d,#b46a2938);color:#fff2e6}}@media(prefers-contrast:more){.ds-navigation{background:var(--glass-solid,#1c2c29);backdrop-filter:none;border-color:var(--line,#9bac9f80)}}@media(prefers-contrast:more){.ds-canvas{--glass:#1c2c29;--line:#9bac9f80;--muted:#cbdad3}}"
     },
     {
       "name": "Estados de cuenta",
       "kind": "chip",
       "refersTo": "status-deudor",
-      "description": "Estados escritos de deuda, saldo a favor y cuenta al día; no son controles.",
-      "html": "<span class=\"ds-status ds-deudor\">Con deuda</span> <span class=\"ds-status ds-acreedor\">A favor</span> <span class=\"ds-status ds-aldia\">Al día</span>",
-      "css": ".ds-status{font-family:\"Manrope Variable\", \"Segoe UI\", ui-sans-serif, system-ui, sans-serif;display:inline-block;font-size:11px;font-weight:600;border-radius:5px;padding:4px 8px;white-space:nowrap;line-height:1.4}.ds-deudor{background:#fcefE8;color:#a54420}.ds-acreedor{background:var(--acreedor-bg,#eaf5ed);color:var(--acreedor,#27704d)}.ds-aldia{background:#edf2ee;color:#54705d}"
+      "description": "Situación escrita de la cuenta y pago por verificar; etiquetas informativas.",
+      "html": "<div class=\"ds-canvas\"><span class=\"ds-chip ds-deudor\">Con deuda</span> <span class=\"ds-chip ds-acreedor\">A favor</span> <span class=\"ds-chip ds-aldia\">Al día</span> <span class=\"ds-chip ds-provisional\">Por verificar</span></div>",
+      "css": ".ds-canvas{background:var(--surface-0,#0d1918);padding:16px;border-radius:14px}.ds-chip{font-family:\"Manrope Variable\",\"Segoe UI\",ui-sans-serif,system-ui,sans-serif;display:inline-block;font-size:.6875rem;font-weight:600;border-radius:5px;padding:4px 8px;white-space:nowrap;line-height:1.4}.ds-deudor{background:#4b3226;color:var(--orange-dark,#ffb77e)}.ds-acreedor{background:var(--acreedor-bg,#133e33);color:var(--acreedor,#60e4c0)}.ds-aldia{background:#163b32;color:#8fd9be}.ds-provisional{background:#f2bc4f1c;color:var(--provisional,#ffd17a);border:1px solid #e7b95550}@media(prefers-contrast:more){.ds-canvas{--glass:#1c2c29;--line:#9bac9f80;--muted:#cbdad3}}"
     },
     {
-      "name": "Contenedor de registro",
+      "name": "Franja de cartera",
       "kind": "card",
-      "refersTo": "card",
-      "description": "Tarjeta blanca y plana delimitada por una línea suave.",
-      "html": "<section class=\"ds-card\"><h2 class=\"ds-card-title\">Requieren atención</h2><p class=\"ds-card-description\">Lo que está frenando el cobro.</p></section>",
-      "css": ".ds-card{font-family:\"Manrope Variable\", \"Segoe UI\", ui-sans-serif, system-ui, sans-serif;color:var(--charcoal,#242827);border-radius:14px;border:1px solid var(--line,#e0e5e1);background:var(--white,#fff);padding:22px}.ds-card-title{font-size:15px;font-weight:650;letter-spacing:-.02em;line-height:1.5;margin:0}.ds-card-description{font-size:12px;line-height:1.5;color:var(--muted,#656c68);margin:7px 0 15px}"
-    },
-    {
-      "name": "Fila de cuenta",
-      "kind": "custom",
-      "refersTo": "account-row",
-      "description": "Nombre, estado e importe conservan su relación entre escritorio y móvil.",
-      "html": "<a class=\"ds-account-row\" href=\"#cliente\"><div class=\"ds-account-name\"><span class=\"ds-client-avatar\">CO</span><div><strong>Comercial Altiplano</strong><small>Mayorista</small></div></div><span class=\"ds-account-status\">Con deuda</span><strong class=\"ds-account-amount\">Bs 28,450.00</strong><svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14M13 6l6 6-6 6\"/></svg></a>",
-      "css": ".ds-account-row{font-family:\"Manrope Variable\", \"Segoe UI\", ui-sans-serif, system-ui, sans-serif;display:grid;grid-template-columns:minmax(150px,1fr) 88px minmax(130px,.65fr) 18px;align-items:center;gap:14px;padding:16px 22px;min-height:77px;background:var(--white,#fff);border-bottom:1px solid #eef1ed;text-decoration:none;color:var(--charcoal,#242827);line-height:1.5}.ds-account-name{display:flex;gap:11px;align-items:center;min-width:0}.ds-account-name strong{font-size:13px;font-weight:600;display:block;overflow-wrap:anywhere}.ds-account-name small{display:block;color:var(--muted,#656c68);font-size:11px;margin-top:3px}.ds-client-avatar{display:grid;place-items:center;width:34px;height:34px;flex-shrink:0;border-radius:8px;background:#edf1e9;color:#5a6b56;font-size:11px;font-weight:600}.ds-account-status{justify-self:start;font-size:11px;font-weight:600;border-radius:5px;padding:4px 8px;white-space:nowrap;line-height:1.4;background:#fcefE8;color:#a54420}.ds-account-amount{font-size:14px;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;letter-spacing:-.015em}.ds-account-row>svg{color:#77827a}.ds-account-row:focus-visible{outline:3px solid #ba542a;outline-offset:4px;}@media(hover:hover) and (pointer:fine){.ds-account-row:hover{background:#f8faf6}}@media(max-width:760px){.ds-account-row{grid-template-columns:minmax(0,1fr) auto;gap:5px 8px;padding:16px}.ds-account-name{grid-row:1/3}.ds-account-name strong{font-size:12px}.ds-client-avatar{width:29px;height:29px}.ds-account-status{grid-column:2;grid-row:2;justify-self:end}.ds-account-amount{grid-column:2;grid-row:1;font-size:13px}.ds-account-row>svg{display:none}}"
+      "refersTo": "balance-strip",
+      "description": "Una superficie compartida conserva cuatro importes y su explicación; datos de ejemplo. Células de 18px, 16px desde 1301px y 12px en móvil.",
+      "html": "<div class=\"ds-canvas\"><section class=\"ds-balance\" aria-label=\"Resumen de cartera · datos de ejemplo\"><div class=\"ds-balance-cell\"><span>Cartera por cobrar</span><div class=\"ds-metric ds-confirmed\"><svg width=\"36\" height=\"36\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M3 6h17v14H3ZM3 6V3h14v3M16 10h5v6h-5ZM17 13h.1\"/></svg><strong>Bs 9,500.00</strong></div><small>Deuda confirmada de clientes</small></div><div class=\"ds-balance-cell\"><span>Cartera vencida</span><div class=\"ds-metric ds-overdue\"><svg width=\"36\" height=\"36\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0M12 7v5l3 2\"/></svg><strong>Bs 1,200.00</strong></div><small>Partidas vencidas</small></div><div class=\"ds-balance-cell\"><span>Pagos por verificar</span><div class=\"ds-metric ds-provisional\"><svg width=\"36\" height=\"36\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M12 3 2 21h20ZM12 9v5M12 17v.1\"/></svg><strong>Bs 800.00</strong></div><small>Ya registrados · falta verificar</small></div><div class=\"ds-balance-cell\"><span>Saldo a favor</span><div class=\"ds-metric ds-credit\"><svg width=\"36\" height=\"36\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8\"/></svg><strong>Bs 400.00</strong></div><small>Crédito confirmado de clientes</small></div></section></div>",
+      "css": ".ds-canvas{background:var(--surface-0,#0d1918);padding:16px;border-radius:14px}.ds-balance{font-family:\"Manrope Variable\",\"Segoe UI\",ui-sans-serif,system-ui,sans-serif;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;margin-bottom:24px;padding:24px 4px;background:var(--glass,rgb(51 69 66 / 43%));border:1px solid #bbd2c97a;border-radius:14px;color:var(--charcoal,#edf4f1);backdrop-filter:blur(12px);box-shadow:inset 0 1px 1px #e2ede957,inset 0 0 24px #ffffff06,0 0 14px #f6a36218}.ds-balance-cell{padding:0 18px;min-width:0}.ds-balance-cell+.ds-balance-cell{border-left:1px solid #c1d5c530}.ds-balance-cell>span{display:block;font-size:.875rem;color:#d0dfd8;margin-bottom:7px;line-height:1.5}.ds-metric{display:flex;align-items:center;gap:10px;min-width:0}.ds-metric svg{flex:0 0 auto}.ds-metric strong{font-size:clamp(1.5rem,calc(4.8vw - 36px),2.5rem);font-weight:700;line-height:1.2;letter-spacing:-.03em;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}.ds-balance-cell small{display:block;font-size:.75rem;color:var(--muted,#adbfba);margin-top:6px;line-height:1.5}.ds-confirmed{color:var(--acreedor,#60e4c0)}.ds-overdue{color:#ffb17e}.ds-provisional{color:var(--provisional,#ffd17a)}.ds-credit{color:var(--credit,#8ac9ff)}@media(min-width:1301px){.ds-balance-cell{padding-inline:16px}}@media(max-width:1300px){.ds-metric strong{font-size:clamp(1.375rem,1.875vw,1.6875rem)}.ds-metric svg{width:28px;height:28px}}@media(max-width:1000px){.ds-balance{grid-template-columns:repeat(2,minmax(0,1fr));gap:20px 0}.ds-balance-cell:nth-child(3){border-left:0}}@media(max-width:760px){.ds-balance{padding:20px 0}.ds-balance-cell{padding:0 12px;border:0}.ds-balance-cell:nth-child(even){border-left:1px solid var(--line,#ccddd840)}.ds-balance-cell>span{font-size:.75rem}.ds-balance-cell small{font-size:.6875rem}.ds-metric{gap:7px}.ds-metric svg{width:24px;height:24px}.ds-metric strong{font-size:1.25rem}}@media(prefers-reduced-transparency:reduce),(prefers-contrast:more){.ds-balance{background:var(--glass-solid,#1c2c29);backdrop-filter:none}}@media(prefers-contrast:more){.ds-canvas{--glass:#1c2c29;--line:#9bac9f80;--muted:#cbdad3}.ds-balance{border-color:var(--line,#9bac9f80)}}@supports not(backdrop-filter:blur(1px)){.ds-balance{background:var(--glass-solid,#1c2c29)}}"
     },
     {
       "name": "Pestañas de ficha",
       "kind": "nav",
       "refersTo": "tabs",
-      "description": "Selección inmediata y subrayado de naranja para alternar paneles; el snippet muestra el estado visual.",
-      "html": "<div class=\"ds-tabs\" role=\"tablist\" aria-label=\"Ficha del cliente\"><button class=\"ds-tab\" type=\"button\" role=\"tab\" aria-selected=\"true\">Cuenta corriente</button><button class=\"ds-tab\" type=\"button\" role=\"tab\" aria-selected=\"false\" tabindex=\"-1\">Partidas<span class=\"ds-tab-count\">2</span></button></div>",
-      "css": ".ds-tabs{font-family:\"Manrope Variable\", \"Segoe UI\", ui-sans-serif, system-ui, sans-serif;display:flex;gap:25px;border-bottom:1px solid var(--line,#e0e5e1);margin-bottom:24px;overflow-x:auto}.ds-tab{font-family:\"Manrope Variable\", \"Segoe UI\", ui-sans-serif, system-ui, sans-serif;background:transparent;border:0;border-bottom:2px solid transparent;padding:14px 0;color:var(--muted,#656c68);font-size:14px;cursor:pointer;white-space:nowrap;font-weight:500}.ds-tab[aria-selected=true]{border-color:var(--orange,#c45121);color:var(--orange-dark,#a53f16);font-weight:600}.ds-tab:hover{background:transparent}.ds-tab:focus-visible{outline:3px solid #ba542a;outline-offset:4px;}.ds-tab-count{display:inline-block;padding:0 5px;margin-left:7px;background:#edf0eb;color:#657064;font-size:11px;border-radius:4px;font-variant-numeric:tabular-nums}@media(max-width:760px){.ds-tabs{gap:22px}.ds-tab{font-size:13px}}"
+      "description": "Selección inmediata por subrayado naranja; el snippet muestra sus estados visuales.",
+      "html": "<div class=\"ds-canvas\"><div class=\"ds-tabs\" role=\"tablist\" aria-label=\"Detalle del cliente\"><button class=\"ds-tab\" type=\"button\" role=\"tab\" aria-selected=\"true\">Cuenta corriente</button><button class=\"ds-tab\" type=\"button\" role=\"tab\" aria-selected=\"false\" tabindex=\"-1\">Partidas<span class=\"ds-tab-count\">2</span></button></div></div>",
+      "css": ".ds-canvas{background:var(--surface-0,#0d1918);padding:16px;border-radius:14px}.ds-tabs{font-family:\"Manrope Variable\",\"Segoe UI\",ui-sans-serif,system-ui,sans-serif;display:flex;gap:0;border:1px solid var(--line,#ccddd840);border-radius:10px;background:#ffffff05;padding:0 16px;overflow-x:auto}.ds-tab{font-family:\"Manrope Variable\",\"Segoe UI\",ui-sans-serif,system-ui,sans-serif;background:transparent;border:0;border-bottom:2px solid transparent;padding:15px 16px;color:var(--muted,#adbfba);font-size:.875rem;cursor:pointer;white-space:nowrap;font-weight:500}.ds-tab[aria-selected=true]{border-color:var(--orange,#ff9d57);color:var(--orange-dark,#ffb77e);font-weight:600}.ds-tab:focus-visible{outline:3px solid var(--orange-dark,#ffb77e);outline-offset:4px;}.ds-tab-count{display:inline-block;padding:0 5px;margin-left:7px;background:#354a43;color:#bfcdc8;font-size:.6875rem;border-radius:4px;font-variant-numeric:tabular-nums}@media(max-width:760px){.ds-tabs{padding:0}.ds-tab{padding:15px 12px;font-size:.8125rem}}@media(prefers-contrast:more){.ds-canvas{--glass:#1c2c29;--line:#9bac9f80;--muted:#cbdad3}}"
     },
     {
-      "name": "Tabla de movimientos",
+      "name": "Registro de pagos",
+      "kind": "custom",
+      "refersTo": "card",
+      "description": "Importe recibido, medio y revisión conservan su relación; datos de ejemplo.",
+      "html": "<div class=\"ds-canvas\"><section class=\"ds-payment\"><div class=\"ds-payment-heading\"><h2>Pagos registrados · falta verificar</h2><span>Total registrado <strong>Bs 4,500.00</strong></span></div><div class=\"ds-payment-wrap\"><table class=\"ds-payment-table\"><thead><tr><th>Cliente</th><th>Medio</th><th>Importe</th><th>Estado</th><th>Acción</th></tr></thead><tbody><tr><td data-label=\"Cliente\">Cliente de ejemplo</td><td data-label=\"Medio\">Transferencia</td><td data-label=\"Importe\">Bs 4,500.00</td><td data-label=\"Estado\"><span class=\"ds-pay-chip\">Por verificar</span></td><td data-label=\"Acción\"><a class=\"ds-pay-action\" href=\"#revision\">Revisar</a></td></tr></tbody></table></div></section></div>",
+      "css": ".ds-canvas{background:var(--surface-0,#0d1918);padding:16px;border-radius:14px}.ds-payment{font-family:\"Manrope Variable\",\"Segoe UI\",ui-sans-serif,system-ui,sans-serif;background:var(--glass,rgb(51 69 66 / 43%));border:1px solid #bbd2c97a;border-radius:14px;box-shadow:inset 0 1px 1px #e2ede957,inset 0 0 24px #ffffff06,0 0 14px #f6a36218;color:var(--charcoal,#edf4f1);backdrop-filter:blur(12px);overflow:hidden}.ds-payment-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:20px 18px 15px}.ds-payment-heading h2{font-size:clamp(1rem,1.5vw,1.4rem);font-weight:650;letter-spacing:-.02em;margin:0}.ds-payment-heading>span{color:var(--muted,#adbfba);font-size:.875rem;display:inline-flex;gap:10px;align-items:center}.ds-payment-heading strong{color:var(--provisional,#ffd17a);font-size:1.25rem;white-space:nowrap}.ds-payment-wrap{padding:0 16px}.ds-payment-table{width:100%;border-collapse:separate;border-spacing:0;font-size:1rem;line-height:1.5}.ds-payment-table th{text-align:left;background:#ffffff09;border-block:1px solid #b3cec93d;padding:10px 12px;font-size:.875rem;color:#d7e4df;font-weight:500}.ds-payment-table th:first-child{border-left:1px solid #b3cec93d;border-radius:7px 0 0 7px}.ds-payment-table th:last-child{border-right:1px solid #b3cec93d;border-radius:0 7px 7px 0}.ds-payment-table td{padding:17px 10px;border-bottom:1px solid var(--line,#ccddd840)}.ds-payment-table td:nth-child(2){font-size:.875rem}.ds-payment-table td:nth-child(3),.ds-payment-table th:nth-child(3){text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}.ds-pay-chip{font-size:.6875rem;font-weight:600;border-radius:5px;padding:4px 8px;line-height:1.4;white-space:nowrap;color:#242a1c;background:#ffd17a;border:1px solid #ffdb94}.ds-pay-action{font-family:\"Manrope Variable\",\"Segoe UI\",ui-sans-serif,system-ui,sans-serif;min-height:44px;padding:10px 16px;border-radius:8px;font-size:.8125rem;font-weight:600;line-height:1.5;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;touch-action:manipulation;transition:transform 120ms var(--ease-out,cubic-bezier(0.23,1,0.32,1));min-height:36px;padding:7px 12px;font-size:.75rem;border:1px solid #ff963f;color:#ffb879;background:#191f1b70;box-shadow:inset 0 0 9px #ff9e3a12}.ds-pay-action:focus-visible{outline:3px solid var(--orange-dark,#ffb77e);outline-offset:4px;}.ds-pay-action:active{transform:scale(.97)}@media(hover:hover) and (pointer:fine){.ds-pay-action:hover{background:#e699491a;border-color:#ffb77e88}}@media(max-width:1300px){.ds-payment-table td{padding:15px 7px}.ds-pay-chip{font-size:.625rem;padding:4px 5px}}@media(max-width:760px){.ds-payment-table thead{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}.ds-payment-table tbody,.ds-payment-table tr{display:block}.ds-payment-table tr{border-top:1px solid var(--line,#ccddd840);padding:15px 0}.ds-payment-table td,.ds-payment-table td:nth-child(2),.ds-payment-table td:nth-child(3){display:grid;grid-template-columns:70px minmax(0,1fr);gap:8px;border:0;padding:5px 0;text-align:right;font-size:.875rem;white-space:normal}.ds-payment-table td::before{content:attr(data-label);text-align:left;color:var(--muted,#adbfba);font-size:.75rem}.ds-payment-table td>.ds-pay-chip,.ds-payment-table td>.ds-pay-action{justify-self:end}.ds-pay-action{min-width:105px}}@media(prefers-reduced-transparency:reduce),(prefers-contrast:more){.ds-payment{background:var(--glass-solid,#1c2c29);backdrop-filter:none}}@media(prefers-reduced-motion:reduce){.ds-pay-action{transition-duration:.01ms}.ds-pay-action:active:not(:disabled){transform:none}}@media(prefers-contrast:more){.ds-payment{border-color:var(--line,#9bac9f80)}}@media(prefers-contrast:more){.ds-canvas{--glass:#1c2c29;--line:#9bac9f80;--muted:#cbdad3}}.ds-payment-table td:nth-child(3){font-weight:700;letter-spacing:-.015em}"
+    },
+    {
+      "name": "Cuenta corriente",
       "kind": "custom",
       "refersTo": "movement-table",
-      "description": "Cifras alineadas en escritorio y pares de etiqueta/valor en móvil.",
-      "html": "<div class=\"ds-movement-wrapper\"><table class=\"ds-movement\"><thead><tr><th scope=\"col\">Fecha</th><th scope=\"col\">Movimiento</th><th scope=\"col\">Monto</th><th scope=\"col\">Saldo corrido</th></tr></thead><tbody><tr><td data-label=\"Fecha\">2026-09-12</td><td data-label=\"Movimiento\"><strong>Pago</strong><small>Transferencia confirmada</small></td><td data-label=\"Monto\" class=\"ds-money-credit\">-Bs 4,450.00</td><td data-label=\"Saldo corrido\" class=\"ds-money\">Bs 28,450.00</td></tr></tbody></table></div>",
-      "css": ".ds-movement-wrapper{font-family:\"Manrope Variable\", \"Segoe UI\", ui-sans-serif, system-ui, sans-serif;border:1px solid var(--line,#e0e5e1);border-radius:14px;overflow:hidden;background:var(--white,#fff);color:var(--charcoal,#242827);line-height:1.5}.ds-movement{width:100%;border-collapse:collapse;text-align:left;font-variant-numeric:tabular-nums}.ds-movement th{font-size:12px;font-weight:500;color:var(--muted,#656c68);background:#f5f7f3;padding:14px 20px}.ds-movement td{padding:18px 20px;border-top:1px solid var(--line,#e0e5e1);font-size:13px}.ds-movement td:first-child{color:var(--muted,#656c68);white-space:nowrap}.ds-movement th:nth-child(n+3),.ds-movement td:nth-child(n+3){text-align:right;white-space:nowrap}.ds-movement td strong{font-weight:600}.ds-movement td small{display:block;color:var(--muted,#656c68);margin-top:4px;font-size:12px}.ds-money{font-weight:700;letter-spacing:-.015em}.ds-money-credit{font-weight:700;color:var(--acreedor,#27704d);letter-spacing:-.015em}@media(max-width:760px){.ds-movement thead{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}.ds-movement tbody,.ds-movement tr,.ds-movement td{display:block}.ds-movement tr{padding:17px;border-top:1px solid var(--line,#e0e5e1)}.ds-movement tr:first-child{border-top:0}.ds-movement td{padding:4px 0;border:0;display:grid;grid-template-columns:100px minmax(0,1fr);text-align:right;gap:8px;overflow-wrap:anywhere}.ds-movement td:nth-child(n+3){white-space:normal}.ds-movement td::before{content:attr(data-label);text-align:left;color:var(--muted,#656c68);font-weight:400;font-size:12px}.ds-movement td small{grid-column:2;margin-top:0}.ds-movement td strong{grid-column:2}}"
+      "description": "Cargo, abono y saldo corrido en columnas distintas; etiquetas visibles en móvil.",
+      "html": "<div class=\"ds-canvas\"><div class=\"ds-movement-wrapper\"><table class=\"ds-movement\"><thead><tr><th scope=\"col\">Fecha</th><th scope=\"col\">Movimiento</th><th scope=\"col\">Cargo</th><th scope=\"col\">Abono</th><th scope=\"col\">Saldo corrido</th></tr></thead><tbody><tr><td data-label=\"Fecha\">2026-10-01</td><td data-label=\"Movimiento\"><strong>Pago</strong><small>Transferencia verificada · ejemplo</small></td><td data-label=\"Cargo\">—</td><td data-label=\"Abono\" class=\"ds-abono\">Bs 4,500.00</td><td data-label=\"Saldo corrido\" class=\"ds-money\">Bs 28,450.00</td></tr></tbody></table></div></div>",
+      "css": ".ds-canvas{background:var(--surface-0,#0d1918);padding:16px;border-radius:14px}.ds-movement-wrapper{font-family:\"Manrope Variable\",\"Segoe UI\",ui-sans-serif,system-ui,sans-serif;background:var(--glass,rgb(51 69 66 / 43%));border:1px solid #bbd2c97a;border-radius:14px;box-shadow:inset 0 1px 1px #e2ede957,inset 0 0 24px #ffffff06,0 0 14px #f6a36218;overflow-x:auto;color:var(--charcoal,#edf4f1);line-height:1.5}.ds-movement{width:100%;border-collapse:collapse;text-align:left;font-variant-numeric:tabular-nums}.ds-movement th{font-size:.875rem;font-weight:500;color:var(--muted,#adbfba);background:#ffffff05;padding:14px 20px}.ds-movement td{padding:16px 14px;border-top:1px solid var(--line,#ccddd840);font-size:1rem}.ds-movement td:first-child{color:var(--muted,#adbfba);white-space:nowrap}.ds-movement th:nth-child(n+3),.ds-movement td:nth-child(n+3){text-align:right;white-space:nowrap}.ds-movement td strong{font-weight:600}.ds-movement td small{display:block;color:var(--muted,#adbfba);margin-top:4px;font-size:.75rem}.ds-abono{font-weight:700;color:var(--acreedor,#60e4c0);letter-spacing:-.015em}@media(max-width:760px){.ds-movement thead{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}.ds-movement tbody,.ds-movement tr,.ds-movement td{display:block}.ds-movement tr{padding:17px;border-top:1px solid var(--line,#ccddd840)}.ds-movement tr:first-child{border-top:0}.ds-movement td{font-size:.875rem;padding:4px 0;border:0;display:grid;grid-template-columns:100px minmax(0,1fr);text-align:right;gap:8px;overflow-wrap:anywhere}.ds-movement td:nth-child(n+3){white-space:normal}.ds-movement td::before{content:attr(data-label);text-align:left;color:var(--muted,#adbfba);font-weight:400;font-size:.75rem}.ds-movement td small{grid-column:2;margin-top:0}.ds-movement td strong{grid-column:2}}@media(prefers-reduced-transparency:reduce),(prefers-contrast:more){.ds-movement-wrapper{background:var(--glass-solid,#1c2c29);backdrop-filter:none}}@media(prefers-contrast:more){.ds-movement-wrapper{border-color:var(--line,#9bac9f80)}}@media(prefers-contrast:more){.ds-canvas{--glass:#1c2c29;--line:#9bac9f80;--muted:#cbdad3}}.ds-money{font-weight:700;letter-spacing:-.015em}"
     }
   ],
   "narrative": {
-    "northStar": "Registro de tesorería",
-    "overview": "Hermes presenta las cuentas por cobrar como un registro de tesorería: superficies blancas y piedra, navegación de carbón y naranja profundo para actuar. La voz es sobria y directa. Los saldos, sus etiquetas y el movimiento que los explica reciben prioridad visual; el color acompaña el significado contable.\n\nLa densidad permite recorrer nombres, cifras y estados con rapidez, con aire entre grupos y reglas suaves dentro de cada registro. Manrope Variable aporta una sans clara; las cifras tabulares mantienen columnas estables. El mundo elegido prescinde de ilustraciones decorativas y utiliza iconos de trazo para identificar acciones.",
+    "northStar": "Cristal financiero Hermes",
+    "overview": "Hermes presenta la cuenta por cobrar sobre cristal oscuro: una base carbón con matiz teal, luz difusa ámbar y menta, bordes luminosos y naranja para actuar. La identidad angular de Hermes y la tipografía Manrope sostienen una interfaz financiera directa. El vidrio es un material del mundo elegido, mientras el saldo, su estado y el movimiento que lo explica conservan la prioridad de lectura.\n\nLa densidad combina cifras destacadas con registros compactos y espacios entre grupos. Cada importe mantiene su etiqueta; registrado, verificado y conciliado con banco son estados distintos. En tamaños pequeños los bloques se apilan y las tablas de consulta conservan sus relaciones mediante pares de etiqueta y valor. El fondo es una imagen atmosférica: el texto, las tablas y los controles permanecen en el DOM.",
     "keyCharacteristics": [
-      "Superficies planas de blanco y piedra con bordes suaves.",
-      "Navegación de carbón y acciones de naranja profundo.",
-      "Cifras tabulares con etiquetas y contexto contable visibles.",
-      "Registros que se reorganizan verticalmente en móvil."
+      "Cristal translúcido sobre carbón teal con luz difusa ámbar y menta.",
+      "Bordes finos luminosos y resplandor suave que delimitan grupos de información.",
+      "Marca angular Hermes, Manrope Variable y cifras tabulares.",
+      "Naranja de acción, menta de confirmado, ámbar de revisión y azul de crédito.",
+      "Lectura financiera con estados escritos y adaptación vertical en móvil."
     ],
     "rules": [
       {
         "name": "The Semantic Color Rule",
-        "body": "El naranja identifica acción y selección; verde, ámbar y rojo acompañan estados contables explícitos. Cada estado conserva su texto para que el color no sea el único indicador.",
+        "body": "Cada cifra conserva una etiqueta contable y cada estado conserva texto. El naranja señala acción o selección; menta, ámbar y azul ayudan a distinguir confirmado, por verificar y crédito sin reemplazar su explicación.",
         "section": "colors"
       },
       {
         "name": "The Aligned Figures Rule",
-        "body": "Los importes usan cifras tabulares; en registros de escritorio se alinean a la derecha y conservan su etiqueta al reorganizarse en móvil.",
+        "body": "Los importes usan cifras tabulares y conservan Cargo, Abono y Saldo corrido como columnas distintas. Al pasar a móvil, cada cifra mantiene la etiqueta de su columna.",
         "section": "typography"
       },
       {
-        "name": "The Flat Ledger Rule",
-        "body": "Los registros descansan sobre superficies planas. La jerarquía se construye con tono, borde y espacio; no con sombras de tarjetas.",
+        "name": "The Readable Glass Rule",
+        "body": "El vidrio conserva texto claro, borde visible y fondo oscuro. Con transparencia reducida o mayor contraste se retira la imagen, los paneles de consulta y la sidebar pasan a cristal sólido y se elimina su blur. No se reemplaza esa preferencia por una versión translúcida nueva.",
         "section": "elevation"
       }
     ],
     "dos": [
-      "Do mantener las etiquetas y la explicación junto a los saldos confirmado y provisional.",
-      "Do usar Manrope Variable y cifras tabulares para importes y contadores.",
-      "Do conservar el foco visible y los textos de estado además del color.",
-      "Do adaptar las filas a pares de etiqueta y valor en móvil.",
-      "Do usar las superficies, radios y estados registrados en los tokens."
+      "Do conservar el cristal oscuro, los bordes luminosos y la marca angular del mundo elegido.",
+      "Do mantener cada saldo con su etiqueta y los estados registrado, verificado y conciliado diferenciados.",
+      "Do usar Manrope Variable, cifras tabulares y columnas Cargo, Abono y Saldo corrido.",
+      "Do mantener foco visible, texto de estado y la adaptación móvil de tablas a etiqueta y valor.",
+      "Do respetar las variantes opacas de transparencia reducida y mayor contraste.",
+      "Do dejar el texto y los controles en el DOM sobre el fondo atmosférico."
     ],
     "donts": [
-      "Don't introducir ilustraciones decorativas en el registro de tesorería.",
-      "Don't sustituir un saldo no disponible por una cifra cero.",
-      "Don't convertir toda cifra o contenedor en un acento naranja.",
-      "Don't añadir sombras de tarjeta a los registros planos.",
-      "Don't heredar los rótulos residuales en mayúsculas como una nueva escala tipográfica."
+      "Don't reemplazar una fuente pendiente o un saldo desconocido por cero o por importes del concepto visual.",
+      "Don't presentar un pago registrado por verificar como confirmado o conciliado con banco.",
+      "Don't compensar el crédito de un cliente contra la deuda de otro.",
+      "Don't extender la variante luminosa del login a todos los controles y registros.",
+      "Don't introducir animaciones de cifras o de carga de páginas en la consulta financiera.",
+      "Don't heredar rótulos residuales en mayúsculas como una nueva escala tipográfica."
     ]
   }
 }

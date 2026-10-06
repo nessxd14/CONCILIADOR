@@ -74,12 +74,12 @@ export default function ClientesPage() {
 
   return (
     <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+      <div className="page-header">
         <div>
           <h1 className="page-title">Clientes</h1>
           <div className="page-sub">Clientes y pedidos de Seller se sincronizan automáticamente. La lista se actualiza cada 15 segundos.</div>
         </div>
-        <div style={{ display: "flex", gap: 10 }}>
+        <div className="header-actions">
           <button type="button" className="btn btn-secondary" disabled={cargando} onClick={() => void cargar()}>
             {cargando ? "Actualizando…" : "Actualizar"}
           </button>
@@ -90,7 +90,7 @@ export default function ClientesPage() {
             Pedidos pendientes
           </Link>
           <Link href="/clientes/nuevo" className="btn btn-primary">
-            + Nuevo cliente
+            Nuevo cliente
           </Link>
         </div>
       </div>

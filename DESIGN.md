@@ -1,50 +1,57 @@
 ---
 name: "Hermes"
-description: "Registro de tesorería para consultar saldos y movimientos de cuentas por cobrar."
+description: "Cuentas por cobrar sobre cristal oscuro, con saldos y movimientos al alcance."
 colors:
-  orange: "#c45121"
-  orange-dark: "#a53f16"
-  focus: "#ba542a"
-  acreedor: "#27704d"
-  acreedor-bg: "#eaf5ed"
-  provisional: "#855f14"
-  provisional-bg: "#fff5df"
-  alerta: "#ac3737"
-  alerta-bg: "#fbeeed"
-  info: "#3a7396"
-  info-bg: "#e9f1f6"
-  deudor: "#a54420"
-  deudor-bg: "#fcefE8"
-  aldia: "#54705d"
-  aldia-bg: "#edf2ee"
-  charcoal: "#242827"
-  muted: "#656c68"
-  line: "#e0e5e1"
-  surface-0: "#f6f7f4"
-  surface-1: "#eef1ed"
-  surface-2: "#f3f5f1"
-  white: "#fff"
-  control-border: "#d1d9d2"
-  nav-text: "#c3cbc5"
-  nav-active: "#3b4240"
-  nav-hover: "#39403b"
-  nav-accent: "#f29b6e"
+  orange: "#ff9d57"
+  orange-dark: "#ffb77e"
+  action: "#ffa965"
+  action-hover: "#ffbd84"
+  action-ink: "#1b261c"
+  acreedor: "#60e4c0"
+  acreedor-bg: "#133e33"
+  credit: "#8ac9ff"
+  info-bg: "#1a3745"
+  provisional: "#ffd17a"
+  provisional-bg: "#473920"
+  alerta: "#ffa2a2"
+  alerta-bg: "#422b2b"
+  deudor-bg: "#4b3226"
+  aldia: "#8fd9be"
+  aldia-bg: "#163b32"
+  charcoal: "#edf4f1"
+  muted: "#adbfba"
+  line: "#ccddd840"
+  contrast-line: "#9bac9f80"
+  contrast-muted: "#cbdad3"
+  surface-0: "#0d1918"
+  surface-1: "#20302f"
+  surface-2: "#1b2a29"
+  white: "#1c2c29"
+  glass: "rgb(51 69 66 / 43%)"
+  glass-solid: "#1c2c29"
+  input-bg: "rgb(8 22 19 / 46%)"
+  panel-border: "#bbd2c97a"
+  control-border: "#a4b8ac40"
+  secondary-bg: "#ffffff07"
+  secondary-hover: "#e699491a"
+  nav-active-text: "#fff2e6"
+  cyan-context: "#a3ddea"
 typography:
   display:
     fontFamily: "\"Manrope Variable\", \"Segoe UI\", ui-sans-serif, system-ui, sans-serif"
-    fontSize: "clamp(24px, 2.5vw, 36px)"
-    fontWeight: 650
-    lineHeight: 1.3
-    letterSpacing: "-.035em"
+    fontSize: "clamp(1.5rem, calc(4.8vw - 36px), 2.5rem)"
+    fontWeight: 700
+    lineHeight: 1.2
+    letterSpacing: "-.03em"
   headline:
     fontFamily: "\"Manrope Variable\", \"Segoe UI\", ui-sans-serif, system-ui, sans-serif"
-    fontSize: "clamp(26px, 3vw, 34px)"
-    fontWeight: 650
+    fontSize: "clamp(1.875rem, 3vw, 3rem)"
+    fontWeight: 700
     lineHeight: 1.2
     letterSpacing: "-.035em"
   title:
     fontFamily: "\"Manrope Variable\", \"Segoe UI\", ui-sans-serif, system-ui, sans-serif"
-    fontSize: "17px"
+    fontSize: "clamp(1rem, 1.5vw, 1.4rem)"
     fontWeight: 650
     lineHeight: 1.5
     letterSpacing: "-.02em"
@@ -56,26 +63,32 @@ typography:
     letterSpacing: "-.02em"
   body:
     fontFamily: "\"Manrope Variable\", \"Segoe UI\", ui-sans-serif, system-ui, sans-serif"
-    fontSize: "14px"
+    fontSize: ".875rem"
     fontWeight: 400
     lineHeight: 1.5
   label:
     fontFamily: "\"Manrope Variable\", \"Segoe UI\", ui-sans-serif, system-ui, sans-serif"
-    fontSize: "13px"
+    fontSize: ".8125rem"
     fontWeight: 600
+    lineHeight: 1.5
+  table-body:
+    fontFamily: "\"Manrope Variable\", \"Segoe UI\", ui-sans-serif, system-ui, sans-serif"
+    fontSize: "1rem"
+    fontWeight: 400
     lineHeight: 1.5
   action:
     fontFamily: "\"Manrope Variable\", \"Segoe UI\", ui-sans-serif, system-ui, sans-serif"
-    fontSize: "13px"
+    fontSize: ".8125rem"
     fontWeight: 600
+    lineHeight: 1.5
   navigation:
     fontFamily: "\"Manrope Variable\", \"Segoe UI\", ui-sans-serif, system-ui, sans-serif"
-    fontSize: "13px"
+    fontSize: ".875rem"
     fontWeight: 500
     lineHeight: 1.5
   caption:
     fontFamily: "\"Manrope Variable\", \"Segoe UI\", ui-sans-serif, system-ui, sans-serif"
-    fontSize: "11px"
+    fontSize: ".75rem"
     fontWeight: 400
     lineHeight: 1.5
 rounded:
@@ -83,39 +96,44 @@ rounded:
   tag: "5px"
   control: "8px"
   notice: "10px"
+  warning: "12px"
   panel: "14px"
 spacing:
   "4": "4px"
   "8": "8px"
   "10": "10px"
   "12": "12px"
+  "14": "14px"
   "16": "16px"
+  "18": "18px"
   "20": "20px"
   "22": "22px"
   "24": "24px"
   "32": "32px"
 components:
   button-primary:
-    backgroundColor: "{colors.orange}"
-    textColor: "{colors.white}"
+    backgroundColor: "{colors.action}"
+    textColor: "{colors.action-ink}"
     typography: "{typography.action}"
     rounded: "{rounded.control}"
     padding: "10px 16px"
   button-primary-hover:
-    backgroundColor: "{colors.orange-dark}"
+    backgroundColor: "{colors.action-hover}"
   button-secondary:
-    backgroundColor: "{colors.white}"
-    textColor: "{colors.charcoal}"
+    backgroundColor: "{colors.secondary-bg}"
+    textColor: "{colors.orange-dark}"
     typography: "{typography.action}"
     rounded: "{rounded.control}"
     padding: "10px 16px"
+  button-secondary-hover:
+    backgroundColor: "{colors.secondary-hover}"
   button-link:
     backgroundColor: "transparent"
     textColor: "{colors.orange-dark}"
     typography: "{typography.action}"
     padding: "0"
   search-field:
-    backgroundColor: "{colors.white}"
+    backgroundColor: "{colors.input-bg}"
     textColor: "{colors.charcoal}"
     typography: "{typography.body}"
     rounded: "{rounded.control}"
@@ -123,16 +141,16 @@ components:
     height: "45px"
   navigation-item:
     backgroundColor: "transparent"
-    textColor: "{colors.nav-text}"
+    textColor: "{colors.charcoal}"
     typography: "{typography.navigation}"
     rounded: "{rounded.control}"
-    padding: "12px"
+    padding: "10px 12px"
   navigation-item-active:
-    backgroundColor: "{colors.nav-active}"
-    textColor: "{colors.white}"
+    textColor: "{colors.nav-active-text}"
+    padding: "10px 12px 10px 9px"
   status-deudor:
     backgroundColor: "{colors.deudor-bg}"
-    textColor: "{colors.deudor}"
+    textColor: "{colors.orange-dark}"
     rounded: "{rounded.tag}"
     padding: "4px 8px"
   status-acreedor:
@@ -145,23 +163,45 @@ components:
     textColor: "{colors.aldia}"
     rounded: "{rounded.tag}"
     padding: "4px 8px"
+  status-provisional:
+    backgroundColor: "#f2bc4f1c"
+    textColor: "{colors.provisional}"
+    rounded: "{rounded.tag}"
+    padding: "4px 8px"
   card:
-    backgroundColor: "{colors.white}"
+    backgroundColor: "{colors.glass}"
     textColor: "{colors.charcoal}"
     rounded: "{rounded.panel}"
     padding: "22px"
+  glass-panel:
+    backgroundColor: "{colors.glass}"
+    textColor: "{colors.charcoal}"
+    rounded: "{rounded.panel}"
+    padding: "24px"
+  balance-strip:
+    backgroundColor: "{colors.glass}"
+    textColor: "{colors.charcoal}"
+    rounded: "{rounded.panel}"
+    padding: "24px 4px"
+  balance-strip-cell:
+    padding: "0 18px"
+  balance-strip-cell-wide:
+    padding: "0 16px"
+  balance-strip-cell-mobile:
+    padding: "0 12px"
   account-row:
-    backgroundColor: "{colors.white}"
+    backgroundColor: "transparent"
     textColor: "{colors.charcoal}"
     padding: "16px 22px"
   tabs:
-    backgroundColor: "transparent"
+    backgroundColor: "#ffffff05"
     textColor: "{colors.muted}"
-    padding: "14px 0"
+    rounded: "{rounded.notice}"
+    padding: "0 16px"
   tabs-selected:
     textColor: "{colors.orange-dark}"
   movement-table:
-    backgroundColor: "{colors.white}"
+    backgroundColor: "{colors.glass}"
     textColor: "{colors.charcoal}"
     rounded: "{rounded.panel}"
 ---
@@ -170,158 +210,190 @@ components:
 
 ## Overview
 
-**Creative North Star: "Registro de tesorería"**
+**Creative North Star: "Cristal financiero Hermes"**
 
-Hermes presenta las cuentas por cobrar como un registro de tesorería: superficies blancas y piedra, navegación de carbón y naranja profundo para actuar. La voz es sobria y directa. Los saldos, sus etiquetas y el movimiento que los explica reciben prioridad visual; el color acompaña el significado contable.
+Hermes presenta la cuenta por cobrar sobre cristal oscuro: una base carbón con matiz teal, luz difusa ámbar y menta, bordes luminosos y naranja para actuar. La identidad angular de Hermes y la tipografía Manrope sostienen una interfaz financiera directa. El vidrio es un material del mundo elegido, mientras el saldo, su estado y el movimiento que lo explica conservan la prioridad de lectura.
 
-La densidad permite recorrer nombres, cifras y estados con rapidez, con aire entre grupos y reglas suaves dentro de cada registro. Manrope Variable aporta una sans clara; las cifras tabulares mantienen columnas estables. El mundo elegido prescinde de ilustraciones decorativas y utiliza iconos de trazo para identificar acciones.
+La densidad combina cifras destacadas con registros compactos y espacios entre grupos. Cada importe mantiene su etiqueta; registrado, verificado y conciliado con banco son estados distintos. En tamaños pequeños los bloques se apilan y las tablas de consulta conservan sus relaciones mediante pares de etiqueta y valor. El fondo es una imagen atmosférica: el texto, las tablas y los controles permanecen en el DOM.
 
 **Key Characteristics:**
-- Superficies planas de blanco y piedra con bordes suaves.
-- Navegación de carbón y acciones de naranja profundo.
-- Cifras tabulares con etiquetas y contexto contable visibles.
-- Registros que se reorganizan verticalmente en móvil.
 
-Este documento describe la implementación local de Mi día y la ficha del cliente. La fuente normativa es la cascada de `app/globals.css`, `app/anticipos.css`, `app/despacho.css` y, al final, `app/redesign.css`, junto con Dashboard, ClientDetail, Sidebar y Tabs. Las cuatro capturas finales de escritorio y móvil en `.impeccable/review/` corroboran su aplicación. La fuente se sirve localmente mediante `@fontsource-variable/manrope` (5.3.0); su archivo de licencia declara SIL Open Font License 1.1.
+- Cristal translúcido sobre carbón teal con luz difusa ámbar y menta.
+- Bordes finos luminosos y resplandor suave que delimitan grupos de información.
+- Marca angular Hermes, Manrope Variable y cifras tabulares.
+- Naranja de acción, menta de confirmado, ámbar de revisión y azul de crédito.
+- Lectura financiera con estados escritos y adaptación vertical en móvil.
+
+Este documento registra, al 6 de octubre de 2026, la reconstrucción local iniciada el día 5. Sustituye la dirección clara y plana anterior por el nuevo mundo que el usuario eligió en la segunda imagen oscura y en las vistas posteriores. La procedencia manual está en `.impeccable/dark-glass-direction.md`; no existe un FORM seed de esta elección. La cascada normativa es `globals.css`, `anticipos.css`, `despacho.css` y finalmente `redesign.css`, con su bloque final de reconstrucción. Las referencias están en `MonitorCaja/output/hermes-vistas-oscuras-2026-10-05` y las capturas locales en `MonitorCaja/output/hermes-integracion-2026-10-05`. Documentar el código no acredita aprobación visual final, aprobación humana del plan ni un recorrido autenticado.
+
+La sesión de revisión actual volvió a aplicar cambios de viewport. La evidencia verificada del 6 de octubre incluye seis vistas móviles —Visión general, Mi día, ficha, Anticipos, pagos y login— a (390 × 844px): ancho de cliente (380px), excepto login (390px), sin desbordamiento horizontal en esas vistas. Incluye cinco vistas de escritorio a (1440 × 1000px, ancho de cliente 1430px), con cifras comprobadas a (33.12px, altura 39.75px) en una línea, y Mi día frente a la referencia a (1586 × 992px, ancho de cliente 1576px, captura 1576 × 985px). Sus cuatro importes mantienen (40px, altura 48px), sin partirse. La evidencia anterior a (1280 × 720px, ancho de cliente 1270px) sigue identificada por su lote.
+
+La comparación válida de Mi día registra `overall: 0.6693` y `verdict: drift` en `.impeccable/review/finish-verified-summary.json`; no representa una coincidencia de píxeles aprobada. Las comparaciones de pantallas de carga se excluyen de la evidencia final. El alcance se limita a los estados y vistas capturados y no cierra los gates de Impeccable ni la validación autenticada.
 
 ## Colors
 
-La paleta combina piedra ligeramente verdosa y carbón con un naranja profundo; los colores de estado mantienen una función semántica. Los valores exactos viven en el frontmatter; estos nombres explican su aplicación.
+El carbón teal contiene la luz cálida de las acciones y los tonos fríos de lectura. Los valores del frontmatter son normativos; los nombres siguientes explican su uso.
 
 ### Primary
 
-- **Naranja de acción** (`orange`): fondo de confirmar y otras acciones primarias; también caret y foco del buscador.
-- **Naranja profundo** (`orange-dark`): hover de acción primaria, enlaces de acción y texto de pestaña seleccionada.
-- **Naranja de foco** (`focus`): contorno de teclado de los controles generales.
-- **Naranja sobre carbón** (`nav-accent`): icono del destino activo en la navegación oscura.
+- **Naranja Hermes** (`orange`): marca, caret, foco de búsqueda, subrayado de pestañas y detalles operativos.
+- **Naranja legible** (`orange-dark`): enlaces, acción secundaria y contorno general de teclado.
+- **Naranja de acción** (`action`, `action-hover`, `action-ink`): botón primario con tinta oscura; el hover sube el tono de la superficie.
+- **Velo de acción** (`secondary-bg`, `secondary-hover`): botón secundario con borde naranja; el fondo cambia suavemente en hover.
 
 ### Secondary
 
-- **Verde de crédito** (`acreedor`, `acreedor-bg`): saldo a favor, importes negativos y estados de pago o crédito.
-- **Ámbar de revisión** (`provisional`, `provisional-bg`): importes provisionales y pagos aún en revisión.
-- **Rojo de incidencia** (`alerta`, `alerta-bg`): errores y estados pendientes o vencidos.
-- **Azul informativo** (`info`, `info-bg`): la nota heredada de despacho en sincronización; conserva su carácter informativo.
-- **Terracota de deuda** (`deudor`, `deudor-bg`): etiqueta de cuenta con deuda, sin competir con la acción principal.
-- **Verde gris de equilibrio** (`aldia`, `aldia-bg`): etiqueta de cuenta al día.
+- **Menta confirmada** (`acreedor`, `acreedor-bg`): importes confirmados destacados, abonos, pagos verificados y crédito individual en la cuenta.
+- **Azul de crédito** (`credit`): saldo a favor agregado, crédito y enlaces al expediente; también es la tinta informativa heredada.
+- **Ámbar de revisión** (`provisional`, `provisional-bg`): recepción registrada que falta verificar, estados y avisos de cobertura pendiente.
+- **Coral de incidencia** (`alerta`, `alerta-bg`): errores y estados vencidos o pendientes acompañados de su descripción.
+- **Terracota de deuda** (`deudor-bg`) y **menta de equilibrio** (`aldia`, `aldia-bg`): etiquetas compactas de situación de una cuenta.
+- **Cian de contexto** (`cyan-context`): subtítulo financiero y mensaje de próximos vencimientos aún no integrado.
+- **Azul de aviso** (`info-bg`): fondo informativo de despacho en sincronización.
 
 ### Neutral
 
-- **Carbón** (`charcoal`): texto principal y fondo de la navegación.
-- **Piedra de página** (`surface-0`): fondo general; **piedra de apoyo** (`surface-1`, `surface-2`): documentos, campos deshabilitados y etiquetas neutras.
-- **Blanco de registro** (`white`): tarjetas, paneles y campos.
-- **Gris de contexto** (`muted`): descripciones, etiquetas de columnas y metadatos.
-- **Línea de registro** (`line`): divisores y contenedores; **borde de control** (`control-border`): inputs, select y botón secundario.
-- **Texto de navegación** (`nav-text`), **selección de carbón** (`nav-active`) y **carbón de hover** (`nav-hover`): estados legibles dentro de la barra lateral.
+- **Carbón de fondo** (`surface-0`): página y alternativa sin imagen.
+- **Cristal principal** (`glass`): superficies translúcidas; **cristal sólido** (`glass-solid`, `white`): fallback opaco, modal y superficies heredadas. `white` conserva su nombre de variable histórico, pero ahora representa una superficie oscura.
+- **Capas de apoyo** (`surface-1`, `surface-2`, `input-bg`): campos deshabilitados, etiquetas neutras y entrada de datos.
+- **Texto de registro** (`charcoal`) y **contexto** (`muted`): tinta clara principal y metadatos. `charcoal` conserva el nombre histórico de la variable, pero ahora representa texto claro.
+- **Línea de registro** (`line`), **borde de cristal** (`panel-border`) y **borde de control** (`control-border`): divisores, contenedores y campos. `contrast-line` y `contrast-muted` refuerzan bordes y contexto al pedir mayor contraste.
+- **Texto activo cálido** (`nav-active-text`): selección de navegación sobre su velo naranja.
 
-**The Semantic Color Rule.** El naranja identifica acción y selección; verde, ámbar y rojo acompañan estados contables explícitos. Cada estado conserva su texto para que el color no sea el único indicador.
+**The Semantic Color Rule.** Cada cifra conserva una etiqueta contable y cada estado conserva texto. El naranja señala acción o selección; menta, ámbar y azul ayudan a distinguir confirmado, por verificar y crédito sin reemplazar su explicación.
 
 ## Typography
 
 **Display Font:** Manrope Variable, con Segoe UI y la pila sans del frontmatter como fallback.
-**Body Font:** la misma familia; no hay una segunda voz de display ni fuente monoespaciada.
 
-**Character:** una sans de lectura directa, con pesos variables para jerarquía y cifras tabulares para lectura contable. Los títulos usan un ajuste de tracking compacto; las etiquetas operativas mantienen caja natural.
+**Body Font:** la misma familia, servida localmente por `@fontsource-variable/manrope`.
+
+**Character:** una sans clara con pesos variables y títulos compactos. Las cifras usan números tabulares; el volumen y el contexto reciben jerarquía sin una segunda voz tipográfica.
 
 ### Hierarchy
 
-- **Display** (`display`): saldo principal fluido; la ficha usa una variante fija (30px) y el móvil mantiene el saldo principal (32px).
-- **Headline** (`headline`): título de página fluido; el nombre del cliente baja a (25px) en móvil.
-- **Title** (`title`): encabezados de registro; tareas usan una variante compacta (15px). **Title client** (`title-client`): encabezados del panel de la ficha.
-- **Body** (`body`): texto general y campos. Las descripciones de ficha y filas de movimientos usan (13px); el contexto auxiliar usa (12px).
-- **Label** (`label`): etiquetas de formulario. **Action** (`action`): botones y enlaces operativos. **Navigation** (`navigation`): destinos de la barra.
-- **Caption** (`caption`): categorías, notas de fila y detalles menores. Las etiquetas de estado usan (11px, peso 600, line-height 1.4).
+- **Display** (`display`): importes dentro de la franja de indicadores. La fórmula fluida conserva el máximo (2.5rem) en escritorio amplio y se adapta antes de alcanzarlo. A (1300px) usa `clamp(1.375rem, 1.875vw, 1.6875rem)`; a (760px) queda en (1.25rem). El importe del detalle de pago usa (2rem, peso 650).
+- **Headline** (`headline`): título de página. A (760px) usa (1.75rem); el nombre del cliente conserva su variante (25px) en ese ancho.
+- **Title** (`title`): encabezados de panel. `title-client` describe los encabezados interiores de ficha; las condiciones de crédito usan (1.125rem).
+- **Body** (`body`): contenido y campos. **Table body** (`table-body`): datos de las tablas de pagos y movimientos en escritorio; sus encabezados y el medio de pago usan (0.875rem), al igual que sus celdas móviles. Los textos de cobertura aumentan el interlineado hasta (1.7), con máximo (65ch).
+- **Label / Action** (`label`, `action`): campos y controles. **Navigation** (`navigation`): destinos de sidebar, con peso 500. El estilo final de navegación se aplica también al menú móvil.
+- **Caption** (`caption`): ayuda, descripción de indicadores y referencias. Las etiquetas de estado usan (0.6875rem, peso 600, line-height 1.4).
 
-**The Aligned Figures Rule.** Los importes usan cifras tabulares; en registros de escritorio se alinean a la derecha y conservan su etiqueta al reorganizarse en móvil.
+El login tiene una expresión propia del mismo sistema: marca grande, titular fluido y formulario amplio. Su bloque narrativo se centra verticalmente; el titular usa `clamp(2.5rem, 3.7vw, 3.65rem)`, peso (750), interlineado (1.15) y no impone un máximo por caracteres. El formulario usa `clamp(1.75rem, 2.6vw, 2.6rem)` con interlineado (1.2). Son variantes de esa superficie, no sustitutos para todos los encabezados.
+
+**The Aligned Figures Rule.** Los importes usan cifras tabulares y conservan Cargo, Abono y Saldo corrido como columnas distintas. Al pasar a móvil, cada cifra mantiene la etiqueta de su columna.
 
 ## Layout
 
-La estructura de escritorio combina una barra lateral persistente (236px, altura 100dvh) con contenido flexible, sin ancho mínimo de página. El contenido se centra dentro de un máximo (1680px), con padding vertical (34px arriba, 30px abajo) y lateral fluido (`clamp(20px, 3.2vw, 52px)`). El encabezado puede envolver título y acciones.
+La shell de escritorio usa sidebar (220px), contenido flexible y separación (16px), con padding exterior (8px). La sidebar es sticky, empieza a (8px) y ocupa `calc(100dvh - 16px)`. El contenido tiene máximo (1680px), ancho completo y padding (16px 18px 32px 24px). Los encabezados envuelven título y acciones cuando lo necesitan.
 
-El registro principal y el trabajo auxiliar forman dos columnas (`minmax(0, 1fr)` y 300px), separadas por (24px). La franja de saldos usa tres columnas (`1.3fr 1fr 1fr`), líneas horizontales y divisores entre cantidades. Las filas de cuentas alinean nombre, estado e importe; las tablas de movimientos conservan fecha, concepto, monto y saldo corrido.
+La composición de consulta combina columnas flexibles con panel auxiliar: Mi día usa proporción (1.85fr / 1fr), mínimo auxiliar (300px) y separación (16px); ficha usa (1.8fr / 1fr), mínimo auxiliar (290px) y separación (18px). Resumen, cobertura y revisión conservan proporciones propias dentro del mismo patrón. Los indicadores forman cuatro columnas; en ficha son tres. Sus divisores separan cantidades dentro de una sola superficie.
 
-En el punto de adaptación (1200px), la barra baja a (210px), el contenido usa padding (28px 24px), el registro queda en una columna y los bloques auxiliares ocupan dos columnas. En el punto de adaptación (760px), la barra pasa arriba con destinos horizontales desplazables; el contenido usa padding (26px 18px). El saldo principal ocupa una fila completa y los dos saldos secundarios se reparten la siguiente. Las tareas forman una sola columna. Las cuentas se recomponen en nombre a la izquierda y monto/estado a la derecha. Los movimientos se convierten en pares de etiqueta y valor manteniendo la tabla semántica; otras tablas heredadas mantienen desplazamiento horizontal.
+A (1300px), Mi día reduce el mínimo auxiliar a (260px) y compacta su tabla y cifras. A (1200px), resumen y cobertura mantienen dos columnas con auxiliar de mínimo (260px); revisión permanece en dos hasta (1000px). A (1000px), el contenido principal pasa a una columna, las tareas y el lateral de ficha pueden formar dos y los indicadores se reparten en dos. El login pasa a una columna, oculta la narrativa y muestra la marca dentro del formulario.
 
-El espaciado reutilizado está registrado por su medida real. No hay una retícula estricta de múltiplos de ocho: (20px), (22px) y (24px) conviven en contenedores y separación de grupos. Los paneles de movimientos usan celdas (18px 20px) y filas móviles con padding (17px).
+A (760px), la sidebar se vuelve cabecera opaca, sin borde redondeado ni blur. Un botón Menú abre destinos en dos columnas; Escape lo cierra. El contenido usa padding (24px 16px 32px). Tareas y lateral de ficha se apilan; cuenta corriente precede a condiciones de crédito. Las tablas de pagos y movimientos conservan la semántica de tabla y muestran etiquetas con `data-label`; el resto de tablas operativas puede desplazarse horizontalmente.
+
+El espaciado usa los pasos reales del frontmatter, sin imponer una retícula nueva. Panel genérico de vidrio: (24px), móvil (20px). Tarjeta heredada: (22px). Encabezados, filtros, filas y pies distribuyen el padding dentro del registro. Los movimientos usan celdas (16px 14px), con fila móvil (17px) y celdas (4px 0); la tabla de pagos usa celdas (17px 10px), reducidas a (15px 7px) a (1300px). Las células de la franja usan padding lateral (18px) por defecto, (16px) desde (1301px) y (12px) en móvil; la reducción amplia deja espacio a las cifras grandes. Icono e importe de indicador se separan (10px), móvil (7px).
 
 ## Elevation & Depth
 
-El sistema es plano y no define sombras. El blanco de los registros contrasta con la piedra de página; bordes suaves y líneas dividen conjuntos sin elevar cada elemento. El modal usa el mismo contenedor blanco y un backdrop (`rgb(25 34 29 / 45%)`) para separar la tarea.
+El mundo combina transparencia, desenfoque, borde y resplandor. El fondo `/visual/hermes-ground.png` aporta luz atmosférica; los paneles revelan esa luz sin incorporar texto o controles a la imagen. La imagen generada es opaca (1586 × 992px, 1,505,611 bytes); el prompt exacto está embebido en el PNG. La petición de generación no constituye una medida del archivo entregado.
 
-**The Flat Ledger Rule.** Los registros descansan sobre superficies planas. La jerarquía se construye con tono, borde y espacio; no con sombras de tarjetas.
+### Shadow Vocabulary
+
+- **Cristal de registro:** `inset 0 1px 1px #e2ede957, inset 0 0 24px #ffffff06, 0 0 14px #f6a36218`; aplicado a tarjetas, tablas, registros, tareas, franja y login antes de su variante.
+- **Cristal de navegación:** `inset 0 1px 1px #e2ede975, inset 0 0 20px #fcb27510, 0 0 12px #ffa65a25`; refuerza el borde del panel persistente.
+- **Selección cálida:** `inset 0 0 0 1px #ffaa6766, inset 0 0 17px #ff9f4233, 0 0 8px #ff9d571f`; acompaña el gradiente y borde izquierdo del destino activo.
+- **Cristal de acceso:** `inset 0 1px 2px #ffcf8fc2, inset 0 0 30px #ff9b4321, 0 0 26px #ff9e5724`; variante luminosa del formulario de login.
+
+Paneles de vidrio, registros, franja, tareas y login usan blur (12px); sidebar conserva (16px). Las tarjetas y la tabla de movimientos reciben cristal y resplandor sin añadir un blur propio. El modal usa fondo sólido con backdrop (`#06120ec4`).
+
+**The Readable Glass Rule.** El vidrio conserva texto claro, borde visible y fondo oscuro. Con transparencia reducida o mayor contraste se retira la imagen, los paneles de consulta y la sidebar pasan a cristal sólido y se elimina su blur. No se reemplaza esa preferencia por una versión translúcida nueva.
+
+`prefers-contrast: more` además cambia el contexto a `contrast-muted`, los divisores a `contrast-line` y hace que los bordes de panel y sidebar usen esa línea reforzada. Sin soporte de `backdrop-filter`, sidebar, paneles de vidrio, registros, franja y login usan cristal sólido. En impresión, el fondo pasa a blanco y la tinta general pasa a oscura; no se acredita una revisión de impresión completa.
 
 ## Shapes
 
-Los contenedores tienen una curva suave de panel; los controles usan una curva más pequeña y los estados una esquina compacta. Los radios normativos son `panel`, `control`, `notice`, `tag` y `counter`. Los bordes de panel y control son sólidos (1px). Los avatares de cliente son cuadrados suavizados; el avatar de usuario y los indicadores puntuales son círculos. Los iconos son SVG de trazo redondeado (stroke 1.7, lienzo 24 × 24), usados como apoyo a texto o con una etiqueta accesible en controles solo de icono.
+Los grupos usan esquinas suaves de panel; controles y estados son más compactos. Los radios normativos son `panel`, `warning`, `notice`, `control`, `tag` y `counter`; los bordes de contenedor y campo son de (1px). Las barras de distribución y crédito usan radio (3px). El avatar de usuario es circular; el de cliente es cuadrado suavizado.
+
+La marca Hermes es SVG angular de relleno, con lienzo (32 × 32), sin una baldosa naranja detrás. En sidebar ocupa (34 × 36px); en la narrativa de login aumenta a (78 × 86px). Los iconos operativos son SVG de trazo redondeado (stroke 1.7, lienzo 24 × 24); la navegación usa (21px) y los indicadores usan (36px), reducidos a (28px) y (24px) según ancho. Los controles solo de icono tienen etiqueta accesible.
 
 ## Components
 
 ### Buttons
 
-Acciones compactas y explícitas, con texto antes que adorno.
+Acciones visibles con texto concreto y feedback breve.
 
-- **Shape:** radio `control`, altura mínima (42px) y padding `button-primary`/`button-secondary`; las acciones de cabecera móviles usan (40px) y confirmar pago en columna usa (36px).
-- **Primary:** naranja de acción y texto blanco; hover de puntero fino usa naranja profundo.
-- **Secondary:** blanco, texto carbón y borde de control; hover usa fondo (`#f1f5ef`) y borde (`#aab7ac`).
-- **Link:** texto naranja profundo sobre fondo transparente, sin padding adicional.
-- **Focus / press:** foco general (3px, offset 4px); la pulsación de botones con superficie escala a (.97) durante (120ms) con `--ease-out`. El estado disabled usa opacidad (.55). Movimiento reducido elimina la transformación y reduce transiciones a (.01ms).
+- **Primary:** naranja de acción con tinta oscura, radio `control`, borde cálido (`#ffd09780`), padding (10px 16px) y altura mínima (44px). Hover de puntero fino usa `action-hover`.
+- **Secondary:** velo transparente, texto naranja y borde (`#ffab6766`); hover usa `secondary-hover` y borde (`#ffb77e88`).
+- **Link:** sin superficie ni padding, texto `orange-dark`. La altura (36px) del selector `.btn-link` no sustituye el tamaño de los controles que también usan `.btn`.
+- **Focus / press:** contorno (3px, offset 4px) en `orange-dark`; pulsación a escala (.97) durante (120ms) con `cubic-bezier(0.23, 1, 0.32, 1)`. Disabled usa opacidad (.6). Movimiento reducido elimina transformaciones y reduce animaciones y transiciones a (.01ms).
+- **Login:** botón con gradiente `#ffa650` → `#ed7834`, texto (`#1a241a`), altura mínima (58px) y tamaño (1.125rem); esta variante pertenece al formulario de acceso.
 
 ### Chips
 
-Estados de lectura, sin simular un control.
+Estados escritos, con color al servicio de la lectura.
 
-- **Style:** radio `tag`, padding (4px 8px), tipografía compacta y fondo tonal según el estado; la cuenta con deuda, a favor o al día conserva el texto.
-- **State:** las etiquetas no son filtros seleccionables. Los contadores de navegación y pestaña usan radio `counter` y cifras tabulares.
+- **Shape:** radio `tag`, padding (4px 8px) y tipografía de estado compacta.
+- **Account:** Con deuda, A favor y Al día usan sus fondos tonales.
+- **Review:** Por verificar usa velo ámbar y borde (`#e7b95550`); dentro de la tabla de Mi día cambia a fondo `provisional`, tinta (`#242a1c`) y borde (`#ffdb94`). A (1300px) esa etiqueta compacta usa (0.625rem, padding 4px 5px).
+- **Counters:** radio `counter` y cifras tabulares. Las etiquetas de estado son información, no controles de filtro.
 
 ### Cards / Containers
 
-Registros delimitados y planos.
+Cristal delimitado para contener un grupo, sin fragmentar cada cifra.
 
-- **Corner Style:** radio `panel`; fondo blanco y borde `line` (1px).
-- **Internal Padding:** tarjeta base (22px); tareas (22px 20px 12px). Los paneles de registro distribuyen su padding entre encabezado, filtros, filas y pie.
-- **State:** la tarjeta enlazada de la ficha cambia a fondo (`#fafcf8`) y borde (`#b7c7b8`) en hover de puntero fino. No usa sombra.
+- **Surface:** `glass`, radio `panel`, borde `panel-border` y resplandor de registro. Las variantes sólidas y el blur se describen en Elevation & Depth.
+- **Padding:** tarjeta (22px), panel de vidrio (24px), móvil (20px); tareas usan (18px 16px) en el bloque final.
+- **State:** filas interactivas aclaran suavemente su superficie en hover. La fila seleccionada de revisión usa fondo (`#ff9d5721`) y contorno interior (`#ffad72ba`).
+- **Feedback:** carga, fallo, vacío, consulta sin coincidencias y fuente pendiente tienen mensajes distintos dentro del panel. Una fuente pendiente puede conservar la estructura de la vista sin fabricar un saldo.
 
 ### Inputs / Fields
 
-Campos blancos con borde claro y feedback de foco explícito.
+Entrada oscura y foco nítido.
 
-- **Style:** borde de control, radio `control`, tipografía de body, altura mínima (44px) y padding horizontal (12px).
-- **Search:** icono de búsqueda de (18px), input interior de altura (43px) y separación (9px); el campo de movimientos tiene máximo (480px).
-- **Focus:** la búsqueda usa contorno naranja de (2px, offset 2px) en `focus-within`; los campos generales conservan el foco visible de teclado.
-- **Error / Disabled:** errores en rojo con texto (13px); campos deshabilitados sobre piedra de apoyo y texto muted. La pista no disponible conserva una frase o raya.
+- **Style:** fondo `input-bg`, borde `control-border`, radio `control`, altura mínima (44px), padding horizontal (12px) y texto de body.
+- **Search:** icono (18px), gap (9px), input interior (43px); foco de contenedor (2px, offset 2px) en `orange`. El buscador de movimientos tiene máximo (480px).
+- **Disabled / error:** campo deshabilitado sobre `surface-1`, tinta `muted`; error coral acompañado de texto. Select usa opciones sobre cristal sólido.
+- **Login:** campo de mínimo (54px), fondo (`#ffffff05`) y borde (`#c9d8d19c`).
 
 ### Navigation
 
-Una base de carbón con destinos legibles y selección tonal.
+Destinos con icono de trazo y selección cálida sobre cristal.
 
-- **Default:** texto `nav-text`, icono de (19px), radio `control`, padding (12px), altura mínima (45px).
-- **Hover / active:** hover tonal y texto blanco; el destino activo usa `nav-active`, texto blanco e icono `nav-accent`.
-- **Mobile:** destinos de una sola línea, tamaño (12px), altura mínima (44px) y scroll horizontal. Las pestañas de ficha también conservan scroll horizontal; selección por subrayado naranja (2px), texto naranja profundo y peso 600.
-- **Keyboard:** las pestañas responden a flechas, Home y End; selección inmediata y foco del destino seleccionado. Los paneles inactivos usan `hidden`.
+- **Default:** texto de registro, peso 500, radio `control`, mínimo (50px), gap (11px), padding (10px 12px).
+- **Active:** gradiente `#ef8a394d` → `#b46a2938`, texto `nav-active-text`, borde izquierdo (`3px solid #ffa34f`) y resplandor de selección; padding izquierdo (9px) compensa el borde.
+- **Mobile:** cabecera opaca y menú expandible en dos columnas. La selección conserva texto, icono y `aria-current`; el botón comunica `aria-expanded`.
+- **Tabs:** superficie sutil, radio `notice`, scroll horizontal y padding de grupo (0 16px); cada destino usa (15px 16px), móvil (15px 12px). Selección por subrayado naranja (2px), texto naranja y peso 600. Flechas, Home y End cambian selección y foco inmediatamente; paneles inactivos usan `hidden`.
 
-### Registro de cuentas y movimientos
+### Registro de pagos y cuenta corriente
 
-La firma del mundo es una cifra que mantiene su explicación al cambiar el ancho.
+La firma financiera es un importe que conserva origen, estado y explicación.
 
-- **Cuentas:** filas enlazadas de altura mínima (77px), separación de columnas (14px), nombre en peso 600 y estado escrito; hover de fila sobre (`#f8faf6`).
-- **Movimientos:** encabezados en (12px, peso 500), contenido en (13px), fecha atenuada e importes tabulares a la derecha. En móvil, cada celda conserva su etiqueta mediante `data-label`, con columna de etiqueta (100px).
-- **Feedback:** cargas, fallos, resultados vacíos y búsquedas sin coincidencias se expresan con texto dentro de su registro. El buscador de movimiento acepta el nombre visible, fecha, referencia y los demás datos cargados; no sugiere una búsqueda global de datos aún no consultados.
+- **Indicators:** una superficie compartida; cuatro cantidades en cartera y tres en ficha. El icono grande forma pareja con el importe, debajo permanecen etiqueta y contexto. Crédito y deuda se muestran por separado.
+- **Payments:** tabla con Cliente, Medio, Importe, Estado y Acción; el total es registrado, pendiente de verificar y usa (1.25rem). La acción Revisar es un control naranja compacto de mínimo (36px), padding (7px 12px). En móvil la etiqueta ocupa (70px) y el valor la columna flexible.
+- **Priorities:** filas interiores con icono (34px), cifra (1.625rem), frase y contexto. Su estructura puede mostrar una consulta pendiente sin convertirla en cero.
+- **Movements:** Fecha, Movimiento, Cargo, Abono y Saldo corrido; cifras a la derecha. En móvil, etiqueta de (100px) y columna flexible. La búsqueda usa los movimientos cargados; el botón de anteriores conserva la paginación.
+- **Review detail:** selección de un pago abre origen, comprobante y secuencia de estados. En móvil/tablet el foco pasa al detalle. El reconocimiento explícito precede al botón Verificar; loading y error conservan su texto y no anticipan éxito.
 
 ## Do's and Don'ts
 
 ### Do:
 
-- **Do** mantener las etiquetas y la explicación junto a los saldos confirmado y provisional.
-- **Do** usar Manrope Variable y cifras tabulares para importes y contadores.
-- **Do** conservar el foco visible y los textos de estado además del color.
-- **Do** adaptar las filas a pares de etiqueta y valor en móvil.
-- **Do** usar las superficies, radios y estados registrados en los tokens.
+- **Do** conservar el cristal oscuro, los bordes luminosos y la marca angular del mundo elegido.
+- **Do** mantener cada saldo con su etiqueta y los estados registrado, verificado y conciliado diferenciados.
+- **Do** usar Manrope Variable, cifras tabulares y columnas Cargo, Abono y Saldo corrido.
+- **Do** mantener foco visible, texto de estado y la adaptación móvil de tablas a etiqueta y valor.
+- **Do** respetar las variantes opacas de transparencia reducida y mayor contraste.
+- **Do** dejar el texto y los controles en el DOM sobre el fondo atmosférico.
 
 ### Don't:
 
-- **Don't** introducir ilustraciones decorativas en el registro de tesorería.
-- **Don't** sustituir un saldo no disponible por una cifra cero.
-- **Don't** convertir toda cifra o contenedor en un acento naranja.
-- **Don't** añadir sombras de tarjeta a los registros planos.
-- **Don't** heredar los rótulos residuales en mayúsculas como una nueva escala tipográfica.
+- **Don't** reemplazar una fuente pendiente o un saldo desconocido por cero o por importes del concepto visual.
+- **Don't** presentar un pago registrado por verificar como confirmado o conciliado con banco.
+- **Don't** compensar el crédito de un cliente contra la deuda de otro.
+- **Don't** extender la variante luminosa del login a todos los controles y registros.
+- **Don't** introducir animaciones de cifras o de carga de páginas en la consulta financiera.
+- **Don't** heredar rótulos residuales en mayúsculas como una nueva escala tipográfica.
 
-Deriva registrada, no canonizada: ClientDetail conserva rótulos heredados en mayúsculas para Partidas/Anticipos y «Frenando el cobro» (11px, peso 700, tracking .03em). No se incluyen en la escala ni en los componentes de referencia porque contradicen la terminación elegida; documentar no los repara ni los convierte en regla para nuevas superficies.
+Deriva registrada, no canonizada: los rótulos de Partidas y seguimiento en ClientDetail, y `origen-eyebrow` en las vistas heredadas, mantienen mayúsculas compactas; el rótulo redundante de Anticipos fue retirado. Los rótulos restantes no se incorporan a la escala ni a las muestras. La aprobación humana de plan/activos y la validación con sesión autenticada siguen pendientes; este documento registra el código local y no convierte esos pendientes en una aprobación visual final.
