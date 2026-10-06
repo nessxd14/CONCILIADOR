@@ -1,6 +1,14 @@
 import type { CSSProperties } from "react";
 
 const paths = {
+  menu: "M4 6h16M4 12h16M4 18h16",
+  chart: "M4 20V10M10 20V4M16 20v-8M22 20H2",
+  calendar: "M4 5h16v16H4ZM8 3v4M16 3v4M4 10h16",
+  wallet: "M3 6h17v14H3ZM3 6V3h14v3M16 10h5v6h-5ZM17 13h.1",
+  credit: "M3 5h18v14H3ZM3 9h18M7 15h4",
+  receipt: "M5 3h14v18l-3-2-4 2-4-2-3 2ZM9 7h6M9 11h6M9 15h3",
+  box: "M3 7l9-5 9 5v10l-9 5-9-5ZM3 7l9 5 9-5M12 12v10M7 4l10 6",
+  lock: "M5 10h14v11H5ZM8 10V6a4 4 0 0 1 8 0v4M12 14v3",
   home: "M3 10 12 3l9 7M5 9v11h14V9M9 20v-7h6v7",
   users: "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M17 4a4 4 0 0 1 0 8M22 21v-2a4 4 0 0 0-3-3.87",
   folder: "M3 7h7l2 2h9v11H3ZM3 7V4h6l3 3",

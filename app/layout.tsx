@@ -7,7 +7,7 @@ import "./redesign.css";
 
 export const metadata: Metadata = {
   title: "Hermes",
-  description: "Libro auxiliar de cuentas por cobrar",
+  description: "Cartera, pagos y salud financiera",
 };
 
 export default function RootLayout({

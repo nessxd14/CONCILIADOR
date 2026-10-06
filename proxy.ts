@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
 
 export async function proxy(request: NextRequest) {
-  const preview = request.nextUrl.pathname === "/vista-previa" || request.nextUrl.pathname === "/vista-previa/cliente";
+  const preview = request.nextUrl.pathname === "/vista-previa" || request.nextUrl.pathname.startsWith("/vista-previa/");
   if (preview) {
     if (process.env.NODE_ENV === "development" && process.env.HERMES_UI_PREVIEW === "1") return NextResponse.next();
     return new NextResponse(null, { status: 404 });

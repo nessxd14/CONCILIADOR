@@ -477,11 +477,11 @@ export function ClientDetail({ fixture }: { fixture?: ClientFixture }) {
       {!tieneApertura && !erroresSecciones.some(e => e.startsWith("Apertura:")) && <div className="banner-warn"><Icon name="alert" /><span>Este cliente no tiene saldo de apertura. La cuenta puede no reflejar toda su deuda.</span></div>}
       {hayPagosPorVerificar && <div className="pago-aviso"><Icon name="clock" /><div><strong>Pagos registrados · por verificar</strong><p>Los pagos ya están registrados. Su verificación actualizará el saldo contable de la cuenta.</p></div></div>}
       <section className="balance-strip client-summary" aria-label="Saldos del cliente">
-        <div className="balance-primary"><span>Saldo contable</span><strong className="summary-value">{saldo ? formatBs(saldo.saldo_confirmado) : "No disponible"}</strong><small>{hayPagosPorVerificar ? "Pendiente de actualizar al verificar los pagos" : saldo?.situacion === "ACREEDOR" ? "Saldo a favor del cliente" : saldo?.situacion === "DEUDOR" ? "Deuda registrada en la cuenta" : saldo ? "Cuenta al día" : "No se pudo obtener el saldo"}</small></div>
-        <div><span>Saldo tras verificar pagos</span><strong className="money-provisional">{saldo ? formatBs(saldo.saldo_provisional) : "—"}</strong><small>Provisional · sujeto a verificación</small></div>
-        <div><span>Pagos por verificar</span><strong className="money-provisional">{saldo ? formatBs(saldo.monto_en_revision) : "—"}</strong><small>{erroresSecciones.some(e => e.startsWith("Partidas:")) ? "Partidas no disponibles" : `${partidasAbiertasList.length} ${partidasAbiertasList.length === 1 ? "partida abierta" : "partidas abiertas"}`}</small></div>
+        <div className="balance-primary"><span>Saldo contable</span><div className="metric-value money-favor"><Icon name="wallet" size={36} /><strong className="summary-value">{saldo ? formatBs(saldo.saldo_confirmado) : "No disponible"}</strong></div><small>{hayPagosPorVerificar ? "Pendiente de actualizar al verificar los pagos" : saldo?.situacion === "ACREEDOR" ? "Saldo a favor del cliente" : saldo?.situacion === "DEUDOR" ? "Deuda registrada en la cuenta" : saldo ? "Cuenta al día" : "No se pudo obtener el saldo"}</small></div>
+        <div><span>Saldo tras verificar pagos</span><div className="metric-value"><Icon name="chart" size={36} /><strong>{saldo ? formatBs(saldo.saldo_provisional) : "—"}</strong></div><small>Provisional · sujeto a verificación</small></div>
+        <div><span>Pagos por verificar</span><div className="metric-value money-overdue"><Icon name="clock" size={36} /><strong>{saldo ? formatBs(saldo.monto_en_revision) : "—"}</strong></div><small>{erroresSecciones.some(e => e.startsWith("Partidas:")) ? "Partidas no disponibles" : `${partidasAbiertasList.length} ${partidasAbiertasList.length === 1 ? "partida abierta" : "partidas abiertas"}`}</small></div>
       </section>
-      <div className="credit-facts"><span>Límite de crédito<strong>{credito?.limite_credito ? formatBs(credito.limite_credito) : "Sin registrar"}</strong></span><span>Plazo<strong>{credito ? `${credito.plazo_dias} días` : "—"}</strong></span><span>Inicio del plazo<strong>{credito?.inicio_computo === "FACTURA" ? "Factura" : credito?.inicio_computo === "ENTREGA" ? "Entrega" : credito ? "Contado" : "—"}</strong></span></div>
+      <div className="client-workspace"><div className="client-main">
       <Tabs id="cliente" label="Detalle del cliente" value={panel} onChange={next => { setPanel(next); if (next === "ANTICIPOS") setTabPartidas("ANTICIPO"); if (next === "PARTIDAS") setTabPartidas("ABIERTA"); }} items={[
         { value: "CUENTA", label: "Cuenta corriente" }, { value: "PARTIDAS", label: "Partidas", count: erroresSecciones.some(e => e.startsWith("Partidas:")) ? undefined : partidasEstado.length },
         { value: "ANTICIPOS", label: "Anticipos", count: erroresSecciones.some(e => e.startsWith("Anticipos:")) ? undefined : anticipos.length }, { value: "PENDIENTES", label: "Pendientes", count: erroresSecciones.some(e => e.startsWith("Pendientes:")) ? undefined : partidasFrenadas.length },
@@ -494,9 +494,9 @@ export function ClientDetail({ fixture }: { fixture?: ClientFixture }) {
       {(partidasEstado.length > 0 || anticipos.length > 0) && (
         <div style={{ marginBottom: 20 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8, flexWrap: "wrap", gap: 8 }}>
-            <div style={{ fontSize: 11, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.03em", fontWeight: 700 }}>
-              {panel === "ANTICIPOS" ? "Saldos a favor del cliente" : `Partidas · ${formatBs(totalImputado.toString())} imputado · ${tramiteCompletoCount}/${partidasAbiertasList.length} con trámite completo`}
-            </div>
+            {panel === "PARTIDAS" && <div style={{ fontSize: 11, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.03em", fontWeight: 700 }}>
+              {`Partidas · ${formatBs(totalImputado.toString())} imputado · ${tramiteCompletoCount}/${partidasAbiertasList.length} con trámite completo`}
+            </div>}
             <div hidden={panel === "ANTICIPOS"} style={panel === "ANTICIPOS" ? { display: "none" } : { display: "flex", gap: 6 }}>
               <button
                 type="button"
@@ -732,11 +732,11 @@ export function ClientDetail({ fixture }: { fixture?: ClientFixture }) {
       <label className="search-field movement-search"><Icon name="search" size={18} /><input aria-label="Buscar movimientos" placeholder="Buscar por movimiento, fecha o referencia…" value={busquedaMovimiento} onChange={e => setBusquedaMovimiento(e.target.value)} /></label>
       <div className="movement-table-wrapper">
         <table className="movement-table"><caption className="sr-only">Cuenta corriente de {cliente.nombre}</caption>
-          <thead><tr><th scope="col">Fecha</th><th scope="col">Movimiento</th><th scope="col">Monto</th><th scope="col">Saldo corrido</th></tr></thead>
+          <thead><tr><th scope="col">Fecha</th><th scope="col">Movimiento</th><th scope="col">Cargo</th><th scope="col">Abono</th><th scope="col">Saldo corrido</th></tr></thead>
           <tbody>{movimientosFiltrados.map(m => <tr key={m.id}>
             <td data-label="Fecha">{m.fecha_efectiva}</td>
             <td data-label="Movimiento"><strong>{nombresMovimiento[m.tipo] ?? m.tipo}</strong>{m.documento_interno && <span className="movement-ref">{m.documento_interno}</span>}{(m.motivo || m.referencia) && <small>{m.motivo ?? m.referencia}</small>}</td>
-            <td data-label="Monto" className={new Decimal(m.monto).lt(0) ? "money-acreedor" : "money"}>{formatBs(m.monto)}</td>
+            <td data-label="Cargo" className="money">{new Decimal(m.monto).gt(0) ? formatBs(m.monto) : "—"}</td><td data-label="Abono" className="money-acreedor">{new Decimal(m.monto).lt(0) ? formatBs(new Decimal(m.monto).abs().toFixed(2)) : "—"}</td>
             <td data-label="Saldo corrido" className={new Decimal(m.saldo_corrido).lt(0) ? "money-acreedor" : "money"}>{formatBs(m.saldo_corrido)}</td>
           </tr>)}</tbody>
         </table>
@@ -745,6 +745,16 @@ export function ClientDetail({ fixture }: { fixture?: ClientFixture }) {
 
       </div>
       </section>
+      </div><aside className="client-side"><section className="glass-panel client-credit"><h2>Condiciones de crédito</h2>
+      <div className="credit-facts"><span>Límite de crédito<strong>{credito?.limite_credito ? formatBs(credito.limite_credito) : "Sin registrar"}</strong></span><span>Plazo<strong>{credito ? `${credito.plazo_dias} días` : "—"}</strong></span><span>Inicio del plazo<strong>{credito?.inicio_computo === "FACTURA" ? "Factura" : credito?.inicio_computo === "ENTREGA" ? "Entrega" : credito ? "Contado" : "—"}</strong></span></div>
+
+      <div className="credit-facts"><span>Disponible<strong className="money-favor">{saldo && credito?.limite_credito != null ? formatBs(Decimal.max(0, new Decimal(credito.limite_credito).minus(Decimal.max(0, saldo.saldo_confirmado))).toFixed(2)) : "No disponible"}</strong></span></div>
+      <p className="credit-note">Límite menos deuda confirmada. Los pagos por verificar no aumentan el disponible.</p>
+      {saldo && credito?.limite_credito != null && new Decimal(credito.limite_credito).gt(0) && <div className="credit-track" aria-hidden="true"><div style={{ width: `${Decimal.min(100, Decimal.max(0, saldo.saldo_confirmado).div(credito.limite_credito).mul(100)).toNumber()}%` }} /></div>}
+      </section><section className="glass-panel open-items"><div className="section-heading"><h2>Partidas abiertas</h2><Icon name="folder" size={20} /></div>
+        {erroresSecciones.some(e => e.startsWith("Partidas:")) ? <p>No disponibles. Reintenta la consulta.</p> : partidasAbiertasList.length === 0 ? <p>No hay partidas abiertas.</p> : <>{partidasAbiertasList.slice(0, 5).map(p => <Link key={p.partida_id} href={fixture ? "/vista-previa/cliente" : `/clientes/${cliente.id}/expediente/${p.partida_id}`} className="open-item"><span>{p.documento_interno}<small>Abrir expediente</small></span><strong>{formatBs(p.pendiente)}</strong><Icon name="arrow" size={15} /></Link>)}{partidasAbiertasList.length > 5 && <button className="btn-link" onClick={() => setPanel("PARTIDAS")}>Ver las {partidasAbiertasList.length} partidas</button>}</>}
+      </section></aside></div>
+
       {modalNCAbierto && (
         <dialog ref={modalRef} className="modal-overlay" aria-labelledby="nota-credito-title" onCancel={(event) => { if (guardandoNC) event.preventDefault(); else cerrarModalNC(); }}>
           <form className="card modal-card" onClick={(e) => e.stopPropagation()} onSubmit={confirmarNC}>
