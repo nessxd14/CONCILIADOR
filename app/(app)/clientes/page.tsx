@@ -74,16 +74,25 @@ function ClientesPageInterna() {
   const [textoBusqueda, setTextoBusqueda] = useState(() => params.get("q") ?? "");
   const paramsRef = useRef(params);
   paramsRef.current = params;
+  // Último valor de "q" que nosotros mismos escribimos en la URL. El
+  // router.replace del debounce puede tardar en confirmarse; si para
+  // entonces el usuario ya tecleó algo más nuevo, esa confirmación no debe
+  // pisarlo. Solo tratamos un cambio de "q" como externo (recarga, atrás/
+  // adelante) cuando no coincide con lo que nosotros mismos enviamos.
+  const ultimoQueryEnviado = useRef(params.get("q") ?? "");
 
   useEffect(() => {
     const actual = params.get("q") ?? "";
-    setTextoBusqueda((previo) => (previo === actual ? previo : actual));
+    if (actual === ultimoQueryEnviado.current) return;
+    ultimoQueryEnviado.current = actual;
+    setTextoBusqueda(actual);
   }, [params]);
 
   useEffect(() => {
     const espera = setTimeout(() => {
       const actual = paramsRef.current.get("q") ?? "";
       if (actual === textoBusqueda) return;
+      ultimoQueryEnviado.current = textoBusqueda;
       const next = new URLSearchParams(paramsRef.current.toString());
       if (textoBusqueda) next.set("q", textoBusqueda);
       else next.delete("q");
