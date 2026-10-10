@@ -44,6 +44,34 @@ export interface VSaldoCliente {
   situacion: Situacion;
 }
 
+export interface VClienteCartera {
+  cliente_id: number;
+  cliente: string;
+  nit: string | null;
+  categoria: CategoriaCliente;
+  activo: boolean;
+  sector: SectorCliente;
+  limite_credito: string | null;
+  plazo_dias: number | null;
+  inicio_computo: InicioComputo | null;
+  saldo_confirmado: string;
+  monto_en_revision: string;
+  saldo_provisional: string;
+  situacion: Situacion;
+  partidas_abiertas: number;
+  pendiente_partidas: string;
+  saldo_sin_partida: string;
+  partidas_vencidas: number;
+  monto_vencido: string;
+  dias_vencido_max: number | null;
+  proximo_vencimiento: string | null;
+  partidas_sin_fecha: number;
+  monto_sin_fecha: string;
+  pagos_por_verificar: number;
+  ultimo_pago_en: string | null;
+  ultimo_movimiento_en: string | null;
+}
+
 export type MotivoBloqueo = "VENCIDA" | "ENTREGADO_SIN_FACTURAR" | "FRENADA";
 export type AccionFrenada = "COBRAR" | "FACTURAR" | "FALTA_DOCUMENTO" | "LISTO_PARA_COMPLETAR";
 export type DiasConcepto = "vencido" | "sin facturar" | "parado";
@@ -93,29 +121,6 @@ export interface VPartidasFrenadas {
   dias: number;
   accion: AccionFrenada;
   dias_concepto: DiasConcepto;
-}
-
-export type MotivoPedidoPendiente =
-  | "SIN_CLIENTE"
-  | "CLIENTE_SIN_CUENTA"
-  | "ABRE"
-  | "SIN_TOTAL"
-  | "SIN_FICHA_CREDITO"
-  | "CATEGORIA_NO_ELEGIBLE"
-  | "ESTADO_NO_ELEGIBLE"
-  | "YA_TIENE_PARTIDA";
-
-export interface VPedidoCationPendiente {
-  pedido_id: number;
-  pos_cliente_id: number | null;
-  hermes_cliente_id: number | null;
-  cliente: string | null;
-  categoria: CategoriaCliente | null;
-  estado: string;
-  total: string | null;
-  referencia: string | null;
-  creado_en: string;
-  motivo: MotivoPedidoPendiente;
 }
 
 export interface VMayorAuxiliar {
@@ -292,33 +297,6 @@ export interface PagoPropuesto {
   referencia: string | null;
   creado_por: string;
   creado_en: string;
-}
-
-export interface ClienteCation {
-  id: number;
-  nombre: string;
-  razon_social: string | null;
-  tipo_precio: string;
-  documento: string | null;
-  ciudad: string | null;
-  activo: boolean;
-  creado_en: string;
-}
-
-export interface ClienteCationPendiente extends ClienteCation {
-  categoria_sugerida: CategoriaCliente | null;
-}
-
-const TIPO_PRECIO_A_CATEGORIA: Record<string, CategoriaCliente> = {
-  retail: "RETAIL",
-  mayorista: "MAYORISTA",
-  corporativo: "CORPORATIVO",
-  institucion: "INSTITUCIONAL",
-};
-
-/** Cation no tiene un valor libre: si no matchea un tipo_precio conocido, no hay categoría válida para asignar. */
-export function categoriaDesdeTipoPrecio(tipoPrecio: string): CategoriaCliente | null {
-  return TIPO_PRECIO_A_CATEGORIA[tipoPrecio.trim().toLowerCase()] ?? null;
 }
 
 /** sector_cliente no existe en Cation: default por regla de negocio, editable después a mano. */

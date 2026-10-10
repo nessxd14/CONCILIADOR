@@ -26,21 +26,11 @@ export default async function AppLayout({
       : "Tu cuenta no tiene acceso a Hermes. Solicita la habilitación al administrador."} />;
   }
 
-  const [{ count: pendientesImportar }, { count: pedidosAccionables }] = await Promise.all([
-    supabase.from("v_clientes_cation_pendientes").select("*", { count: "exact", head: true }),
-    supabase
-      .from("v_pedidos_cation_pendientes")
-      .select("*", { count: "exact", head: true })
-      .in("motivo", ["ABRE", "CLIENTE_SIN_CUENTA", "SIN_FICHA_CREDITO"]),
-  ]);
-
   return (
     <div className="shell"><a className="skip-link" href="#contenido">Ir al contenido</a>
       <Sidebar
         email={user.email ?? ""}
         rol={rol}
-        pendientesImportar={pendientesImportar ?? 0}
-        pedidosAccionables={pedidosAccionables ?? 0}
       />
       <main id="contenido" className="content">{children}</main>
     </div>
