@@ -7,8 +7,8 @@ import { createClient } from "@/lib/supabase/client";
 import { Icon, type IconName } from "./Icon";
 import { HermesMark } from "./HermesMark";
 
-export function Sidebar({ email, rol, pendientesImportar = 0, pedidosAccionables = 0, preview = false }: {
-  email: string; rol: string | null; pendientesImportar?: number; pedidosAccionables?: number; preview?: boolean;
+export function Sidebar({ email, rol, preview = false }: {
+  email: string; rol: string | null; preview?: boolean;
 }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -19,11 +19,10 @@ export function Sidebar({ email, rol, pendientesImportar = 0, pedidosAccionables
     { href: "/resumen", label: "Visión general", icon: "chart" },
     { href: "/dia", label: "Mi día", icon: "calendar" },
     { href: "/tesoreria", label: "Tesorería", icon: "wallet" },
-    { href: "/clientes", label: "Clientes", icon: "users", badge: pendientesImportar || undefined },
+    { href: "/clientes", label: "Clientes", icon: "users" },
     { href: "/proveedores", label: "Proveedores", icon: "box" },
     { href: "/resultados", label: "Resultados", icon: "chart" },
     { href: "/conciliacion", label: "Conciliación", icon: "receipt" },
-    { href: "/pedidos-pendientes", label: "Pedidos", icon: "folder", badge: pedidosAccionables || undefined },
     { href: "/captura", label: "Documentos", icon: "camera" },
     ...(rol === "admin" || preview ? [{ href: "/apertura", label: "Apertura", icon: "book" as const }] : []),
   ];
@@ -47,7 +46,7 @@ export function Sidebar({ email, rol, pendientesImportar = 0, pedidosAccionables
         className={`nav-item ${active ? "active" : ""}`} aria-current={active ? "page" : undefined}>
         <Icon name={item.icon} size={19} /><span>{item.label}</span>{item.badge && <span className="nav-badge">{item.badge}</span>}
       </Link>;
-      return item.href === "/pedidos-pendientes" ? <div key="operacion" className="nav-operation"><span className="nav-section-label">Operación</span>{link}</div> : link;
+      return item.href === "/captura" ? <div key="operacion" className="nav-operation"><span className="nav-section-label">Operación</span>{link}</div> : link;
     })}</nav>
     <div className="sidebar-note"><span className="connection-dot" />{preview ? "Datos de ejemplo" : "Hermes · Seller / Cation"}<p>Saldos y pagos, en un solo lugar.</p></div>
     <div className="sidebar-footer">

@@ -1,5 +1,6 @@
 import type { DashboardData } from "@/components/Dashboard";
 import type { Cliente, ClienteCredito, VSaldoCliente, VMayorAuxiliar, VPartidaEstado, VAnticipoCliente, VPartidasFrenadas } from "@/lib/types";
+import type { PagoActividad, PedidoActividad } from "@/lib/use-actividad";
 
 // Synthetic fixtures: never sourced from a customer's financial records.
 export const clientes: VSaldoCliente[] = [
@@ -15,7 +16,7 @@ export const clientes: VSaldoCliente[] = [
 
 export const dashboardFixture: DashboardData = {
   saldos: clientes, cargando: false, error: null, errorSaldos: null, errorPagos: null, puedeConfirmar: true, actualizado: null,
-  vencidas: { monto: "6400.00", clientes: 1 }, pedidosPorRevisar: 2, errorVencidas: null,
+  vencidas: { monto: "6400.00", clientes: 1 }, errorVencidas: null,
   bloqueados: [
     { cliente_id: 1, cliente: "Comercial Altiplano", categoria: "MAYORISTA", partidas_bloqueadas: 2, monto_bloqueado: "6400", dias_maximo: 12, motivos: "VENCIDA" },
     { cliente_id: 3, cliente: "Instituto Nueva Esperanza", categoria: "INSTITUCIONAL", partidas_bloqueadas: 1, monto_bloqueado: "3200", dias_maximo: 5, motivos: "ENTREGADO_SIN_FACTURAR" },
@@ -25,6 +26,21 @@ export const dashboardFixture: DashboardData = {
     { id: 2, cliente_id: 3, cliente: "Instituto Nueva Esperanza", monto: "800", medio: "DEPOSITO", referencia: "Ejemplo 002", creado_por: "pos:cajero", creado_en: "2026-10-02T12:00:00Z" },
     { id: 3, cliente_id: 7, cliente: "Colegio Los Olivos", monto: "300", medio: "QR", referencia: "Ejemplo 003", creado_por: "pos:cajero", creado_en: "2026-10-03T12:00:00Z" },
     { id: 4, cliente_id: 1, cliente: "Comercial Altiplano", monto: "600", medio: "EFECTIVO", referencia: "Ejemplo 004", creado_por: "pos:cajero", creado_en: "2026-10-04T12:00:00Z" },
+  ],
+};
+
+export const actividadFixture: { pagos: PagoActividad[]; pedidos: PedidoActividad[] } = {
+  pagos: [
+    { id: 4, cliente_id: 1, cliente: "Comercial Altiplano", monto: "600", medio: "EFECTIVO", estado: "PROPUESTO", referencia: "Ejemplo 004", creado_por: "pos:cajero", creado_en: "2026-10-09T18:00:00Z", confirmado_en: null },
+    { id: 3, cliente_id: 7, cliente: "Colegio Los Olivos", monto: "300", medio: "QR", estado: "CONFIRMADO", referencia: "Ejemplo 003", creado_por: "pos:cajero", creado_en: "2026-10-08T16:30:00Z", confirmado_en: "2026-10-08T17:00:00Z" },
+    { id: 2, cliente_id: 3, cliente: "Instituto Nueva Esperanza", monto: "800", medio: "DEPOSITO", estado: "ACREDITADO", referencia: "Ejemplo 002", creado_por: "pos:cajero", creado_en: "2026-10-07T14:00:00Z", confirmado_en: "2026-10-07T15:00:00Z" },
+    { id: 1, cliente_id: 1, cliente: "Comercial Altiplano", monto: "900", medio: "TRANSFERENCIA", estado: "RECHAZADO", referencia: "Ejemplo 001", creado_por: "pos:administracion", creado_en: "2026-10-06T12:00:00Z", confirmado_en: null },
+    { id: 5, cliente_id: 5, cliente: "Corporación Horizonte", monto: "1200", medio: "CHEQUE", estado: "ANULADO", referencia: "Ejemplo 005", creado_por: "pos:cajero", creado_en: "2026-10-05T11:00:00Z", confirmado_en: null },
+  ],
+  pedidos: [
+    { id: 11, cliente_id: 1, cliente_nombre: "Comercial Altiplano", cliente_categoria: "MAYORISTA", pedido_id: 201, referencia: "PED-2026-00301", documento_interno: "PART-A-00301", total: "4200.00", estado: "ABIERTA", creado_en: "2026-10-09T19:00:00Z", fecha_entrega: null },
+    { id: 12, cliente_id: 3, cliente_nombre: "Instituto Nueva Esperanza", cliente_categoria: "INSTITUCIONAL", pedido_id: 202, referencia: "PED-2026-00302", documento_interno: "PART-A-00302", total: "1800.00", estado: "PAGADA", creado_en: "2026-10-08T13:00:00Z", fecha_entrega: "2026-10-08" },
+    { id: 13, cliente_id: 5, cliente_nombre: "Corporación Horizonte", cliente_categoria: "CORPORATIVO", pedido_id: 203, referencia: "PED-2026-00303", documento_interno: "PART-A-00303", total: "950.00", estado: "ANULADA", creado_en: "2026-10-06T09:00:00Z", fecha_entrega: null },
   ],
 };
 

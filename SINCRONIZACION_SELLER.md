@@ -38,3 +38,7 @@ Al verificar la instalación había cero clientes activos elegibles sin vínculo
 - Compilaciones de Seller y Conciliador, pruebas y lint de Seller satisfactorios.
 
 La base ya tiene la automatización. Los cambios de interfaz están en las carpetas locales; requieren publicar los respectivos frontends para verse en sus URLs remotas.
+
+## Nota — 2026-10-09
+
+Las pantallas «Pedidos pendientes» y «Revisar clientes pendientes», y la acción manual de recuperación de pedidos anteriores, se retiraron del Conciliador: la sincronización automática descrita arriba ya cubre ese flujo (0 clientes y 0 pedidos pendientes desde el 3 de octubre). El resto de este documento describe la base compartida tal como quedó aplicada y sigue vigente.

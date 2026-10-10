@@ -38,11 +38,10 @@ export function useCartera(revisionEnCurso = false) {
   async function consultar(enSegundoPlano: boolean) {
     setData(prev => ({ ...prev, cargando: enSegundoPlano ? prev.cargando : true, error: null, errorSaldos: null, errorPagos: null }));
     try {
-      const [userRes, saldosRes, bloqueadosRes, vencidasRes, pedidosRes] = await Promise.all([
+      const [userRes, saldosRes, bloqueadosRes, vencidasRes] = await Promise.all([
         obtenerSesionHermes(supabase), leerSaldos(),
         leerPaginas<VCobrosBloqueados>(fromToBloqueados),
         leerPaginas<{ partida_id: number; cliente_id: number; saldo_partida: string }>((from, to) => supabase.from("v_partidas_frenadas").select("partida_id, cliente_id, saldo_partida").eq("motivo", "VENCIDA").order("partida_id").range(from, to)),
-        supabase.from("v_pedidos_cation_pendientes").select("pedido_id", { count: "exact", head: true }).in("motivo", ["ABRE", "CLIENTE_SIN_CUENTA", "SIN_FICHA_CREDITO"]),
       ]);
       if (userRes.error) throw new Error(userRes.error.message);
       const gerente = puedeConfirmarPagos(userRes.data.rol);
@@ -59,11 +58,10 @@ export function useCartera(revisionEnCurso = false) {
       }
       setData({ saldos: saldosRes.data ?? [], bloqueados: bloqueadosRes.data ?? [], pagos, puedeConfirmar: gerente, cargando: false,
         error: bloqueadosRes.error?.message ?? null, errorSaldos: saldosRes.error?.message ?? null, errorPagos,
-        pedidosPorRevisar: pedidosRes.error ? null : pedidosRes.count,
         vencidas: vencidasRes.error ? null : resumirVencidas(vencidasRes.data ?? []), errorVencidas: vencidasRes.error?.message ?? null,
         actualizado: new Date().toLocaleTimeString("es-BO", { hour: "2-digit", minute: "2-digit", timeZone: "America/La_Paz" }) });
     } catch {
-      setData(prev => ({ ...prev, cargando: false, saldos: [], bloqueados: [], pagos: [], vencidas: null, pedidosPorRevisar: null, errorVencidas: "No se pudo consultar vencimientos.", error: "No se pudo conectar. Reintenta la consulta.", errorSaldos: "No se pudo conectar. Reintenta la consulta.", errorPagos: "No se pudo conectar. Reintenta la consulta.", actualizado: null }));
+      setData(prev => ({ ...prev, cargando: false, saldos: [], bloqueados: [], pagos: [], vencidas: null, errorVencidas: "No se pudo consultar vencimientos.", error: "No se pudo conectar. Reintenta la consulta.", errorSaldos: "No se pudo conectar. Reintenta la consulta.", errorPagos: "No se pudo conectar. Reintenta la consulta.", actualizado: null }));
     }
   }
   function fromToBloqueados(from: number, to: number) {
