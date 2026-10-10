@@ -102,4 +102,32 @@ describe("Actividad reciente", () => {
     expect(html).toContain("Verificación a cargo de gerencia");
     expect(html).not.toContain("Total recibido");
   });
+
+  it('el link "Ver N pagos por verificar" aparece aunque el período no tenga pagos', () => {
+    const html = renderToStaticMarkup(
+      <Dashboard {...propsBase} actividad={{ ...actividadConDatos, pagos: [], pedidos: [] }} />
+    );
+    expect(html).toContain("Sin pagos en este período.");
+    // dashboardFixture.pagos tiene 4 pagos PROPUESTO (de useCartera, sin recortar por período).
+    expect(html).toContain("Ver 4 pagos por verificar");
+  });
+
+  it("avisa de los pagos por verificar anteriores al período elegido", () => {
+    const html = renderToStaticMarkup(<Dashboard {...propsBase} actividad={actividadConDatos} />);
+    // Solo el pago id 4 (PROPUESTO) está en el período; los otros 3 de
+    // dashboardFixture.pagos (ids 1-3) quedan fuera, aunque compartan id con
+    // filas de actividadFixture.pagos en otro estado.
+    expect(html).toContain("3 pagos por verificar anteriores a este período");
+  });
+
+  it("no avisa de pagos anteriores cuando todos los PROPUESTO ya están en el período", () => {
+    const html = renderToStaticMarkup(
+      <Dashboard
+        {...propsBase}
+        data={{ ...dashboardFixture, pagos: [{ id: 4, cliente_id: 1, cliente: "Comercial Altiplano", monto: "600", medio: "EFECTIVO", referencia: null, creado_por: "pos:cajero", creado_en: "2026-10-09T18:00:00Z" }] }}
+        actividad={actividadConDatos}
+      />
+    );
+    expect(html).not.toContain("anteriores a este período");
+  });
 });

@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import { Dashboard } from "@/components/Dashboard";
 import { useCartera } from "@/lib/use-cartera";
 import { useActividad } from "@/lib/use-actividad";
-import { calcularRangoActividad, hoyLocal, type PeriodoActividad } from "@/lib/fechas";
+import { hoyLocal, type PeriodoActividad } from "@/lib/fechas";
 
 export default function MiDiaPage() {
   const { data, cargar, confirmarPago } = useCartera();
@@ -11,15 +11,12 @@ export default function MiDiaPage() {
   const [desde, setDesde] = useState(hoyLocal());
   const [hasta, setHasta] = useState(hoyLocal());
 
-  const rango = useMemo(
-    () => calcularRangoActividad(periodo, periodo === "rango" ? { desde, hasta } : undefined),
-    [periodo, desde, hasta]
-  );
+  const rangoPersonalizado = useMemo(() => ({ desde, hasta }), [desde, hasta]);
   const contexto = useMemo(
     () => ({ puedeConfirmar: data.puedeConfirmar, saldos: data.saldos.map((s) => ({ cliente_id: s.cliente_id, cliente: s.cliente })) }),
     [data.puedeConfirmar, data.saldos]
   );
-  const actividad = useActividad(rango, contexto);
+  const actividad = useActividad(periodo, rangoPersonalizado, contexto);
 
   return (
     <Dashboard

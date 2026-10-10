@@ -105,6 +105,11 @@ export function Dashboard({
   const totalPagosPeriodo = actividad.pagos
     .filter(p => p.estado !== "RECHAZADO" && p.estado !== "ANULADO")
     .reduce((total, p) => total.plus(p.monto), new Decimal(0));
+  // data.pagos (de useCartera) es la lista completa de PROPUESTO, sin
+  // recortar por período; lo que no aparece en actividad.pagos es anterior
+  // al período elegido.
+  const idsPagosEnPeriodo = new Set(actividad.pagos.filter(p => p.estado === "PROPUESTO").map(p => p.id));
+  const pagosFueraDePeriodo = pagos.filter(p => !idsPagosEnPeriodo.has(p.id));
   const totalPedidosPeriodo = actividad.pedidos
     .filter(p => p.estado !== "ANULADA")
     .reduce((total, p) => total.plus(p.total), new Decimal(0));
@@ -136,16 +141,21 @@ export function Dashboard({
         <div role="tabpanel" id="actividad-panel" aria-labelledby={`actividad-tab-${tab}`}>
           {tab === "pagos" ? (
             !data.puedeConfirmar ? <div className="empty-state"><Icon name="lock" /><h3>Verificación a cargo de gerencia</h3><p>Consulta los pagos en la ficha de cada cliente.</p><Link className="btn btn-secondary" href={preview ? "/vista-previa/cliente" : "/clientes"}>Consultar clientes</Link></div>
-            : actividad.errorPagos ? <div className="empty-state" role="alert"><h3>No pudimos consultar los pagos</h3><p>{actividad.errorPagos}</p><button className="btn btn-secondary" onClick={() => actividad.recargar()}>Reintentar</button></div>
-            : actividad.cargando && actividad.pagos.length === 0 ? <div className="loading-state" role="status">Consultando pagos…</div>
-            : actividad.pagos.length === 0 ? <div className="empty-state"><Icon name="check" /><h3>Sin pagos en este período.</h3></div>
             : <>
-              <div className="payment-table-wrap"><table className="payment-table"><caption className="sr-only">Pagos registrados en el período</caption>
-                <thead><tr><th>Fecha y hora</th><th>Cliente</th><th>Medio</th><th>Importe</th><th>Estado</th><th>Acción</th></tr></thead>
-                <tbody>{actividad.pagos.slice(0, visiblePagos).map(p => <FilaPago key={p.id} p={p} preview={preview} />)}</tbody>
-              </table></div>
-              {visiblePagos < actividad.pagos.length && <div style={{ padding: "12px 22px" }}><button type="button" className="btn btn-secondary" onClick={() => setVisiblePagos(v => v + PAGINA_ACTIVIDAD)}>Ver más</button></div>}
-              <div className="panel-footer"><span>{actividad.pagos.length} {actividad.pagos.length === 1 ? "pago" : "pagos"} · Total recibido {formatBs(totalPagosPeriodo.toFixed(2))}</span><Link href={preview ? "/vista-previa/conciliacion" : "/conciliacion"}>Ver {pagos.length} pagos por verificar<Icon name="arrow" size={16} /></Link></div>
+              {pagosFueraDePeriodo.length > 0 && <div className="panel-notice" style={{ padding: "10px 22px", fontSize: ".8125rem" }}>
+                <Link href={preview ? "/vista-previa/conciliacion" : "/conciliacion"}>{pagosFueraDePeriodo.length} {pagosFueraDePeriodo.length === 1 ? "pago" : "pagos"} por verificar anteriores a este período</Link>
+              </div>}
+              {actividad.errorPagos ? <div className="empty-state" role="alert"><h3>No pudimos consultar los pagos</h3><p>{actividad.errorPagos}</p><button className="btn btn-secondary" onClick={() => actividad.recargar()}>Reintentar</button></div>
+              : actividad.cargando && actividad.pagos.length === 0 ? <div className="loading-state" role="status">Consultando pagos…</div>
+              : actividad.pagos.length === 0 ? <div className="empty-state"><Icon name="check" /><h3>Sin pagos en este período.</h3></div>
+              : <>
+                <div className="payment-table-wrap"><table className="payment-table"><caption className="sr-only">Pagos registrados en el período</caption>
+                  <thead><tr><th>Fecha y hora</th><th>Cliente</th><th>Medio</th><th>Importe</th><th>Estado</th><th>Acción</th></tr></thead>
+                  <tbody>{actividad.pagos.slice(0, visiblePagos).map(p => <FilaPago key={p.id} p={p} preview={preview} />)}</tbody>
+                </table></div>
+                {visiblePagos < actividad.pagos.length && <div style={{ padding: "12px 22px" }}><button type="button" className="btn btn-secondary" onClick={() => setVisiblePagos(v => v + PAGINA_ACTIVIDAD)}>Ver más</button></div>}
+              </>}
+              <div className="panel-footer"><span>{actividad.errorPagos ? "No disponible" : `${actividad.pagos.length} ${actividad.pagos.length === 1 ? "pago" : "pagos"} · Total recibido ${formatBs(totalPagosPeriodo.toFixed(2))}`}</span><Link href={preview ? "/vista-previa/conciliacion" : "/conciliacion"}>Ver {pagos.length} pagos por verificar<Icon name="arrow" size={16} /></Link></div>
             </>
           ) : (
             actividad.errorPedidos ? <div className="empty-state" role="alert"><h3>No pudimos consultar los pedidos</h3><p>{actividad.errorPedidos}</p><button className="btn btn-secondary" onClick={() => actividad.recargar()}>Reintentar</button></div>

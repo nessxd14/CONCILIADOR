@@ -103,6 +103,8 @@ h1,h2,h3 { text-wrap: balance; }
 .account-amount { font-size: .875rem; white-space: nowrap; }
 .panel-footer { padding: 17px 22px; display: flex; gap: 12px; align-items: center; justify-content: space-between; font-size: .75rem; color: var(--muted); }
 .panel-footer a { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; font-weight: 600; }
+.panel-notice { border-bottom: 1px solid var(--line); color: var(--provisional); }
+.panel-notice a { color: inherit; font-weight: 600; text-decoration: none; }
 .task-column { display: grid; gap: 20px; }
 .task-section { padding: 22px 20px 12px; }
 .task-section h2 { font-size: 15px; }

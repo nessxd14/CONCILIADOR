@@ -20,7 +20,9 @@ describe("consulta de cartera", () => {
     expect(html).toContain("Bs 3,550.00");
   });
   it("no presenta saldo cero ni cartera vacía cuando la consulta falla", () => {
-    const html = renderToStaticMarkup(<Dashboard data={{ ...dashboardFixture, saldos: [], errorSaldos: "Sin conexión" }} onRefresh={() => {}} onConfirm={() => {}} {...propsActividad} />);
+    // Actividad con datos reales (no la vacía): así "Bs 0.00" solo podría
+    // venir del panel de cartera, que es lo que esta prueba vigila.
+    const html = renderToStaticMarkup(<Dashboard data={{ ...dashboardFixture, saldos: [], errorSaldos: "Sin conexión" }} onRefresh={() => {}} onConfirm={() => {}} {...propsActividad} actividad={{ ...actividadVacia, pagos: actividadFixture.pagos, pedidos: actividadFixture.pedidos }} />);
     expect(html).toContain("No disponible");
     expect(html).toContain("No pudimos cargar la cartera");
     expect(html).not.toContain("Bs 0.00");

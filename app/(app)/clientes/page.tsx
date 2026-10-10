@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -64,10 +64,34 @@ function ClientesPageInterna() {
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const busqueda = params.get("q") ?? "";
   const categoria = parseCategoria(params.get("categoria"));
   const situacion = parseSituacion(params.get("situacion"));
   const orden = parseOrden(params.get("orden"));
+
+  // Texto en estado local: escribir nunca espera al router.replace. Se
+  // sincroniza a la URL con debounce (abajo) y desde la URL cuando cambia
+  // por fuera (recarga, atrás/adelante del navegador).
+  const [textoBusqueda, setTextoBusqueda] = useState(() => params.get("q") ?? "");
+  const paramsRef = useRef(params);
+  paramsRef.current = params;
+
+  useEffect(() => {
+    const actual = params.get("q") ?? "";
+    setTextoBusqueda((previo) => (previo === actual ? previo : actual));
+  }, [params]);
+
+  useEffect(() => {
+    const espera = setTimeout(() => {
+      const actual = paramsRef.current.get("q") ?? "";
+      if (actual === textoBusqueda) return;
+      const next = new URLSearchParams(paramsRef.current.toString());
+      if (textoBusqueda) next.set("q", textoBusqueda);
+      else next.delete("q");
+      router.replace(`/clientes?${next.toString()}`);
+    }, 250);
+    return () => clearTimeout(espera);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [textoBusqueda]);
 
   function actualizarQuery(cambios: Record<string, string>) {
     const next = new URLSearchParams(params.toString());
@@ -114,8 +138,8 @@ function ClientesPageInterna() {
   );
   const conteos = useMemo(() => contarPorSituacion(porCategoria), [porCategoria]);
   const filtrados = useMemo(
-    () => ordenarClientes(filtrarClientes(porCategoria, situacion, busqueda), orden),
-    [porCategoria, situacion, busqueda, orden]
+    () => ordenarClientes(filtrarClientes(porCategoria, situacion, textoBusqueda), orden),
+    [porCategoria, situacion, textoBusqueda, orden]
   );
   const totalBase = (situacion === "inactivos" ? conteos.inactivos : conteos.todos) || 0;
 
@@ -142,8 +166,8 @@ function ClientesPageInterna() {
           <input
             aria-label="Buscar cliente"
             placeholder="Buscar un cliente…"
-            value={busqueda}
-            onChange={(e) => actualizarQuery({ q: e.target.value })}
+            value={textoBusqueda}
+            onChange={(e) => setTextoBusqueda(e.target.value)}
           />
         </label>
         <select

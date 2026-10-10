@@ -3,12 +3,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useHermesRefresh } from "@/lib/supabase/use-refresh";
+import { calcularRangoActividad, type PeriodoActividad } from "./fechas";
 import { leerPaginas } from "./paginate";
 import type { CategoriaCliente, EstadoPago, EstadoPartida, MedioPago } from "./types";
 
-export interface RangoActividad {
+export interface RangoPersonalizado {
   desde: string;
-  hasta: string | null;
+  hasta: string;
 }
 
 export interface PagoActividad {
@@ -51,8 +52,18 @@ type FilaPago = Omit<PagoActividad, "cliente">;
  * Pagos y pedidos recientes para el panel "Actividad reciente" de Mi día.
  * Consultas propias, no las de useCartera: el período se elige acá y no
  * debe disparar la consulta de saldos.
+ *
+ * "Últimas 24 horas" es una ventana móvil: el límite inferior se recalcula
+ * en cada consulta (acá, vía rangoActual()), no una sola vez al elegir el
+ * período. Si se calculara en un useMemo en el componente que llama a este
+ * hook, el límite quedaría fijo en el momento en que se eligió "24h" y
+ * nunca avanzaría entre refrescos.
  */
-export function useActividad(rango: RangoActividad, contexto: ContextoActividad) {
+export function useActividad(
+  periodo: PeriodoActividad,
+  rangoPersonalizado: RangoPersonalizado | undefined,
+  contexto: ContextoActividad
+) {
   const supabase = useMemo(() => createClient(), []);
   const [pagos, setPagos] = useState<PagoActividad[]>([]);
   const [pedidos, setPedidos] = useState<PedidoActividad[]>([]);
@@ -62,6 +73,13 @@ export function useActividad(rango: RangoActividad, contexto: ContextoActividad)
 
   const contextoRef = useRef(contexto);
   contextoRef.current = contexto;
+  // Leídos de un ref (no de una variable cerrada por la consulta) para que
+  // cada ejecución de consultar() recalcule el rango con la hora actual, sin
+  // que cambiarlos dispare el efecto por sí solos salvo cuando sí deben.
+  const periodoRef = useRef(periodo);
+  periodoRef.current = periodo;
+  const rangoPersonalizadoRef = useRef(rangoPersonalizado);
+  rangoPersonalizadoRef.current = rangoPersonalizado;
   const lecturaActual = useRef<Promise<void> | null>(null);
 
   function recargar(enSegundoPlano = false): Promise<void> {
@@ -76,7 +94,15 @@ export function useActividad(rango: RangoActividad, contexto: ContextoActividad)
     return consulta;
   }
 
+  function rangoActual() {
+    return calcularRangoActividad(
+      periodoRef.current,
+      periodoRef.current === "rango" ? rangoPersonalizadoRef.current : undefined
+    );
+  }
+
   async function consultarPedidos() {
+    const rango = rangoActual();
     const res = await leerPaginas<PedidoActividad>((from, to) => {
       let q = supabase
         .from("partida_abierta")
@@ -106,6 +132,7 @@ export function useActividad(rango: RangoActividad, contexto: ContextoActividad)
       return;
     }
 
+    const rango = rangoActual();
     const res = await leerPaginas<FilaPago>((from, to) => {
       // Excluye la regularización masiva del 2026-10-07: no fueron cobros reales.
       let q = supabase
@@ -155,7 +182,7 @@ export function useActividad(rango: RangoActividad, contexto: ContextoActividad)
   useEffect(() => {
     recargar();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [supabase, rango.desde, rango.hasta, contexto.puedeConfirmar]);
+  }, [supabase, periodo, rangoPersonalizado?.desde, rangoPersonalizado?.hasta, contexto.puedeConfirmar]);
 
   return { pagos, pedidos, cargando, errorPagos, errorPedidos, recargar: () => recargar() };
 }
