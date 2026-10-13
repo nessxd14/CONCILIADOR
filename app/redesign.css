@@ -711,3 +711,25 @@ body { background: #0d1918 url('/visual/hermes-ground.png') center / cover fixed
 .historial-eventos .section-heading, .bajas-list .section-heading { flex-wrap: wrap; gap: 8px; }
 .bajas-list .card { margin-block: 12px; }
 .baja-detail { margin-block: 12px; }
+.incidencias-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 24px; align-items: start; }
+.incidencias-filter, .incidencias-count { margin: 16px 20px; }
+.incidencias-filter { display: flex; align-items: center; gap: 8px; }
+.incidencias-layout .review-row { width: 100%; text-align: left; gap: 14px; }
+.incidencias-layout .review-row small { display: block; overflow-wrap: anywhere; }
+.incidencias-layout .review-row > span:last-child { text-align: right; flex-shrink: 0; }
+.resolucion-detail { padding: 24px; overflow-wrap: anywhere; }
+.resolucion-detail fieldset { padding: 0; margin: 0; border: 0; min-width: 0; }
+.resolucion-detail .field { margin-block: 18px; }
+.resolucion-detail .input, .resolucion-detail .select { width: 100%; min-width: 0; }
+.resolucion-detail textarea { min-height: 90px; resize: vertical; }
+.incidencias-payments { margin-block: 20px; padding-block: 14px; border-block: 1px solid var(--line); }
+.incidencias-payments summary { cursor: pointer; }
+.incidencias-payments p { margin-block: 14px; }
+.resolucion-line { display: grid; grid-template-columns: minmax(0, 1fr) 100px; align-items: center; gap: 12px; margin-block: 14px; }
+.resolucion-line small { display: block; margin-top: 5px; color: var(--muted); }
+.resolucion-estimate, .resolucion-confirm { margin-block: 20px; padding: 18px; border: 1px solid var(--line); border-radius: 14px; background: var(--glass); }
+.resolucion-confirm dl > div { display: flex; justify-content: space-between; gap: 18px; margin-block: 12px; }
+.resolucion-confirm dd { margin: 0; text-align: right; }
+.resolucion-confirm .form-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+@media (max-width: 1000px) { .incidencias-layout { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 600px) { .resolucion-detail { padding: 18px; }.resolucion-confirm dl > div { display: block; }.resolucion-confirm dd { text-align: left; margin-top: 4px; }.incidencias-layout .review-row { flex-wrap: wrap; }.incidencias-layout .review-row > span:last-child { text-align: left; } }

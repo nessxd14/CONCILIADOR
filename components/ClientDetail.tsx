@@ -568,6 +568,7 @@ export function ClientDetail({ fixture }: { fixture?: ClientFixture }) {
                     {errorArchivo && <div className="subida-error">{errorArchivo}</div>}
                     <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 6 }}>
                       Original {formatBs(monto.toString())}
+                      {a.devuelto_monto && new Decimal(a.devuelto_monto).gt(0) && <> · Devuelto {formatBs(a.devuelto_monto)}</>}
                       {imputado.gt(0) && <> · {formatBs(imputado.toString())} ya aplicado</>}
                     </div>
                     <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 2 }}>
