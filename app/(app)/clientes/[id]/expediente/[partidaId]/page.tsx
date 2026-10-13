@@ -8,6 +8,8 @@ import { createClient } from "@/lib/supabase/client";
 import { formatBs } from "@/lib/money";
 import { resumirPago } from "@/lib/pago-estado";
 import { ExpedienteOrigen } from "@/components/ExpedienteOrigen";
+import { DetalleBaja } from "@/components/BajasPartidas";
+import { HistorialPartida } from "@/components/HistorialPartida";
 import { cantidadDocumento, etiquetasOrigen, lineasVigentes, resumenHitoOrigen, type OrigenExpediente } from "@/lib/expediente-origen";
 import { useHermesRefresh } from "@/lib/supabase/use-refresh";
 import { puedeRegistrarFechas, puedeGestionarEvidencia, puedeConfirmarPagos } from "@/lib/roles";
@@ -62,6 +64,7 @@ export default function ExpedientePage() {
   const [hitos, setHitos] = useState<HitoConPendientes[]>([]);
   const [documentosPorHito, setDocumentosPorHito] = useState<Record<number, Documento[]>>({});
   const [esGerente, setEsGerente] = useState(false);
+  const [origenCancelado, setOrigenCancelado] = useState(false);
   const [puedeFechas, setPuedeFechas] = useState(false);
   const [puedeSubirArchivo, setPuedeSubirArchivo] = useState(false);
   const [usuario, setUsuario] = useState("desconocido");
@@ -132,9 +135,10 @@ export default function ExpedientePage() {
 
     setUsuario(userData.user?.email ?? "desconocido");
     const rol = userData.rol;
-    setEsGerente(puedeConfirmarPagos(rol));
-    setPuedeFechas(puedeRegistrarFechas(rol));
-    setPuedeSubirArchivo(puedeGestionarEvidencia(rol));
+    const operable = !["ANULADA", "CANCELADA"].includes(partidaRes.data.estado);
+    setEsGerente(puedeConfirmarPagos(rol) && operable);
+    setPuedeFechas(puedeRegistrarFechas(rol) && partidaRes.data.estado === "ABIERTA");
+    setPuedeSubirArchivo(puedeGestionarEvidencia(rol) && operable);
     setPartida(partidaRes.data as PartidaAbierta);
     setOrigen((origenRes.data ?? null) as OrigenExpediente | null);
     setErrorOrigen(partidaRes.data.cliente_categoria === "MAYORISTA" ? origenRes.error?.message ?? null : null);
@@ -380,14 +384,13 @@ export default function ExpedientePage() {
     setGuardandoAnular(true);
     setErrorAnular(null);
 
-    const { error } = await supabase.rpc("anular_partida", {
+    const { error } = await supabase.rpc("anular_partida_auditada", {
       p_partida_id: partidaId,
       p_motivo: motivoAnular.trim(),
-      p_usuario: usuario,
     });
 
     if (error) {
-      setErrorAnular(error.message);
+      setErrorAnular(error.code === "PGRST202" ? "La baja con historial aún no está habilitada. Solicita la actualización del sistema." : error.message);
       setGuardandoAnular(false);
       return;
     }
@@ -472,9 +475,9 @@ export default function ExpedientePage() {
             </div>
           )}
         </div>
-        {esGerente && (
+        {esGerente && partida.estado === "ABIERTA" && (
           <div style={{ display: "flex", gap: 10 }}>
-            <button type="button" className="btn btn-secondary" onClick={() => setModalPartirAbierto(true)}>
+            <button type="button" className="btn btn-secondary" disabled={origenCancelado} onClick={() => setModalPartirAbierto(true)}>
               Partir partida
             </button>
             <button
@@ -488,6 +491,9 @@ export default function ExpedientePage() {
           </div>
         )}
       </div>
+
+      {(partida.estado === "ANULADA" || partida.estado === "CANCELADA") && <section className="card"><DetalleBaja partida={{ ...partida, estado: partida.estado }} /></section>}
+      <HistorialPartida partidaId={partida.id} estadoPartida={partida.estado} onOrigenCancelado={setOrigenCancelado} />
 
       <div className="card" style={{ margin: "16px 0" }}>
         <div
@@ -508,7 +514,7 @@ export default function ExpedientePage() {
             <div style={{ fontSize: 13, color: "var(--muted)", marginBottom: mostrarFormEntrega ? 10 : 0 }}>
               Todavía no se registró la entrega.
             </div>
-            {puedeFechas && !mostrarFormEntrega && (
+            {puedeFechas && !origenCancelado && !mostrarFormEntrega && (
               <button
                 type="button"
                 className="btn btn-orange"
@@ -524,7 +530,7 @@ export default function ExpedientePage() {
                 Registrar entrega
               </button>
             )}
-            {mostrarFormEntrega && (
+            {mostrarFormEntrega && !origenCancelado && (
               <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
                 <input
                   type="date"
@@ -560,7 +566,7 @@ export default function ExpedientePage() {
               {origen && !origen.recepcion.fecha ? "Fecha de entrega registrada" : "Entregada"} el <b>{partida.fecha_entrega}</b> · hace {diasDesde(partida.fecha_entrega)}{" "}
               {diasDesde(partida.fecha_entrega) === 1 ? "día" : "días"}
             </div>
-            {puedeFechas && !mostrarFormFactura && (
+            {puedeFechas && !origenCancelado && !mostrarFormFactura && (
               <button
                 type="button"
                 className="btn btn-orange"
@@ -572,7 +578,7 @@ export default function ExpedientePage() {
                 Registrar factura
               </button>
             )}
-            {mostrarFormFactura && (
+            {mostrarFormFactura && !origenCancelado && (
               <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
                 <input
                   type="date"
@@ -633,9 +639,9 @@ export default function ExpedientePage() {
           </div>
         )}
 
-        {!puedeFechas && !(partida.fecha_entrega && partida.fecha_factura) && (
+        {(!puedeFechas || origenCancelado) && !(partida.fecha_entrega && partida.fecha_factura) && (
           <div className="field-hint" style={{ marginTop: 8 }}>
-            Tu rol no puede registrar fechas de la partida.
+            {origenCancelado ? "El pedido está cancelado. Resuelve su situación antes de registrar fechas." : partida.estado !== "ABIERTA" ? "Las fechas se registran mientras la partida está abierta." : "Tu rol no puede registrar fechas de la partida."}
           </div>
         )}
 
@@ -728,7 +734,7 @@ export default function ExpedientePage() {
           const docs = documentosPorHito[h.id] ?? [];
           const accionHito = acciones[`hito-${h.id}`];
           const pagoRegistrado = h.nombre === "Pago" && estadoPago?.registrado.gt(0) ? estadoPago : null;
-          const puedeCompletar = !h.origen_sistema && esGerente && h.estado === "PENDIENTE" && h.habilitantes_pendientes === 0;
+          const puedeCompletar = !h.origen_sistema && esGerente && !origenCancelado && h.estado === "PENDIENTE" && h.habilitantes_pendientes === 0;
 
           return (
             <div key={h.id} id={`hito-${h.id}`} className="timeline-hito">
@@ -767,7 +773,7 @@ export default function ExpedientePage() {
                             Ver
                           </button>
                         )}
-                        {esGerente && d.estado === "SUBIDO" && (
+                        {esGerente && !origenCancelado && d.estado === "SUBIDO" && (
                           <>
                             <button
                               type="button"
@@ -790,7 +796,7 @@ export default function ExpedientePage() {
                         )}
                       </div>
                     </div>
-                    {esGerente && d.estado === "SUBIDO" && (
+                    {esGerente && !origenCancelado && d.estado === "SUBIDO" && (
                       <input
                         className="input"
                         placeholder="Notas (opcional, para aprobar o rechazar)"
@@ -799,7 +805,7 @@ export default function ExpedientePage() {
                         onChange={(e) => setNotas((prev) => ({ ...prev, [d.id]: e.target.value }))}
                       />
                     )}
-                    {puedeSubirArchivo && (d.estado === "PENDIENTE" || d.estado === "RECHAZADO") && (
+                    {puedeSubirArchivo && !origenCancelado && (d.estado === "PENDIENTE" || d.estado === "RECHAZADO") && (
                       <div style={{ marginTop: 6, display: "flex", alignItems: "center", gap: 8 }}>
                         <input
                           type="file"
@@ -848,7 +854,8 @@ export default function ExpedientePage() {
             <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 14 }}>Anular partida</div>
             <div style={{ fontSize: 12.5, color: "var(--muted)", marginBottom: 14 }}>
               No se borra nada: se genera una nota de crédito por {formatBs(partida.total)} en la cuenta de {partida.cliente_nombre}.
-              Se niega si la partida tiene pagos aplicados.
+              La baja requiere que no existan pagos por verificar, pagos aplicados, entregas ni facturas pendientes de resolver.
+              {partida.pedido_id && <> Si el pedido sigue vigente, cancélalo desde Seller para resolver sus partidas conjuntamente.</>}
             </div>
 
             <div className="field">
@@ -877,7 +884,7 @@ export default function ExpedientePage() {
         </div>
       )}
 
-      {modalPartirAbierto && (
+      {modalPartirAbierto && !origenCancelado && (
         <div className="modal-overlay" onClick={guardandoPartir ? undefined : cerrarModalPartir}>
           <form className="card modal-card" onClick={(e) => e.stopPropagation()} onSubmit={confirmarPartir}>
             <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 14 }}>Partir partida</div>
