@@ -1,4 +1,5 @@
 import type { DashboardData } from "@/components/Dashboard";
+import type { PartidaBaja } from "@/lib/historial";
 import type { Cliente, ClienteCredito, VSaldoCliente, VMayorAuxiliar, VPartidaEstado, VAnticipoCliente, VPartidasFrenadas } from "@/lib/types";
 import type { PagoActividad, PedidoActividad } from "@/lib/use-actividad";
 
@@ -45,10 +46,12 @@ export const actividadFixture: { pagos: PagoActividad[]; pedidos: PedidoActivida
 };
 
 export type ClientFixture = {
+  bajas?: PartidaBaja[];
   cliente: Cliente; credito: ClienteCredito; saldo: VSaldoCliente;
   movimientos: VMayorAuxiliar[]; partidas: VPartidaEstado[]; anticipos: VAnticipoCliente[]; frenadas: VPartidasFrenadas[];
 };
 export const clientFixture: ClientFixture = {
+  bajas: [{ id: 901, documento_interno: "Ejemplo · PART-901", estado: "ANULADA", total: "1250", anulada_por: "María · Gerencia (ejemplo)", anulada_en: "2026-10-12T14:30:00Z", motivo_anulacion: "El cliente canceló el pedido antes del despacho." }],
   cliente: { id: 1, nombre: "Comercial Altiplano", nit: "Ejemplo · sin NIT real", categoria: "MAYORISTA", activo: true, sincronizado_en: "2026-10-01", importado_en: "2026-08-01" },
   credito: { cliente_id: 1, sector: "PRIVADO", limite_credito: "50000", plazo_dias: 30, inicio_computo: "ENTREGA", actualizado_en: "2026-10-01", actualizado_por: "ejemplo" },
   saldo: { ...clientes[0], saldo_provisional: "26950.00" },

@@ -12,6 +12,7 @@ import { resumirPago } from "@/lib/pago-estado";
 import { puedeGestionarEvidencia, type Rol } from "@/lib/roles";
 import { subirEvidencia, abrirArchivo, validarArchivo } from "@/lib/uploads";
 import { Tabs } from "@/components/Tabs";
+import { BajasPartidas } from "@/components/BajasPartidas";
 import { Icon } from "@/components/Icon";
 import type { ClientFixture } from "@/app/vista-previa/preview-data";
 import { formatDiaMes } from "@/lib/fechas";
@@ -64,7 +65,7 @@ export function ClientDetail({ fixture }: { fixture?: ClientFixture }) {
   const [tieneApertura, setTieneApertura] = useState(false);
   const [partidasEstado, setPartidasEstado] = useState<VPartidaEstado[]>([]);
   const [anticipos, setAnticipos] = useState<VAnticipoCliente[]>([]);
-  const [tabPartidas, setTabPartidas] = useState<"ABIERTA" | "PAGADA" | "ANTICIPO">("ABIERTA");
+  const [tabPartidas, setTabPartidas] = useState<"ABIERTA" | "PAGADA" | "ANTICIPO" | "BAJAS">("ABIERTA");
   const [partidasFrenadas, setPartidasFrenadas] = useState<VPartidasFrenadas[]>([]);
   const [hitoPorPartida, setHitoPorPartida] = useState<Record<number, number>>({});
   const [despachoPorPartida, setDespachoPorPartida] = useState<
@@ -300,7 +301,7 @@ export function ClientDetail({ fixture }: { fixture?: ClientFixture }) {
 
   const nombresMovimiento: Record<string, string> = { SALDO_APERTURA: "Saldo de apertura", CARGO: "Cargo", PAGO: "Pago", ANTICIPO: "Anticipo", NOTA_CREDITO: "Nota de crédito", AJUSTE: "Ajuste" };
   const normalizarBusqueda = (value: string) => value.toLocaleLowerCase("es").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-  const movimientosFiltrados = movimientos.filter(m => normalizarBusqueda([m.tipo, nombresMovimiento[m.tipo], m.fecha_efectiva, m.documento_interno, m.referencia, m.motivo, m.monto].filter(Boolean).join(" ")).includes(normalizarBusqueda(busquedaMovimiento.trim())));
+  const movimientosFiltrados = movimientos.filter(m => normalizarBusqueda([m.tipo, nombresMovimiento[m.tipo], m.fecha_efectiva, m.documento_interno, m.referencia, m.motivo, m.creado_por, m.monto].filter(Boolean).join(" ")).includes(normalizarBusqueda(busquedaMovimiento.trim())));
   const partidasAbiertasList = partidasEstado.filter((p) => p.estado === "ABIERTA");
   const partidasPagadasList = partidasEstado.filter((p) => p.estado === "PAGADA");
   const partidasMostradas = tabPartidas === "ABIERTA" ? partidasAbiertasList : partidasPagadasList;
@@ -490,14 +491,13 @@ export function ClientDetail({ fixture }: { fixture?: ClientFixture }) {
       <div hidden={panel !== "PARTIDAS" && panel !== "ANTICIPOS"}>
       <div className="client-panel-heading"><div><h2>{panel === "ANTICIPOS" ? "Anticipos y comprobantes" : "Partidas del cliente"}</h2><p>{panel === "ANTICIPOS" ? "Anticipos confirmados que todavía tienen saldo disponible." : "Consulta el estado de cada pedido y abre su expediente."}</p></div></div>
       {panel === "ANTICIPOS" && saldo?.situacion === "ACREEDOR" && <div className="card" style={{ marginBottom: 12 }}><strong className="money-favor">El cliente tiene saldo a favor confirmado.</strong><p>El saldo de apertura y las notas de crédito figuran en Cuenta corriente. En Seller puedes aplicar el saldo disponible a una compra o a un pedido; aquí se actualizarán la cuenta y el pendiente del pedido.</p></div>}
-      {partidasEstado.length === 0 && anticipos.length === 0 && <div className="empty-state"><h3>Sin registros todavía</h3><p>Las partidas y anticipos aparecerán aquí cuando se registren.</p></div>}
-      {(partidasEstado.length > 0 || anticipos.length > 0) && (
+      {(
         <div style={{ marginBottom: 20 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8, flexWrap: "wrap", gap: 8 }}>
             {panel === "PARTIDAS" && <div style={{ fontSize: 11, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.03em", fontWeight: 700 }}>
               {`Partidas · ${formatBs(totalImputado.toString())} imputado · ${tramiteCompletoCount}/${partidasAbiertasList.length} con trámite completo`}
             </div>}
-            <div hidden={panel === "ANTICIPOS"} style={panel === "ANTICIPOS" ? { display: "none" } : { display: "flex", gap: 6 }}>
+            <div hidden={panel === "ANTICIPOS"} style={panel === "ANTICIPOS" ? { display: "none" } : { display: "flex", gap: 10, flexWrap: "wrap" }}>
               <button
                 type="button"
                 className={tabPartidas === "ABIERTA" ? "btn btn-secondary" : "btn-link"}
@@ -512,11 +512,11 @@ export function ClientDetail({ fixture }: { fixture?: ClientFixture }) {
               >
                 Pagadas ({partidasPagadasList.length})
               </button>
-
+              <button type="button" className={tabPartidas === "BAJAS" ? "btn btn-secondary" : "btn-link"} onClick={() => setTabPartidas("BAJAS")}>Bajas e historial</button>
             </div>
           </div>
 
-          {tabPartidas === "ANTICIPO" ? (
+          {tabPartidas === "BAJAS" ? <BajasPartidas clienteId={clienteId} fixture={fixture ? fixture.bajas ?? [] : undefined} /> : tabPartidas === "ANTICIPO" ? (
             <>
               {anticipos.length === 0 && (
                 <div className="card" style={{ color: "var(--muted)" }}>Sin anticipos.</div>
@@ -735,7 +735,7 @@ export function ClientDetail({ fixture }: { fixture?: ClientFixture }) {
           <thead><tr><th scope="col">Fecha</th><th scope="col">Movimiento</th><th scope="col">Cargo</th><th scope="col">Abono</th><th scope="col">Saldo corrido</th></tr></thead>
           <tbody>{movimientosFiltrados.map(m => <tr key={m.id}>
             <td data-label="Fecha">{m.fecha_efectiva}</td>
-            <td data-label="Movimiento"><strong>{nombresMovimiento[m.tipo] ?? m.tipo}</strong>{m.documento_interno && <span className="movement-ref">{m.documento_interno}</span>}{(m.motivo || m.referencia) && <small>{m.motivo ?? m.referencia}</small>}</td>
+            <td data-label="Movimiento"><strong>{nombresMovimiento[m.tipo] ?? m.tipo}</strong>{m.documento_interno && <span className="movement-ref">{m.documento_interno}</span>}{(m.motivo || m.referencia) && <small>{m.motivo ?? m.referencia}</small>}<small>Registrado por: {m.creado_por || "Usuario no registrado"}</small></td>
             <td data-label="Cargo" className="money">{new Decimal(m.monto).gt(0) ? formatBs(m.monto) : "—"}</td><td data-label="Abono" className="money-acreedor">{new Decimal(m.monto).lt(0) ? formatBs(new Decimal(m.monto).abs().toFixed(2)) : "—"}</td>
             <td data-label="Saldo corrido" className={new Decimal(m.saldo_corrido).lt(0) ? "money-acreedor" : "money"}>{formatBs(m.saldo_corrido)}</td>
           </tr>)}</tbody>

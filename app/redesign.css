@@ -702,3 +702,12 @@ body { background: #0d1918 url('/visual/hermes-ground.png') center / cover fixed
   .sidebar { background: var(--glass-solid); backdrop-filter: none; border-color: var(--line); }
   .card,.table,.ledger-panel,.task-section,.glass-panel,.balance-strip,.movement-table-wrapper,.login-card { border-color: var(--line); }
 }
+.historial-partida { margin-block: 18px; }
+.historial-partida h2 { font-size: 1.125rem; margin-bottom: 12px; }
+.historial-eventos { list-style: none; padding: 0; margin: 16px 0 0; }
+.historial-eventos li { padding: 16px 0; border-top: 1px solid var(--line); overflow-wrap: anywhere; }
+.historial-eventos p, .baja-detail p { margin: 8px 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.historial-eventos small, .baja-detail small { display: block; color: var(--muted); }
+.historial-eventos .section-heading, .bajas-list .section-heading { flex-wrap: wrap; gap: 8px; }
+.bajas-list .card { margin-block: 12px; }
+.baja-detail { margin-block: 12px; }
