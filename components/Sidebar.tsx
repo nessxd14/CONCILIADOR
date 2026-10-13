@@ -23,6 +23,7 @@ export function Sidebar({ email, rol, preview = false }: {
     { href: "/proveedores", label: "Proveedores", icon: "box" },
     { href: "/resultados", label: "Resultados", icon: "chart" },
     { href: "/conciliacion", label: "Conciliación", icon: "receipt" },
+    { href: "/incidencias", label: "Incidencias", icon: "alert" },
     { href: "/captura", label: "Documentos", icon: "camera" },
     ...(rol === "admin" || preview ? [{ href: "/apertura", label: "Apertura", icon: "book" as const }] : []),
   ];

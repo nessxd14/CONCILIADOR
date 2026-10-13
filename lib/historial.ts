@@ -22,6 +22,7 @@ const acciones: Record<string, string> = {
   LINEA_RECHAZADA: "Línea rechazada", PEDIDO_RECHAZADO: "Pendientes rechazados",
   LINEA_CAMBIADA: "Línea cambiada", LINEA_RETIRADA: "Línea retirada",
   LINEAS_AGREGADAS: "Líneas agregadas", PARTIDA_ANULADA: "Partida anulada",
+  CANCELACION_RESUELTA: "Cancelación y pagos resueltos", REMANENTE_CANCELADO: "Remanente cancelado",
 };
 export function nombreAccion(accion: string) { return acciones[accion] ?? accion.replaceAll("_", " "); }
 export function fechaHistorial(fecha: string | null) {
