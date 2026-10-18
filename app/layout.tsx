@@ -4,6 +4,7 @@ import "./globals.css";
 import "./anticipos.css";
 import "./despacho.css";
 import "./redesign.css";
+import "./cobro-trazabilidad.css";
 
 export const metadata: Metadata = {
   title: "Hermes",

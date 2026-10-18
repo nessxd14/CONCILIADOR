@@ -1,6 +1,6 @@
 # Prioridades altas: incidencias y resolución comercial/financiera
 
-Desarrollo solicitado el 13 de octubre de 2026. El usuario pidió elegir en cada caso entre saldo a favor, reasignación y devolución. Esta etapa se prepara localmente; la autorización de la migración anterior no sustituye una revisión de esta nueva operación.
+Desarrollo solicitado el 13 de octubre de 2026. El usuario pidió elegir en cada caso entre saldo a favor, reasignación y devolución. La migración se activó el 17 de octubre (America/La_Paz) tras autorizar explícitamente completar los cuatro puntos de la entrega integrada.
 
 ## Operaciones
 
@@ -30,6 +30,6 @@ Pasaron 117 pruebas de Hermes, incluidas nueve nuevas de incidencias: revisión 
 
 Vista previa: `http://127.0.0.1:3024/vista-previa/incidencias`, en una copia aislada de desarrollo; datos sintéticos y confirmación real deshabilitada. Ruta real: `/incidencias`; admite `?pedido=<id>` para revisar directamente un pedido.
 
-Migración preparada en Seller: `supabase/migrations/20261013210748_hermes_incidencias_resolucion.sql`, dependiente de `hermes_bajas_trazabilidad`, ya aplicada en la etapa anterior. Esta nueva migración no se ha aplicado a Supabase remoto. La consulta y las acciones nuevas requieren su activación. No se ejecutaron devoluciones, cancelaciones o ajustes sobre registros reales.
+Migración instalada en el proyecto compartido `zxoxougwgstrarwymlvd`: `20261018000223_hermes_incidencias_resolucion.sql`. La bandeja y sus acciones están habilitadas con sus permisos. No se ejecutaron devoluciones, cancelaciones o ajustes sobre registros reales durante la instalación. El archivo local se alineó con la versión asignada por Supabase.
 
-No se demostró concurrencia entre conexiones en Supabase ni un recorrido autenticado con registros reales. Deben verificarse esos casos en un entorno de pruebas antes de una publicación general.
+La entrega integrada también pasó la suite financiera en PostgreSQL 17 nativo con perfiles sintéticos y conexiones independientes: doble liquidación, cancelación frente a liquidación y reintento de resolución. Se verificó la lectura de la bandeja remota con rol SQL authenticated y un gerente activo. No se hicieron operaciones financieras de prueba sobre clientes reales. Ver `CIERRE_COBROS_COMISIONES.md`.
