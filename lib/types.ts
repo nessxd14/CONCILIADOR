@@ -230,6 +230,7 @@ export interface VAnticipoCliente {
   monto: string;
   imputado: string;
   saldo_favor: string;
+  devuelto_monto?: string;
   no_imputar: boolean;
   medio: MedioPago;
   estado: EstadoPago;

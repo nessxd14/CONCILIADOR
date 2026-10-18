@@ -10,6 +10,7 @@ import { resumirPago } from "@/lib/pago-estado";
 import { ExpedienteOrigen } from "@/components/ExpedienteOrigen";
 import { DetalleBaja } from "@/components/BajasPartidas";
 import { HistorialPartida } from "@/components/HistorialPartida";
+import { DetalleCobrosPartida } from "@/components/DetalleCobrosPartida";
 import { cantidadDocumento, etiquetasOrigen, lineasVigentes, resumenHitoOrigen, type OrigenExpediente } from "@/lib/expediente-origen";
 import { useHermesRefresh } from "@/lib/supabase/use-refresh";
 import { puedeRegistrarFechas, puedeGestionarEvidencia, puedeConfirmarPagos } from "@/lib/roles";
@@ -494,6 +495,7 @@ export default function ExpedientePage() {
 
       {(partida.estado === "ANULADA" || partida.estado === "CANCELADA") && <section className="card"><DetalleBaja partida={{ ...partida, estado: partida.estado }} /></section>}
       <HistorialPartida partidaId={partida.id} estadoPartida={partida.estado} onOrigenCancelado={setOrigenCancelado} />
+      <DetalleCobrosPartida partidaId={partida.id} />
 
       <div className="card" style={{ margin: "16px 0" }}>
         <div
