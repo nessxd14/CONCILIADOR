@@ -17,6 +17,7 @@ Las rutas operativas están en `app/(app)`.
 | `/` | Redirige a Mi día | `app/page.tsx` |
 | `/login` | Acceso | `app/login/page.tsx` |
 | `/resumen` | Visión general de cartera | `components/Overview.tsx`, `lib/use-cartera.ts` |
+| `/mayor` | Mayor global: evolución de deuda, crédito separado y movimientos por período | `components/MayorCartera.tsx`, `lib/consultar-mayor.ts`, `lib/mayor-cartera.ts` |
 | `/dia` | Cartera, prioridades y actividad reciente de pagos/pedidos con selector de período | `components/Dashboard.tsx`, `components/CarteraSummary.tsx`, `lib/use-actividad.ts` |
 | `/clientes` | Listado de cuentas con búsqueda, filtros y orden persistidos en la URL | `app/(app)/clientes/page.tsx`, `lib/clientes-filtros.ts` |
 | `/clientes/nuevo` | Alta de cliente y condiciones de crédito | `app/(app)/clientes/nuevo/page.tsx` |
