@@ -20,6 +20,7 @@ export function Sidebar({ email, rol, preview = false }: {
     { href: "/dia", label: "Mi día", icon: "calendar" },
     { href: "/tesoreria", label: "Tesorería", icon: "wallet" },
     { href: "/clientes", label: "Clientes", icon: "users" },
+    { href: "/mayor", label: "Mayor de cartera", icon: "book" },
     { href: "/proveedores", label: "Proveedores", icon: "box" },
     { href: "/resultados", label: "Resultados", icon: "chart" },
     { href: "/conciliacion", label: "Conciliación", icon: "receipt" },
