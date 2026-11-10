@@ -5,6 +5,7 @@ import { formatBs } from "@/lib/money";
 import { createClient } from "@/lib/supabase/client";
 import { abrirArchivo } from "@/lib/uploads";
 import type { PagoPropuesto } from "@/lib/types";
+import { cargarDestinoPago, MOTIVOS_ANTICIPO, type DestinoPago } from "@/lib/destino-pago";
 import type { DashboardData } from "./Dashboard";
 import { DashboardHeader } from "./CarteraSummary";
 import { Icon } from "./Icon";
@@ -24,6 +25,8 @@ export function PaymentReview({ data, onRefresh, onConfirm, confirmando = {}, er
   const [cargandoEvidencia, setCargandoEvidencia] = useState(false);
   const [errorEvidencia, setErrorEvidencia] = useState<string | null>(null);
   const [abriendo, setAbriendo] = useState(false);
+  const [destino, setDestino] = useState<DestinoPago | null>(null);
+  const [errorDestino, setErrorDestino] = useState(false);
   const filtrados = useMemo(() => data.pagos.filter(p => (!medio || p.medio === medio) && `${p.cliente} ${p.referencia ?? ""}`.toLocaleLowerCase("es").includes(busqueda.trim().toLocaleLowerCase("es"))), [data.pagos, medio, busqueda]);
   const selected = data.pagos.find(p => p.id === id);
   useEffect(() => { if (id != null && window.matchMedia?.("(max-width: 1000px)").matches) detailRef.current?.focus(); }, [id]);
@@ -42,6 +45,14 @@ export function PaymentReview({ data, onRefresh, onConfirm, confirmando = {}, er
     });
     return () => { active = false; };
   }, [selected?.id, selected?.monto, selected?.referencia, preview]);
+
+  useEffect(() => {
+    setDestino(null); setErrorDestino(false);
+    if (!selected || preview) return;
+    let active = true;
+    cargarDestinoPago(createClient(), selected).then(d => { if (active) setDestino(d); }).catch(() => { if (active) setErrorDestino(true); });
+    return () => { active = false; };
+  }, [selected?.id, selected?.no_imputar, preview]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function abrirComprobante() {
     if (!evidencia || preview) return;
@@ -70,13 +81,19 @@ export function PaymentReview({ data, onRefresh, onConfirm, confirmando = {}, er
     {!data.puedeConfirmar ? <section className="glass-panel empty-state"><Icon name="lock" /><h3>Acceso de gerencia</h3><p>Tu rol puede consultar las cuentas. La verificación de pagos corresponde al gerente o administrador.</p><Link className="btn btn-secondary" href="/clientes">Consultar clientes</Link></section>
     : <div className="review-layout"><section className="ledger-panel"><div className="section-heading"><h2>Pagos por verificar</h2><span className="quiet-count">{data.errorPagos || data.cargando ? "—" : `${data.pagos.length} registrados`}</span></div>
       <div className="filter-bar"><label className="search-field"><Icon name="search" size={18} /><input aria-label="Buscar pago por cliente o referencia" placeholder="Cliente o referencia…" value={busqueda} onChange={e => setBusqueda(e.target.value)} /></label><select className="select" aria-label="Filtrar por medio de pago" value={medio} onChange={e => setMedio(e.target.value)}><option value="">Todos los medios</option>{Array.from(new Set(data.pagos.map(p => p.medio))).sort().map(m => <option key={m}>{m}</option>)}</select></div>
-      {data.errorPagos ? <div className="empty-state" role="alert"><h3>No pudimos consultar los pagos</h3><p>{data.errorPagos}</p><button className="btn btn-secondary" onClick={onRefresh}>Reintentar</button></div> : data.cargando ? <div className="loading-state" role="status">Consultando pagos…</div> : filtrados.length === 0 ? <div className="empty-state"><Icon name="check" /><h3>{data.pagos.length ? "No encontramos ese pago" : "Todo verificado"}</h3><p>{data.pagos.length ? "Prueba con otro cliente, referencia o medio." : "No hay pagos pendientes de verificación."}</p></div> : <div className="review-list">{filtrados.map(p => <button type="button" className={`review-row ${selected?.id === p.id ? "selected" : ""}`} key={p.id} aria-pressed={selected?.id === p.id} disabled={Boolean(selected && confirmando[selected.id])} onClick={() => { setId(p.id); setRevisado(false); setSuccess(null); }}><span><strong>{p.cliente}</strong><small>{p.medio} · {p.referencia ?? "Sin referencia"}</small></span><span><strong className="money-provisional">{formatBs(p.monto)}</strong><small>Por verificar</small></span><Icon name="arrow" size={16} /></button>)}</div>}
+      {data.errorPagos ? <div className="empty-state" role="alert"><h3>No pudimos consultar los pagos</h3><p>{data.errorPagos}</p><button className="btn btn-secondary" onClick={onRefresh}>Reintentar</button></div> : data.cargando ? <div className="loading-state" role="status">Consultando pagos…</div> : filtrados.length === 0 ? <div className="empty-state"><Icon name="check" /><h3>{data.pagos.length ? "No encontramos ese pago" : "Todo verificado"}</h3><p>{data.pagos.length ? "Prueba con otro cliente, referencia o medio." : "No hay pagos pendientes de verificación."}</p></div> : <div className="review-list">{filtrados.map(p => <button type="button" className={`review-row ${selected?.id === p.id ? "selected" : ""}`} key={p.id} aria-pressed={selected?.id === p.id} disabled={Boolean(selected && confirmando[selected.id])} onClick={() => { setId(p.id); setRevisado(false); setSuccess(null); }}><span><strong>{p.cliente}{p.no_imputar && <span className="badge badge-no-imputar">Anticipo</span>}</strong><small>{p.medio} · {p.referencia ?? "Sin referencia"}</small></span><span><strong className="money-provisional">{formatBs(p.monto)}</strong><small>Por verificar</small></span><Icon name="arrow" size={16} /></button>)}</div>}
       <div className="panel-footer"><span>La recepción está registrada; falta validar el pago.</span></div>
     </section>
     <aside ref={detailRef} tabIndex={-1} className="glass-panel review-detail" aria-label="Detalle del pago seleccionado">
       {!selected ? <div className="empty-state"><Icon name="receipt" size={32} /><h3>Selecciona un pago</h3><p>Consulta su origen, referencia y comprobante antes de verificarlo.</p></div> : <>
         <div className="section-heading"><h2>Detalle del pago</h2><span className="badge badge-provisional">Por verificar</span></div><h3>{selected.cliente}</h3><div className="review-amount">{formatBs(selected.monto)}</div>
         <ol className="payment-progress"><li><Icon name="check" />Registrado</li><li><Icon name="clock" />Verificación pendiente</li><li><Icon name="lock" />Conciliación bancaria pendiente</li></ol><dl className="payment-facts"><div><dt>Medio</dt><dd>{selected.medio}</dd></div><div><dt>Referencia</dt><dd>{selected.referencia ?? "Sin referencia"}</dd></div><div><dt>Registrado por</dt><dd>{selected.creado_por.replace(/^pos:/, "")}</dd></div><div><dt>Fecha de registro</dt><dd>{new Date(selected.creado_en).toLocaleString("es-BO", { timeZone: "America/La_Paz" })}</dd></div></dl>
+        <div className="payment-destino" aria-live="polite"><strong>Destino</strong>{selected.no_imputar ? <>
+          <p><span className="badge badge-no-imputar">Anticipo</span> {selected.anticipo_motivo ? (MOTIVOS_ANTICIPO[selected.anticipo_motivo] ?? selected.anticipo_motivo) : "Sin motivo registrado"}</p>
+          {selected.anticipo_detalle && <p>{selected.anticipo_detalle}</p>}
+          {destino?.tipo === "anticipo" && new Decimal(destino.pendienteCliente).gt(0) && <p className="field-error" role="alert">Este cliente tiene pedidos pendientes por {formatBs(destino.pendienteCliente)}. Si este dinero es por esos pedidos, no lo confirmes como anticipo.</p>}
+        </> : destino?.tipo === "aplicado" ? (destino.aplicaciones.length ? <><p>Se aplica a:</p><ul>{destino.aplicaciones.map((a, i) => <li key={i}>{a.referencia} · {formatBs(a.monto)}</li>)}</ul></> : <p>Se repartirá por antigüedad al confirmar</p>) : !errorDestino && <p>{preview ? "Vista de ejemplo" : "Consultando destino…"}</p>}
+        {errorDestino && <p className="field-error" role="alert">No se pudo consultar el destino</p>}</div>
         <div className="receipt-state"><Icon name="receipt" size={21} /><div><strong>Comprobante</strong><p>{cargandoEvidencia ? "Consultando respaldo…" : evidencia ? evidencia.nombre : preview ? "Comprobante de ejemplo · acciones deshabilitadas" : "Sin comprobante disponible en Hermes. Revisa el respaldo en la ficha o en Seller."}</p>{evidencia && <button className="btn btn-secondary" disabled={abriendo} onClick={abrirComprobante}>{abriendo ? "Abriendo…" : "Abrir comprobante"}</button>}</div></div>
         {errorEvidencia && <p className="field-error" role="alert">{errorEvidencia}</p>}
         <Link className="btn btn-secondary" href={preview ? "/vista-previa/cliente" : `/clientes/${selected.cliente_id}`}>Abrir ficha del cliente<Icon name="arrow" size={16} /></Link>

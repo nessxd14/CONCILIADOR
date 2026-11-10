@@ -296,6 +296,9 @@ export interface PagoPropuesto {
   monto: string;
   medio: MedioPago;
   referencia: string | null;
+  no_imputar: boolean;
+  anticipo_motivo: string | null;
+  anticipo_detalle: string | null;
   creado_por: string;
   creado_en: string;
 }

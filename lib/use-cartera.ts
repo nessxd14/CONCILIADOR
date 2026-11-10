@@ -49,7 +49,7 @@ export function useCartera(revisionEnCurso = false) {
       let pagos: PagoPropuesto[] = [];
       let errorPagos: string | null = null;
       if (gerente) {
-        const res = await leerPaginas<Omit<PagoPropuesto, "cliente">>((from, to) => supabase.from("pago").select("id, cliente_id, monto, medio, referencia, creado_por, creado_en").eq("estado", "PROPUESTO").order("creado_en", { ascending: true }).order("id").range(from, to));
+        const res = await leerPaginas<Omit<PagoPropuesto, "cliente">>((from, to) => supabase.from("pago").select("id, cliente_id, monto, medio, referencia, no_imputar, anticipo_motivo, anticipo_detalle, creado_por, creado_en").eq("estado", "PROPUESTO").order("creado_en", { ascending: true }).order("id").range(from, to));
         if (res.error) errorPagos = res.error.message;
         else if (res.data?.length) {
           const names = new Map(saldosRes.data?.map(c => [c.cliente_id, c.cliente]) ?? []);
