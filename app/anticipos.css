@@ -60,3 +60,8 @@
   color: var(--alerta);
   font-weight: 700;
 }
+
+.payment-destino { display: grid; gap: 6px; margin: 12px 0; }
+.payment-destino p, .payment-destino ul { margin: 0; }
+.payment-destino ul { padding-left: 18px; }
+.review-row .badge-no-imputar { margin-left: 8px; font-size: 11px; }

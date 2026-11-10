@@ -23,10 +23,10 @@ export const dashboardFixture: DashboardData = {
     { cliente_id: 3, cliente: "Instituto Nueva Esperanza", categoria: "INSTITUCIONAL", partidas_bloqueadas: 1, monto_bloqueado: "3200", dias_maximo: 5, motivos: "ENTREGADO_SIN_FACTURAR" },
   ],
   pagos: [
-    { id: 1, cliente_id: 1, cliente: "Comercial Altiplano", monto: "900", medio: "TRANSFERENCIA", referencia: "Ejemplo 001", creado_por: "pos:administracion", creado_en: "2026-10-01T12:00:00Z" },
-    { id: 2, cliente_id: 3, cliente: "Instituto Nueva Esperanza", monto: "800", medio: "DEPOSITO", referencia: "Ejemplo 002", creado_por: "pos:cajero", creado_en: "2026-10-02T12:00:00Z" },
-    { id: 3, cliente_id: 7, cliente: "Colegio Los Olivos", monto: "300", medio: "QR", referencia: "Ejemplo 003", creado_por: "pos:cajero", creado_en: "2026-10-03T12:00:00Z" },
-    { id: 4, cliente_id: 1, cliente: "Comercial Altiplano", monto: "600", medio: "EFECTIVO", referencia: "Ejemplo 004", creado_por: "pos:cajero", creado_en: "2026-10-04T12:00:00Z" },
+    { id: 1, cliente_id: 1, cliente: "Comercial Altiplano", monto: "900", medio: "TRANSFERENCIA", referencia: "Ejemplo 001", no_imputar: false, anticipo_motivo: null, anticipo_detalle: null, creado_por: "pos:administracion", creado_en: "2026-10-01T12:00:00Z" },
+    { id: 2, cliente_id: 3, cliente: "Instituto Nueva Esperanza", monto: "800", medio: "DEPOSITO", referencia: "Ejemplo 002", no_imputar: false, anticipo_motivo: null, anticipo_detalle: null, creado_por: "pos:cajero", creado_en: "2026-10-02T12:00:00Z" },
+    { id: 3, cliente_id: 7, cliente: "Colegio Los Olivos", monto: "300", medio: "QR", referencia: "Ejemplo 003", no_imputar: false, anticipo_motivo: null, anticipo_detalle: null, creado_por: "pos:cajero", creado_en: "2026-10-03T12:00:00Z" },
+    { id: 4, cliente_id: 1, cliente: "Comercial Altiplano", monto: "600", medio: "EFECTIVO", referencia: "Ejemplo 004", no_imputar: false, anticipo_motivo: null, anticipo_detalle: null, creado_por: "pos:cajero", creado_en: "2026-10-04T12:00:00Z" },
   ],
 };
 
