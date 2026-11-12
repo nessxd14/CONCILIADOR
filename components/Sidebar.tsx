@@ -22,6 +22,7 @@ export function Sidebar({ email, rol, preview = false }: {
     { href: "/clientes", label: "Clientes", icon: "users" },
     { href: "/mayor", label: "Mayor de cartera", icon: "book" },
     { href: "/proveedores", label: "Proveedores", icon: "box" },
+    { href: "/compras/demanda", label: "Compras", icon: "box" },
     { href: "/resultados", label: "Resultados", icon: "chart" },
     { href: "/conciliacion", label: "Conciliación", icon: "receipt" },
     { href: "/incidencias", label: "Incidencias", icon: "alert" },
