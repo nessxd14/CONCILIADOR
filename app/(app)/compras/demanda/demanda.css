@@ -1,0 +1,33 @@
+.demanda-page { max-width: 1600px; margin: 0 auto; }
+.demanda-filtros { display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+.demanda-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.demanda-chip { border: 1px solid var(--line); background: transparent; color: var(--muted); border-radius: 999px; padding: 8px 14px; font: inherit; font-size: .8125rem; cursor: pointer; }
+.demanda-chip[aria-pressed="true"] { border-color: var(--orange); color: var(--orange-dark); font-weight: 600; }
+.demanda-layout { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(320px, 1fr); gap: 18px; align-items: start; }
+.demanda-scroll { overflow-x: auto; }
+.demanda-table { width: 100%; border-collapse: collapse; min-width: 640px; }
+.demanda-table th { text-align: left; color: var(--muted); font-size: .625rem; letter-spacing: .06em; text-transform: uppercase; padding: 14px 16px; border-bottom: 1px solid var(--line); }
+.demanda-table td { padding: 12px 16px; font-size: .8125rem; border-bottom: 1px solid var(--line); vertical-align: middle; }
+.demanda-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+.demanda-table tr.por-decidir { background: #f26b2b14; }
+.demanda-table tr.activa { box-shadow: inset 3px 0 0 var(--orange); }
+.demanda-fila-btn { all: unset; cursor: pointer; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.demanda-fila-btn:focus-visible { outline: 2px solid var(--orange); outline-offset: 3px; }
+.demanda-fila-btn small, .demanda-notas small { color: var(--muted); font-size: .6875rem; }
+.demanda-vacio { color: var(--muted); text-align: center; padding: 24px; }
+.demanda-pie { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 14px 16px; font-size: .75rem; color: var(--muted); }
+.demanda-pie > div { display: flex; gap: 8px; }
+.demanda-panel { padding: 22px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.demanda-panel h2 { margin: 0; font-size: 1.25rem; letter-spacing: -.02em; overflow-wrap: anywhere; }
+.demanda-panel h3 { margin: 0 0 10px; font-size: .8125rem; }
+.demanda-panel .page-sub { margin: 0; font-size: .75rem; }
+.demanda-notas, .demanda-avisar ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.demanda-notas li { display: flex; align-items: center; gap: 10px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+.demanda-notas li > div { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.demanda-similar { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px; border: 1px dashed var(--line); border-radius: 10px; font-size: .75rem; }
+.demanda-botones { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+.demanda-avisar li { display: flex; justify-content: space-between; align-items: center; gap: 10px; font-size: .8125rem; }
+.demanda-avisar { display: flex; flex-direction: column; gap: 10px; }
+.demanda-foto { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
+.demanda-foto img { max-width: 100%; max-height: 260px; border-radius: 10px; }
+@media (max-width: 1050px) { .demanda-layout { grid-template-columns: 1fr; } }
